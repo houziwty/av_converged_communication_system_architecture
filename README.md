@@ -13,3 +13,7 @@
    >>> * 对外提供HTTP API接口，通过接口可以进行多系统互联互通。
 
    2. 系统架构图
+
+   <div align="center">
+      <img src=./document/architecture.png />
+   </div>
