@@ -1,0 +1,12 @@
+#ifndef BUILD_VERSION_H
+#define BUILD_VERSION_H
+
+#define MAJOR 0
+#define MINOR 0
+#define  PATCH 1
+#define VERSION (MAJOR * 10000 + MINOR * 100 + PATCH)
+
+#define BUILD_VERSION_STRING(str) #str
+#define __BUILD_VERSION_STRING__(major, minor, patch) "v" BUILD_VERSION_STRING(major.minor.patch)
+
+#endif//BUILD_VERSION_H

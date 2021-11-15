@@ -1,0 +1,19 @@
+cmake_minimum_required(VERSION 3.5...3.16)
+project(avccsa)
+
+#项目版本信息
+include(cmake/utils.cmake)
+extract_build_version()
+message(STATUS "******   Project Version : ${PROJECT_NAME}_${BUILD_VERSION_STRING}")
+
+#set(CMAKE_BUILD_TYPE "Release")
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+    set(CMAKE_BUILD_TYPE "Debug")
+endif ()
+
+set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(3RDPART_DIR ${ROOT_DIR}/3rdpart)
+set(INCLUDE_DIR ${ROOT_DIR}/include ${ROOT_DIR}/modules)
+
+add_subdirectory(modules/liblog)
+add_subdirectory(tests)
