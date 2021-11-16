@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.5...3.16)
+
+project(message_distribute VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
+
+include_directories(${INCLUDE_DIR})
+add_executable(${PROJECT_NAME} main.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE xmq)

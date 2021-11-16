@@ -1,0 +1,231 @@
+cmake_minimum_required(VERSION 3.5...3.16)
+
+project(aio VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
+
+include(FetchContent)
+
+FetchContent_Declare(
+    asio 
+    GIT_REPOSITORY "https://github.com/boostorg/asio.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/asio
+)
+
+FetchContent_Declare(
+    assert 
+    GIT_REPOSITORY "https://github.com/boostorg/assert.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/assert
+)
+
+FetchContent_Declare(
+    atomic 
+    GIT_REPOSITORY "https://github.com/boostorg/atomic.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/atomic
+)
+
+FetchContent_Declare(
+    bind 
+    GIT_REPOSITORY "https://github.com/boostorg/bind.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/bind
+)
+
+FetchContent_Declare(
+    chrono 
+    GIT_REPOSITORY "https://github.com/boostorg/chrono.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/chrono
+)
+
+FetchContent_Declare(
+    concept_check 
+    GIT_REPOSITORY "https://github.com/boostorg/concept_check.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/concept_check
+)
+
+FetchContent_Declare(
+    config 
+    GIT_REPOSITORY "https://github.com/boostorg/config.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/config
+)
+
+FetchContent_Declare(
+    container 
+    GIT_REPOSITORY "https://github.com/boostorg/container.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/container
+)
+
+FetchContent_Declare(
+    container_hash 
+    GIT_REPOSITORY "https://github.com/boostorg/container_hash.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/container_hash
+)
+
+FetchContent_Declare(
+    core 
+    GIT_REPOSITORY "https://github.com/boostorg/core.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/core
+)
+
+FetchContent_Declare(
+    date_time 
+    GIT_REPOSITORY "https://github.com/boostorg/date_time.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/date_time
+)
+
+FetchContent_Declare(
+    exception 
+    GIT_REPOSITORY "https://github.com/boostorg/exception.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/exception
+)
+
+FetchContent_Declare(
+    function 
+    GIT_REPOSITORY "https://github.com/boostorg/function.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/function
+)
+
+FetchContent_Declare(
+    intrusive 
+    GIT_REPOSITORY "https://github.com/boostorg/intrusive.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/intrusive
+)
+
+FetchContent_Declare(
+    io 
+    GIT_REPOSITORY "https://github.com/boostorg/io.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/io
+)
+
+FetchContent_Declare(
+    iterator 
+    GIT_REPOSITORY "https://github.com/boostorg/iterator.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/iterator
+)
+
+FetchContent_Declare(
+    move 
+    GIT_REPOSITORY "https://github.com/boostorg/move.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/move
+)
+
+FetchContent_Declare(
+    optional 
+    GIT_REPOSITORY "https://github.com/boostorg/optional.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/optional
+)
+
+FetchContent_Declare(
+    predef 
+    GIT_REPOSITORY "https://github.com/boostorg/predef.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/predef
+)
+
+FetchContent_Declare(
+    preprocessor 
+    GIT_REPOSITORY "https://github.com/boostorg/preprocessor.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/preprocessor
+)
+
+FetchContent_Declare(
+    smart_ptr 
+    GIT_REPOSITORY "https://github.com/boostorg/smart_ptr.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/smart_ptr
+)
+
+FetchContent_Declare(
+    static_assert 
+    GIT_REPOSITORY "https://github.com/boostorg/static_assert.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/static_assert
+)
+
+FetchContent_Declare(
+    system 
+    GIT_REPOSITORY "https://github.com/boostorg/system.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/system
+)
+
+FetchContent_Declare(
+    throw_exception 
+    GIT_REPOSITORY "https://github.com/boostorg/throw_exception.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/throw_exception
+)
+
+FetchContent_Declare(
+    tuple 
+    GIT_REPOSITORY "https://github.com/boostorg/tuple.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/tuple
+)
+
+FetchContent_Declare(
+    type_traits 
+    GIT_REPOSITORY "https://github.com/boostorg/type_traits.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/type_traits
+)
+
+FetchContent_Declare(
+    thread 
+    GIT_REPOSITORY "https://github.com/boostorg/thread.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/thread
+)
+
+FetchContent_Declare(
+    utility 
+    GIT_REPOSITORY "https://github.com/boostorg/utility.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/utility
+)
+
+FetchContent_Declare(
+    winapi 
+    GIT_REPOSITORY "https://github.com/boostorg/winapi.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/winapi
+)
+
+FetchContent_Declare(
+    algorithm 
+    GIT_REPOSITORY "https://github.com/boostorg/algorithm.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/algorithm
+)
+
+FetchContent_Declare(
+    lexical_cast 
+    GIT_REPOSITORY "https://github.com/boostorg/lexical_cast.git" 
+    GIT_TAG "boost-1.77.0" 
+	SOURCE_DIR ${3RDPART_DIR}/boost/lexical_cast
+)
+
+FetchContent_MakeAvailable(
+	asio assert atomic bind chrono concept_check config container 
+	container_hash core date_time exception function intrusive io 
+	iterator move optional predef preprocessor smart_ptr static_assert 
+	system throw_exception tuple type_traits utility winapi thread algorithm lexical_cast)
+
+#add_library(${PROJECT_NAME} SHARED log.cpp)
+#target_link_libraries(${PROJECT_NAME} PRIVATE glog)

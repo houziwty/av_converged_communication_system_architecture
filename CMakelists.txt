@@ -15,5 +15,6 @@ set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(3RDPART_DIR ${ROOT_DIR}/3rdpart)
 set(INCLUDE_DIR ${ROOT_DIR}/include ${ROOT_DIR}/modules)
 
+add_subdirectory(modules/libaio)
 add_subdirectory(modules/liblog)
 add_subdirectory(tests)
