@@ -1,9 +1,7 @@
 #include <iostream>
-#include "liblog/log.h"
+#include "boost/asio.hpp"
 
 int main(int argc, char* argv[])
 {
-    Logger l;
-	l.init(argv[0]);
     return 0;
 }

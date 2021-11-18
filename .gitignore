@@ -33,5 +33,6 @@
 
 /.git/
 /.vscode/
-/3rdPart/
+/3rd/
 /build/
+/tools/

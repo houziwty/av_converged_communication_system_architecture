@@ -2,7 +2,7 @@
 //		Copyright : @2021, ***, All Rights Reserved
 //
 //		Author : 王科威
-//		E-mail : wangkw531@icloud.com
+//		E-mail : wangkw531@hotmail.com
 //		Date : 2021-11-15
 //		Description : 读写锁
 //

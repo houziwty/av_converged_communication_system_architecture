@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.5...3.16)
+
 project(avccsa)
 
 #项目版本信息
@@ -12,9 +13,13 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif ()
 
 set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(3RDPART_DIR ${ROOT_DIR}/3rdpart)
-set(INCLUDE_DIR ${ROOT_DIR}/include ${ROOT_DIR}/modules)
+set(3RDPART_DIR ${ROOT_DIR}/3rd)
+set(MODULE_DIR ${ROOT_DIR}/modules)
+set(INCLUDE_DIR ${ROOT_DIR}/include ${MODULE_DIR})
+set(SOURCE_DIR ${ROOT_DIR}/src)
+set(LINK_DIR ${ROOT_DIR}/build/modules)
 
-add_subdirectory(modules/libaio)
-add_subdirectory(modules/liblog)
-add_subdirectory(tests)
+add_subdirectory(modules/libxmq)
+add_subdirectory(services/message_distribute)
+#add_subdirectory(modules/liblog)
+#add_subdirectory(tests)

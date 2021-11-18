@@ -1,104 +1,59 @@
-#include "boost/bind.hpp"
-#include "boost/checked_delete.hpp"
-#include "boost/functional/factory.hpp"
-#include "boost/thread.hpp"
-
-#include "libcommon/defs.h"
-#include "libcommon/error.h"
-#include "libcommon/hardware/cpu/cpu.h"
-using Cpu = framework::libcommon::hardware::Cpu;
-#include "libcommon/thread/threadpool.h"
-using ThreadPool = framework::libcommon::ThreadPool;
-#include "libcommon/lock/rwlock.h"
-using WRLock = framework::libcommon::WRLock;
+#include "error_code.h"
 #include "ctx.h"
-using namespace module::network::asio;
 
-class ICtx
+MultiService::MultiService(
+	const std::size_t number/* = std::thread::hardware_concurrency()*/) 
+	: ctxs{number}, works{number}, idle{ 0 }
 {
-public:
-	ICtx(void);
-	~ICtx(void);
+	createNew(number);
+}
 
-public:
-	CommonError init(void);
-	CommonError uninit(void);
-	void* io(void);
-
-private:
-	IOContextGroup ioctxGroup;
-	IOWorkGroup ioworkGroup;
-	ThreadPool threadPool;
-	int idleIONumber;
-	WRLock wrLock;
-};//class ICtx
-
-ICtx::ICtx() 
-	: ioctxGroup{Cpu().getCoreNumber()}, idleIONumber{ 0 }
-{}
-ICtx::~ICtx()
+MultiService::~MultiService()
 {
 	uninit();
 }
 
-CommonError ICtx::init()
+boost::asio::io_context& MultiService::getIdle()
 {
-	for (int i = 0; i != ioctxGroup.size(); ++i)
-	{
-		void* t{
-			threadPool.create(
-				boost::bind(&boost::asio::io_context::run, boost::ref(ioctxGroup[i])))};
+//	wrLock.wlock();
+	auto& ctx{ctxs.at(idle++ % ctxs.size())};
+//	wrLock.unwlock();
 
-		if (t)
+	return ctx;
+}
+
+int MultiService::createNew(const std::size_t number/* = 1*/)
+{
+	for (int i = 0; i != number; ++i)
+	{
+		std::unique_ptr<boost::asio::io_context::work> work{
+			new(std::nothrow) boost::asio::io_context::work(ctxs[i])};
+
+		if(work)
 		{
-			boost::thread* thr{reinterpret_cast<boost::thread*>(t)};
-			Cpu().setAffinity(thr->native_handle(), i);
+			works[i] = work;
 		}
-		
-		ioworkGroup.push_back(boost::asio::io_context::work(ioctxGroup[i]));
 	}
 
-	return CommonError::COMMON_ERROR_SUCCESS;
+	for (int j = 0; j != ctxs.size(); ++j)
+	{
+		threads.emplace_back([this, i](){ctxs[i].run();});
+	}        
+
+	return 0 < threads.size() ? Error_Code_Success : Error_Code_Operate_Failure;
 }
 
-CommonError ICtx::uninit()
+int MultiService::destory()
 {
-	std::for_each(ioctxGroup.begin(), ioctxGroup.end(), boost::bind(&boost::asio::io_context::stop, _1));
-	threadPool.joinAll();
-	ioworkGroup.clear();
-	ioctxGroup.clear();
-	return CommonError::COMMON_ERROR_SUCCESS;
-}
+	for (auto& work : works)
+	{
+		work.reset();
+	}
 
-void* ICtx::io()
-{
-	wrLock.wlock();
-	boost::asio::io_context& c{
-		ioctxGroup.at(idleIONumber++ % ioctxGroup.size())};
-	wrLock.unwlock();
+	for (auto& thread : threads)
+	{
+		thread.join();
+	}
 
-	return &c;
-}
-
-Ctx::Ctx() : ctx{boost::factory<ICtx*>()()}
-{}
-
-Ctx::~Ctx()
-{
-	boost::checked_delete(ctx);
-}
-
-int Ctx::init()
-{
-	return static_cast<int>(ctx ? ctx->init() : CommonError::COMMON_ERROR_BAD_NEW_INSTANCE);
-}
-
-int Ctx::uninit()
-{
-	return static_cast<int>(ctx ? ctx->uninit() : CommonError::COMMON_ERROR_BAD_NEW_INSTANCE);
-}
-
-void* Ctx::io()
-{
-	return ctx ? ctx->io() : nullptr;
+	return Error_Code_Success;
 }

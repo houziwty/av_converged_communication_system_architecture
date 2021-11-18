@@ -1,7 +1,14 @@
-#include "libzmq/zmq.h"
+#include <cstring>
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "zmq.h"
+#ifdef __cplusplus
+}
+#endif
 #include "error_code.h"
-#include "network/xmq/msg.h"
-using namespace network::xmq;
+#include "msg.h"
+using namespace module::network::xmq;
 
 Msg::Msg()
 {}
@@ -11,7 +18,7 @@ Msg::~Msg()
 
 void Msg::pushBack(const std::string data)
 {
-	msgs.push_bask(data);
+	msgs.push_back(data);
 }
 
 const std::string Msg::popFront()
@@ -27,7 +34,7 @@ const std::string Msg::popFront()
 	return std::move(data);
 }
 
-int Msg::recv(socket_t* s /* = nullptr */)
+int Msg::recv(void* s /* = nullptr */)
 {
 	int ret{ s ? Error_Code_Success : Error_Code_Invalid_Param };
 	zmq_msg_t msg;
@@ -51,10 +58,10 @@ int Msg::recv(socket_t* s /* = nullptr */)
 		zmq_msg_close(&msg);
 	}
 
-	return e;
+	return ret;
 }
 
-int Msg::sendData(socket_t* s /* = nullptr */)
+int Msg::send(void* s /* = nullptr */)
 {
 	int ret{ s ? Error_Code_Success : Error_Code_Invalid_Param };
 
@@ -79,7 +86,7 @@ int Msg::sendData(socket_t* s /* = nullptr */)
 			memcpy(zmq_msg_data (&msg), data.c_str(), len);
 #endif//OS_WINDOWS
 
-			if (len != zmq_msg_send(&msg, s, i < msgNo - 1 ? ZMQ_DONTWAIT | ZMQ_SNDMORE : ZMQ_DONTWAIT))
+			if (len != zmq_msg_send(&msg, s, i < number - 1 ? ZMQ_DONTWAIT | ZMQ_SNDMORE : ZMQ_DONTWAIT))
 			{
 				ret = Error_Code_Bad_Operate_Send;
 				break;

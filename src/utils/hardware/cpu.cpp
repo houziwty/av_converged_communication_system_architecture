@@ -11,8 +11,8 @@
 #else
 #include <sys/sysinfo.h>
 #endif//OS_WINDOWS
-#include "utils/hw/cpu.h"
-using namespace utils::hw;
+#include "utils/hardware/cpu.h"
+using namespace framework::utils::hardware;
 
 Cpu::Cpu()
 {}
@@ -20,17 +20,17 @@ Cpu::Cpu()
 Cpu::~Cpu()
 {}
 
-const size_t Cpu::getCount() const
+const int Cpu::getCount() const
 {
-	size_t number = 1;
+	int number{1};
 
 #ifdef WINDOWS
 	boost::winapi::_SYSTEM_INFO info;
 	boost::winapi::GetSystemInfo(&info);
-	number = info.dwNumberOfProcessors;
+	number = static_cast<int>(info.dwNumberOfProcessors);
 #else
-	number = get_nprocs();
+	number = static_cast<int>(get_nprocs());
 #endif//WINDOWS
 
-	return tempNumberOfCores;
-}A
+	return number;
+}
