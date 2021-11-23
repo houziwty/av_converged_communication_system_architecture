@@ -24,6 +24,7 @@ static const int Error_Code_Operate_Not_Support = -6;
 static const int Error_Code_Operate_Failure = -7;
 static const int Error_Code_Object_Existed = -8;
 static const int Error_Code_Object_Not_Exist = -9;
+static const int Error_Code_Method_Not_Support = -10;
 
 //网络操作
 static const int Error_Code_Bad_New_Socket = -1000;
