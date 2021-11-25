@@ -13,7 +13,9 @@
 #ifndef MODULE_MEDIA_AV_GRAPH_H
 #define MODULE_MEDIA_AV_GRAPH_H
 
-#include "defs.h"
+#include <string>
+#include "boost/shared_ptr.hpp"
+#include "boost/unordered_map.hpp"
 
 namespace module
 {
@@ -21,6 +23,10 @@ namespace module
 	{
 		namespace av
 		{
+			class Filter;
+            using FilterPtr = boost::shared_ptr<Filter>;
+			using FilterPtrs = boost::unordered_map<const std::string, FilterPtr>;
+
 			class Graph
 			{
 			public:

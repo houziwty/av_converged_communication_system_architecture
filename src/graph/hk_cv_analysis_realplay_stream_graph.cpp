@@ -1,5 +1,8 @@
 #include "boost/make_shared.hpp"
 #include "error_code.h"
+#include "libmedia/filter/capture/device_sdk/hk_sdk_capture_filter.h"
+#include "libmedia/filter/parser/av_packet_parser_filter.h"
+#include "libmedia/filter/callback/av_data_callback_filter.h"
 #include "graph/hk_cv_analysis_realplay_stream_graph.h"
 using namespace framework::media::av;
 
@@ -16,20 +19,18 @@ int HKCVAnalysisRealplayStreamGraph::createNew()
 
 	if (Error_Code_Success == ret)
 	{
-		FilterPtr vdf{boost::make_shared<VideoDecoderFilter>()};
-		FilterPtr iff{boost::make_shared<ImageFormatterFilter>()};
-		FilterPtr pef{boost::make_shared<PictureEncoderFilter>()};
-		FilterPtr cvaf{boost::make_shared<CvAnalysisFilter>()};
+		FilterPtr hksf{boost::make_shared<HKSdkCaptureFilter>()};
+		FilterPtr fpf{boost::make_shared<AVPacketParserFilter>()};
+		FilterPtr cbf{boost::make_shared<AVDataCallbackFilter>()};
 
-		if (vdf && Error_Code_Success == vdf->createNew() &&
-			iff && Error_Code_Success == iff->createNew() && 
-			pef && Error_Code_Success == pef->createNew() &&
-			cvaf && Error_Code_Success == cvaf->createNew())
+		if (hksf && Error_Code_Success == hksf->createNew() &&
+			ppf && Error_Code_Success == ppf->createNew() && 
+			cbf && Error_Code_Success == cbf->createNew())
 		{
-			filters.insert(std::make_pair(innerVideoDecoderFilterName, vdf));
-			filters.insert(std::make_pair(innerImageFormatterFilterName, iff));
-			filters.insert(std::make_pair(innerPictureEncoderFilterName, pef));
-			filters.insert(std::make_pair(innerCVAnalysisFilterName, cvaf));
+			filters.insert(std::make_pair(userDefineHKSdkCaptureFilterName, hksf));
+			filters.insert(std::make_pair(userDefineAVPacketParserFilterName, ppf));
+			filters.insert(std::make_pair(userDefineAVDataCallbackFilterName, cbf));
+			ret = connectPin();
 		}
 		else
 		{
@@ -42,27 +43,32 @@ int HKCVAnalysisRealplayStreamGraph::createNew()
 
 int CVAnalysisRealplayStreamGraph::connectPin()
 {
-	int ret{Error_Code_Object_Not_Exist};
-	FilterPtr vdf{query(innerVideoDecoderFilterName)};
-	FilterPtr iff{query(innerImageFormatterFilterName)};
-	FilterPtr cvaf{query(innerCVAnalysisFilterName)};
-	FilterPtr pef{query(innerPictureEncoderFilterName)};
+	int ret{CVAnalysisRealplayStreamGraph::connectPin()};
 
-	if (vdf && iff && cvaf && pef)
+	if(Error_Code_Success == ret)
 	{
-		PinPtr vdf_out{vdf->query(innerDataOutputPinName)};
-		PinPtr iff_out{iff->query(innerDataOutputPinName)};
-		PinPtr iff_in{iff->query(innerDataInputPinName)};
-		PinPtr cvaf_out{cvaf->query(innerDataOutputPinName)};
-		PinPtr cvaf_in{cvaf->query(innerDataInputPinName)};
-		PinPtr pef_in{pef->query(innerDataInputPinName)};
+		FilterPtr hksf{query(userDefineHKSdkCaptureFilterName)};
+		FilterPtr ppf{query(userDefineAVPacketParserFilterName)};
+		FilterPtr vdf{query(innerVideoDecoderFilterName)};
+		FilterPtr pef{query(innerPictureEncoderFilterName)};
+		FilterPtr cbf{query(userDefineAVDataCallbackFilterName)};
 
-		if (vdf_out && iff_in && iff_out && cvaf_out && cvaf_in && pef_in)
+		if (hksf && ppf && vdf && pef && cbf)
 		{
-			vdf_out->next(iff_in);
-			iff_out->next(cvaf_in);
-			cvaf_out->next(pef_in);
-			ret = Error_Code_Success;
+			PinPtr hksf_out{vdf->query(innerDataOutputPinName)};
+			PinPtr ppf_in{ppf->query(innerDataInputPinName)};
+			PinPtr ppf_out{ppf->query(innerDataOutputPinName)};
+			PinPtr vdf_in{vdf->query(innerDataInputPinName)};
+			PinPtr pef_out{pef->query(innerDataOutputPinName)};
+			PinPtr cbf_in{cvaf->query(innerDataInputPinName)};
+
+			if (hksf_out && ppf_in && ppf_out && vdf_in && pef_out && cbf_in)
+			{
+				hksf_out->next(ppf_in);
+				ppf_out->next(vdf_in);
+				pef_out->next(cbf_in);
+				ret = Error_Code_Success;
+			}
 		}
 	}
 	

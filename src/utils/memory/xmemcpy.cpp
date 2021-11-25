@@ -1,7 +1,16 @@
+#ifndef WINDOWS
+#include <cstring>
+#endif//WINDOWS
 #include "utils/memory/xmemcpy.h"
-using framework::utils::memory;
+using namespace framework::utils::memory;
 
-void xmemcpy(
+XMemory::XMemory()
+{}
+
+XMemory::~XMemory()
+{}
+
+void XMemory::copy(
     void* src/* = nullptr*/, 
     void* dest/* = nullptr*/, 
     const unsigned long long bytes/* = 0*/)

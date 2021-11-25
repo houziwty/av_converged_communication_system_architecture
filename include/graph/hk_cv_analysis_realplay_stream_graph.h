@@ -22,6 +22,10 @@ namespace framework
 	{
 		namespace av
 		{
+			static const std::string userDefineHKSdkCaptureFilterName = "UserDefineHKSdkCaptureFilter";
+			static const std::string userDefineAVPacketParserFilterName = "UserDefineAVPacketParserFilter";
+			static const std::string userDefineAVDataCallbackFilterName = "UserDefineAVDataCallbackFilter";
+
 			class HKCVAnalysisRealplayStreamGraph 
 				: public CVAnalysisRealplayStreamGraph
 			{

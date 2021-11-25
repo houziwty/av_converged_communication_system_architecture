@@ -10,23 +10,23 @@
 //					1. 2021-11-18 由王科威创建
 //
 
-#ifndef MESSAGE_DISTRIBUTE_SERVICE_H
-#define MESSAGE_DISTRIBUTE_SERVICE_H
+#ifndef MESSAGE_DISPATCHER_SERVICE_H
+#define MESSAGE_DISPATCHER_SERVICE_H
 
-#include "network/mq/switcher_pub.h"
-using namespace framework::network::mq;
+#include "network/xmq/switcher_pub.h"
+using namespace framework::network::xmq;
 
-class MessageDistribute final : public SwitcherPub
+class MessageDispatcher final : public SwitcherPub
 {
 public:
-	MessageDistribute(void);
-	~MessageDistribute(void);
+	MessageDispatcher(void);
+	~MessageDispatcher(void);
 
 protected:
 	//交换模型数据接收回调函数
 	//@uid [out] : 用户ID标识
 	//@data [out] : 数据
 	void afterSwitcherPolledDataHandler(const std::string uid, const std::string data) override;
-};//class MessageDistribute
+};//class MessageDispatcher
 
-#endif//MESSAGE_DISTRIBUTE_SERVICE_H
+#endif//MESSAGE_DISPATCHER_SERVICE_H

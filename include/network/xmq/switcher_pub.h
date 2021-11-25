@@ -10,8 +10,8 @@
 //					1. 2021-11-15 由王科威创建
 //
 
-#ifndef FRAMEWORK_NETWORK_MQ_SWITCHER_PUBLISHER_H
-#define FRAMEWORK_NETWORK_MQ_SWITCHER_PUBLISHER_H
+#ifndef FRAMEWORK_NETWORK_XMQ_SWITCHER_PUBLISHER_H
+#define FRAMEWORK_NETWORK_XMQ_SWITCHER_PUBLISHER_H
 
 #include <string>
 
@@ -19,7 +19,7 @@ namespace framework
 {
 	namespace network
 	{
-		namespace mq
+		namespace xmq
 		{
 			class SwitcherPub
 			{
@@ -71,8 +71,8 @@ namespace framework
 				void* thread;
 				bool stopped;
 			};//class SwitcherPub
-		}//namespace mq
+		}//namespace xmq
 	}//namespace network
 }//namespace framework
 
-#endif//FRAMEWORK_NETWORK_MQ_SWITCHER_PUBLISHER_H
+#endif//FRAMEWORK_NETWORK_XMQ_SWITCHER_PUBLISHER_H

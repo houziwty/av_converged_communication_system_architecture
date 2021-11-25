@@ -1,11 +1,11 @@
 #include <iostream>
-#include "MessageDistribute.h"
+#include "message_dispatcher_service.h"
 
 int main(int argc, const char** argv)
 {
     std::cout << "It is beginning ..." << std::endl;
 
-    MessageDistribute md;
+    MessageDispatcher md;
     md.start();
 
     md.stop();

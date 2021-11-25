@@ -9,21 +9,24 @@
 //		History: 2021-11-15 由王科威创建
 //
 
-#ifndef UTILS_LOCK_RW_LOCK_H
-#define UTILS_LOCK_RW_LOCK_H
+#ifndef FRAMEWORK_UTILS_LOCK_RW_LOCK_H
+#define FRAMEWORK_UTILS_LOCK_RW_LOCK_H
 
 #include "boost/thread/locks.hpp"
 #include "boost/thread/shared_mutex.hpp"
 
-namespace utils
+namespace framework
 {
-    namespace lock
+    namespace utils
     {
-        using SharedMutex = boost::shared_mutex;
-        using WriteLock = boost::unique_lock<SharedMutex>;
-        using ReadLock = boost::shared_lock<SharedMutex>;
-    }//namespace lock
-}//namespace utils
+        namespace lock
+        {
+            using SharedMutex = boost::shared_mutex;
+            using WriteLock = boost::unique_lock<SharedMutex>;
+            using ReadLock = boost::shared_lock<SharedMutex>;
+        }//namespace lock
+    }//namespace utils
+}//namespace framework
 
-#endif//UTILS_LOCK_RW_LOCK_H
+#endif//FRAMEWORK_UTILS_LOCK_RW_LOCK_H
 

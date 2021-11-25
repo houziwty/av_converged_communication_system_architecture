@@ -1,0 +1,31 @@
+cmake_minimum_required(VERSION 3.5...3.16)
+
+project(dvs_host_service VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
+
+include_directories(${INCLUDE_DIR})
+link_directories(${LINK_DIR}/libxmq)
+link_directories(${LINK_DIR}/libasio)
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+	link_directories(${3RDPART_DIR}/sdk/hikvision/lib/linux)
+elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+	link_directories(${3RDPART_DIR}/sdk/hikvision/lib/win32)
+endif()
+
+file(GLOB_RECURSE src "*.cpp")
+file(GLOB_RECURSE framework_avcap_src "${SOURCE_DIR}/avcap/*.cpp")
+file(GLOB_RECURSE framework_network_src "${SOURCE_DIR}/network/*.cpp")
+file(GLOB_RECURSE framework_utils_src "${SOURCE_DIR}/utils/*.cpp")
+
+add_executable(
+	${PROJECT_NAME} 
+	${src} 
+	${framework_avcap_src} 
+	${framework_network_src}
+	${framework_utils_src})
+target_link_libraries(
+	${PROJECT_NAME} 
+	PRIVATE 
+	asio xmq hcnetsdk 
+	libboost_program_options.a 
+	libboost_thread.a 
+	pthread)

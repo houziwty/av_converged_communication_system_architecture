@@ -13,8 +13,9 @@
 #ifndef MODULE_MEDIA_AV_FILTER_H
 #define MODULE_MEDIA_AV_FILTER_H
 
-#include "libavp/avp.h"
-#include "defs.h"
+#include <string>
+#include "boost/shared_ptr.hpp"
+#include "boost/unordered_map.hpp"
 
 namespace module
 {
@@ -22,6 +23,27 @@ namespace module
 	{
 		namespace av
 		{
+			//过滤器工作模式
+			//必选其一
+			typedef enum class tagWorkMode_t : int
+			{
+				WORK_MODE_SOURCE = 0, 
+				WORK_MODE_MEDIUM,
+				WORK_MODE_TARGET
+			}WorkMode;
+
+			static const std::string innerVideoDecoderFilterName = "InnerVideoDecoderFilter";
+			static const std::string innerVideoRenderFilterName = "InnerVideoRenderFilter";
+			static const std::string innerAudioDecoderFilterName = "InnerAudioDecoderFilter";
+			static const std::string innerAudioPlayerFilterName = "InnerAudioPlayerFilter";
+			static const std::string innerImageFormatterFilterName = " innerImageFormatterFilter";
+			static const std::string innerPictureEncoderFilterName = " innerPictureEncoderFilter";
+			static const std::string innerCVAnalysisFilterName = " innerCVAnalysisFilter";
+
+			class Pin;
+            using PinPtr = boost::shared_ptr<Pin>;
+			using PinPtrs = boost::unordered_map<const std::string, PinPtr>;
+			class AVProcessor;
 			using AVProcessorPtr = boost::shared_ptr<AVProcessor>;
 
 			class Filter

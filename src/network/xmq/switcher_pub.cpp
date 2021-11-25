@@ -8,8 +8,8 @@ using namespace module::network::xmq;
 #include "utils/thread/thread.h"
 #include "utils/thread/thread_pool.h"
 using namespace framework::utils::thread;
-#include "network/mq/switcher_pub.h"
-using namespace framework::network::mq;
+#include "network/xmq/switcher_pub.h"
+using namespace framework::network::xmq;
 
 SwitcherPub::SwitcherPub() 
 	: switcher{nullptr}, publisher{nullptr}, thread{nullptr}, stopped{ false }
@@ -65,8 +65,6 @@ int SwitcherPub::stop()
 	ThreadPool().get_mutable_instance().destroy(thread);
 	boost::checked_delete(switcher);
 	boost::checked_delete(publisher);
-	switcher = nullptr;
-	publisher = nullptr;
 
 	return Error_Code_Success;
 }
@@ -86,8 +84,7 @@ int SwitcherPub::send(
 	return ret;
 }
 
-int SwitcherPub::send(
-	const std::string data)
+int SwitcherPub::send(const std::string data)
 {
 	int ret{ publisher ? Error_Code_Success : Error_Code_Object_Existed };
 

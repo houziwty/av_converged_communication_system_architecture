@@ -16,8 +16,8 @@
 #ifndef MODULE_MEDIA_AV_PIN_H
 #define MODULE_MEDIA_AV_PIN_H
 
-#include "libavp/frame.h"
-#include "defs.h"
+#include <string>
+#include "boost/shared_ptr.hpp"
 
 namespace module
 {
@@ -25,6 +25,20 @@ namespace module
 	{
 		namespace av
 		{
+			//针脚传输模式
+			//必选其一
+			typedef enum class tagTransportMode_t : int
+			{
+				TRANSPORT_MODE_INPUT = 0,
+				TRANSPORT_MODE_OUTPUT
+			}TransportMode;
+
+			static const std::string innerDataInputPinName = "innerDataInputPin";
+			static const std::string innerDataOutputPinName = "innerDataOutputPin";
+
+			class Filter;
+			using FilterPtr = boost::shared_ptr<Filter>;
+			class Frame;
 			using FramePtr = boost::shared_ptr<Frame>;
 
 			class Pin

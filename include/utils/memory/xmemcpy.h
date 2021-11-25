@@ -10,8 +10,8 @@
 //					1. 2021-11-18 由王科威创建
 //
 
-#ifndef FRAMEWORK_UTILS_MEMORY_H
-#define FRAMEWORK_UTILS_MEMORY_H
+#ifndef FRAMEWORK_UTILS_XMEMORY_H
+#define FRAMEWORK_UTILS_XMEMORY_H
 
 namespace framework
 {
@@ -19,12 +19,17 @@ namespace framework
 	{
 		namespace memory
 		{
-            static void xmemcpy(
-                void* src = nullptr, 
-                void* dest = nullptr, 
-                const unsigned long long bytes = 0);
+            class XMemory
+            {
+            public:
+                XMemory(void);
+                ~XMemory(void);
+
+            public:
+                void copy(void* src = nullptr, void* dest = nullptr, const unsigned long long bytes = 0);
+            };//class XMemory
         }//namespace memory
     }//namespace utils
 }//namespace framework
 
-#endif//FRAMEWORK_UTILS_MEMORY_H
+#endif//FRAMEWORK_UTILS_XMEMORY_H
