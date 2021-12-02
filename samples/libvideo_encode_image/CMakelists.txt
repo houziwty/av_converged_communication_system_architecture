@@ -13,4 +13,4 @@ file(GLOB_RECURSE src "*.cpp")
 file(GLOB_RECURSE framework_utils_src "${SOURCE_DIR}/utils/memory/*.cpp")
 
 add_library(${PROJECT_NAME} SHARED ${src} ${framework_utils_src})
-target_link_libraries(${PROJECT_NAME} PUBLIC libboost_thread.a avcodec avformat avutil swscale hcnetsdk PlayCtrl)
+target_link_libraries(${PROJECT_NAME} PUBLIC avcodec avformat avutil swscale hcnetsdk PlayCtrl pthread)

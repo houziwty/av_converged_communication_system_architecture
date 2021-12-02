@@ -15,10 +15,11 @@
 
 #include <string>
 #include <vector>
+#include <mutex>
 #include "HCNetSDK.h"
 #include "LinuxPlayM4.h"
-#include "boost/thread.hpp"
-#include "boost/thread/mutex.hpp"
+//#include "boost/thread.hpp"
+//#include "boost/thread/mutex.hpp"
 extern "C"
 {
 #include "libavformat/avformat.h"
@@ -66,6 +67,7 @@ private:
         int nReserved2);
     void decodeThreadHandler(void);
 
+
 private:
     const int deviceId;
     static int deviceCount;
@@ -73,16 +75,17 @@ private:
     int realplayID;
     int playID;
     char mac[17];
-    boost::thread_group tg;
+ //   boost::thread_group tg;
     bool stopped;
     std::vector<H264Frame> frames;
-	boost::mutex mtx;
+	std::mutex mtx;
     AVFrame* iframe;
 	AVFrame* oframe;
-	void* iframebuf;
-	void* oframebuf;
+	void* yuvframebuf;
+	void* bgrframebuf;
     struct SwsContext* ctx;
-    int oframebufsize;
+    int yuvframebufsize;
+    int bgrframebufsize;
     JPEGImageEncoder jpegEncoder;
     Fifo<OutputFrameData*> frameDataQueue;
     int sequence;

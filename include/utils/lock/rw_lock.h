@@ -12,8 +12,11 @@
 #ifndef FRAMEWORK_UTILS_LOCK_RW_LOCK_H
 #define FRAMEWORK_UTILS_LOCK_RW_LOCK_H
 
-#include "boost/thread/locks.hpp"
-#include "boost/thread/shared_mutex.hpp"
+//#include "boost/thread/locks.hpp"
+//#include "boost/thread/shared_mutex.hpp"
+
+#include <mutex>
+#include <shared_mutex>
 
 namespace framework
 {
@@ -21,9 +24,9 @@ namespace framework
     {
         namespace lock
         {
-            using SharedMutex = boost::shared_mutex;
-            using WriteLock = boost::unique_lock<SharedMutex>;
-            using ReadLock = boost::shared_lock<SharedMutex>;
+            using SharedMutex = std::mutex;
+ //           using WriteLock = std::unique_lock<SharedMutex>;
+//            using ReadLock = std::shared_lock<SharedMutex>;
         }//namespace lock
     }//namespace utils
 }//namespace framework

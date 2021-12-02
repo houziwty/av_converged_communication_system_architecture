@@ -1,6 +1,3 @@
-#include "boost/checked_delete.hpp"
-#include "boost/bind/bind.hpp"
-using namespace boost::placeholders;
 #include "boost/format.hpp"
 #include "boost/make_shared.hpp"
 #include "dvs.h"
@@ -15,8 +12,11 @@ static int deviceId{0};
 
 static const int getDeviceId(void)
 {
-    WriteLock wl{mtx};
-    return ++deviceId;
+    //WriteLock wl{mtx};
+    mtx.lock();
+    int number{++deviceId};
+    mtx.unlock();
+    return number;
 }
 
 int CLT_LIB_VideoEncodeImage_Start()
@@ -45,7 +45,7 @@ int CLT_LIB_VideoEncodeImage_AddDevice(
         const int did{getDeviceId()};
         DvsPtr ptr{boost::make_shared<Dvs>(did)};
 
-        if(0 < did && ptr && ptr->login(ip, port, username, passwd))
+        if(0 < did && ptr && -1 < (ret = ptr->login(ip, port, username, passwd)))
         {
             dvss.replace(did, ptr);
         }

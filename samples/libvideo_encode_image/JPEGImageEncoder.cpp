@@ -3,6 +3,8 @@ extern "C"
 #include "libavformat/avformat.h"
 #include "libavutil/imgutils.h"
 }
+#include "utils/memory/xmemcpy.h"
+using namespace framework::utils::memory;
 #include "error_code.h"
 #include "JPEGImageEncoder.h"
 
@@ -58,21 +60,8 @@ int JPEGImageEncoder::input(void* data, const int w, const int h, void*& jpeg, i
 				av_init_packet(&avpkt);
 				if (!avcodec_receive_packet(avcc, &avpkt))
 				{
-					// Base64 base64;
-					// e = base64.encodeBase64((const char*)avpkt.data, avpkt.size);
-
-					// if (eSuccess == e)
-					// {
-					// 	data->setData(base64.getData(), base64.getDataBytes());
-					// 	fp->setFrameType(framework::data::FrameType::FRAME_TYPE_JPEG);
-						
-					// 	if (dataNotificationCallback)
-					// 	{
-					// 		dataNotificationCallback(data);
-					// 	}
-					// }
-
-					jpeg = avpkt.data;
+					jpeg = new char[avpkt.size];
+					XMemory().copy(avpkt.data, jpeg, avpkt.size);
 					bytes = avpkt.size;
 				}
 

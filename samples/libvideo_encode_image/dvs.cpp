@@ -1,6 +1,8 @@
 //#include <cstring>
-#include "boost/thread.hpp"
+//#include "boost/thread.hpp"
+#include <functional>
 #include <thread>
+#include <chrono>
 #include "utils/memory/xmemcpy.h"
 using namespace framework::utils::memory;
 #include "dvs.h"
@@ -9,8 +11,8 @@ int Dvs::deviceCount = 0;
 
 Dvs::Dvs(const int did) 
     : deviceId{did}, userID{-1}, realplayID{-1}, playID{-1}, stopped{true}, 
-    ctx{nullptr}, iframe{nullptr}, oframe{nullptr}, iframebuf{nullptr}, oframebuf{nullptr}, sequence{0}, 
-    oframebufsize{0}
+    ctx{nullptr}, iframe{nullptr}, oframe{nullptr}, yuvframebuf{nullptr}, bgrframebuf{nullptr}, sequence{0}, frameDataQueue{25}, yuvframebufsize{0},
+    bgrframebufsize{0}
 {
     if (!deviceCount)
     {
@@ -26,7 +28,7 @@ Dvs::Dvs(const int did)
 Dvs::~Dvs()
 {
     stopped = true;
-    tg.join_all();
+ //   tg.join_all();
     --deviceCount;
     av_frame_free(&iframe);
     av_frame_free(&oframe);
@@ -51,18 +53,18 @@ int Dvs::login(
     if (-1 < userID)
     {
         DWORD ret = 0;
-        NET_DVR_NETCFG_V30 cfg;
-        memset(&cfg, 0, sizeof(NET_DVR_NETCFG_V30));
-        if (NET_DVR_GetDVRConfig(userID, NET_DVR_GET_NETCFG_V30, 0,&cfg, sizeof(NET_DVR_NETCFG_V30), &ret))
-        {
-            sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x", 
-                cfg.struEtherNet[0].byMACAddr[0],
-                cfg.struEtherNet[0].byMACAddr[1],
-                cfg.struEtherNet[0].byMACAddr[2],
-                cfg.struEtherNet[0].byMACAddr[3],
-                cfg.struEtherNet[0].byMACAddr[4],
-                cfg.struEtherNet[0].byMACAddr[5]);
-        }
+        // NET_DVR_NETCFG_V30 cfg;
+        // memset(&cfg, 0, sizeof(NET_DVR_NETCFG_V30));
+        // if (NET_DVR_GetDVRConfig(userID, NET_DVR_GET_NETCFG_V30, 0,&cfg, sizeof(NET_DVR_NETCFG_V30), &ret))
+        // {
+        //     sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x", 
+        //         cfg.struEtherNet[0].byMACAddr[0],
+        //         cfg.struEtherNet[0].byMACAddr[1],
+        //         cfg.struEtherNet[0].byMACAddr[2],
+        //         cfg.struEtherNet[0].byMACAddr[3],
+        //         cfg.struEtherNet[0].byMACAddr[4],
+        //         cfg.struEtherNet[0].byMACAddr[5]);
+        // }
 
         NET_DVR_PREVIEWINFO struPlayInfo = { 0 };
         struPlayInfo.hPlayWnd = 0;
@@ -73,14 +75,17 @@ int Dvs::login(
 
         if (-1 < realplayID)
         {
-            tg.create_thread(boost::bind(&Dvs::decodeThreadHandler, this));
+     //       tg.create_thread(boost::bind(&Dvs::decodeThreadHandler, this));
+
+            std::thread decode_thread(std::bind(&Dvs::decodeThreadHandler, this));
+            decode_thread.detach();
         }
     }
 
 //    printf("ip=%s, port=%d, name=%s, password=%s, user=%d, realplay=%d, serialNo=%s.\r\n", 
 //        ip.c_str(), port, name.c_str(), password.c_str(), userID, realplayID, struDeviceInfo.sSerialNumber);
 
-    return 0;
+    return realplayID;
 }
 
 void Dvs::RealDataCallBack_V30(
@@ -126,7 +131,8 @@ void Dvs::decodeThreadHandler()
     {
         if(!frames.size())
         {
-            boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+            //boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
             continue;
         }
 
@@ -203,59 +209,62 @@ void Dvs::DecodeOneFrameCallback(
 
     if (T_YV12 == pFrameInfo->nType)
     {
- //       if(dvs->decodeDataCallback)
+        if(!dvs->ctx)
         {
-            if(!dvs->ctx)
-            {
-                dvs->ctx = sws_getContext(
-                    pFrameInfo->nWidth, pFrameInfo->nHeight, AV_PIX_FMT_YUV420P, 
-                    pFrameInfo->nWidth, pFrameInfo->nHeight, AV_PIX_FMT_BGR24,
-                    SWS_BILINEAR, 0, 0, 0);
-                int bgr24_bytes{ av_image_get_buffer_size(AV_PIX_FMT_BGR24, pFrameInfo->nWidth, pFrameInfo->nHeight, 1) };
-                dvs->oframebuf = av_malloc(bgr24_bytes);
-                int yuv420p_Bytes{ av_image_get_buffer_size(AV_PIX_FMT_YUV420P, pFrameInfo->nWidth, pFrameInfo->nHeight, 1) };
-                dvs->iframebuf = av_malloc(yuv420p_Bytes);
-                dvs->oframebufsize = bgr24_bytes;
-                av_image_fill_arrays(
-                    dvs->oframe->data, dvs->oframe->linesize, (const uint8_t*)dvs->oframebuf,
-                    AV_PIX_FMT_BGR24, pFrameInfo->nWidth, pFrameInfo->nHeight, 1);
-            }
-
+            dvs->ctx = sws_getContext(
+                pFrameInfo->nWidth, pFrameInfo->nHeight, AV_PIX_FMT_YUV420P, 
+                pFrameInfo->nWidth, pFrameInfo->nHeight, AV_PIX_FMT_BGR24,
+                SWS_BILINEAR, 0, 0, 0);
+            dvs->bgrframebufsize = av_image_get_buffer_size(AV_PIX_FMT_BGR24, pFrameInfo->nWidth, pFrameInfo->nHeight, 1);
+            dvs->bgrframebuf = av_malloc(dvs->bgrframebufsize);
             av_image_fill_arrays(
-                dvs->iframe->data, dvs->iframe->linesize, (const uint8_t*)pBuf,
-                AV_PIX_FMT_YUV420P, pFrameInfo->nWidth, pFrameInfo->nHeight, 1);
-            uint8_t* temp{dvs->iframe->data[1]};
-                dvs->iframe->data[1] = dvs->iframe->data[2];
-                dvs->iframe->data[2] = temp;
-            sws_scale(
-                dvs->ctx, (uint8_t const* const*)dvs->iframe->data, dvs->iframe->linesize, 0, 
-                pFrameInfo->nHeight, dvs->oframe->data, dvs->oframe->linesize);
+                dvs->oframe->data, dvs->oframe->linesize, (const uint8_t*)dvs->bgrframebuf,
+                AV_PIX_FMT_BGR24, pFrameInfo->nWidth, pFrameInfo->nHeight, 1);
+            dvs->yuvframebufsize = av_image_get_buffer_size(AV_PIX_FMT_YUV420P, pFrameInfo->nWidth, pFrameInfo->nHeight, 1);
+            dvs->yuvframebuf = av_malloc(dvs->yuvframebufsize);
+        }
+        int ysize{pFrameInfo->nWidth * pFrameInfo->nHeight};
+        int uvsize{ysize / 4};
+        XMemory().copy(pBuf, dvs->yuvframebuf, ysize);
+        XMemory().copy(pBuf + ysize, dvs->yuvframebuf + ysize + uvsize, uvsize);
+        XMemory().copy(pBuf + ysize + uvsize, dvs->yuvframebuf + ysize, uvsize);
 
-            // DEC_API_DECODE_DATA data{0};
-            // data.ts = (double)pFrameInfo->nStamp;
-            // data.frameData = (unsigned char*)dvs->oframebuf;
-            // data.channelNo = 3;
-            // data.frameWidth = pFrameInfo->nWidth;
-            // data.frameHeight = pFrameInfo->nHeight;
-            // dvs->decodeDataCallback(data);
+        av_image_fill_arrays(
+            dvs->iframe->data, dvs->iframe->linesize, (const uint8_t*)dvs->yuvframebuf,
+            AV_PIX_FMT_YUV420P, pFrameInfo->nWidth, pFrameInfo->nHeight, 1);
+        uint8_t* temp{dvs->iframe->data[1]};
+            dvs->iframe->data[1] = dvs->iframe->data[2];
+            dvs->iframe->data[2] = temp;
+        sws_scale(
+            dvs->ctx, (uint8_t const* const*)dvs->iframe->data, dvs->iframe->linesize, 0, 
+            pFrameInfo->nHeight, dvs->oframe->data, dvs->oframe->linesize);
 
-            void* jpeg{nullptr};
-            int jpegbytes{0};
-            dvs->jpegEncoder.input(dvs->iframe->data, pFrameInfo->nWidth, pFrameInfo->nHeight, jpeg, jpegbytes);            
-            OutputFrameData* ofd{new(std::nothrow) OutputFrameData};
+        void* jpeg{nullptr};
+        int jpegbytes{0};
+        dvs->jpegEncoder.input(dvs->yuvframebuf, pFrameInfo->nWidth, pFrameInfo->nHeight, jpeg, jpegbytes);
+        OutputFrameData* ofd{new(std::nothrow) OutputFrameData};
 
-            if(ofd)
-            {
-                XMemory().copy(dvs->oframebuf, ofd->bgr24, dvs->oframebufsize);
-                ofd->bgr24bytes = dvs->oframebufsize;
-                XMemory().copy(jpeg, ofd->jpeg, jpegbytes);
-                ofd->jpegbytes = jpegbytes;
-                ofd->width = pFrameInfo->nWidth;
-                ofd->height = pFrameInfo->nHeight;
-                ofd->sequence = ++dvs->sequence;
-                ofd->timestamp = (double)pFrameInfo->nStamp;
-                dvs->frameDataQueue.add(ofd);
-            }
+        if(ofd && 25 > dvs->frameDataQueue.size())
+        {
+            ofd->bgr24 = new uint8_t[dvs->bgrframebufsize];
+            XMemory().copy(dvs->bgrframebuf, ofd->bgr24, dvs->bgrframebufsize);
+            ofd->bgr24bytes = dvs->bgrframebufsize;
+            ofd->jpeg = jpeg;
+            ofd->jpegbytes = jpegbytes;
+            ofd->width = pFrameInfo->nWidth;
+            ofd->height = pFrameInfo->nHeight;
+            ofd->sequence = ++dvs->sequence;
+            ofd->timestamp = (double)pFrameInfo->nStamp;
+            dvs->frameDataQueue.add(ofd);
+
+            // FILE* fd{nullptr};
+            // fd = fopen("/mnt/build/test.jpg", "wb+");
+            // fwrite(ofd->jpeg, ofd->jpegbytes, 1, fd);
+            // fclose(fd);
+
+            // fd = fopen("/mnt/build/out.bgr", "wb+");
+            // fwrite(ofd->bgr24, ofd->bgr24bytes, 1, fd);
+            // fclose(fd);
         }
     }
     else if (T_AUDIO16 == pFrameInfo->nType)
