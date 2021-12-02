@@ -46,9 +46,8 @@ namespace module
 
 			public:
 				//创建
-				//@number [in] : 线程数
 				//@Return : 错误码
-				virtual int createNew(const int number = 1);
+				virtual int createNew(void);
 
 				//销毁
 				//@Return : 错误码

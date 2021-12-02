@@ -28,11 +28,7 @@ namespace module
 				virtual ~CvAnalysisFilter(void);
 
 			public:
-				int createNew(void) override;
-				int input(FramePtr frame) override;
-
-			protected:
-				AVProcessorPtr createNewProcessor(void) override;
+				int createNew(void* param = nullptr) override;
 			};//class CvAnalysisFilter
 		}//namespace av
 	}//namespace media

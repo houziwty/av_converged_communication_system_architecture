@@ -15,7 +15,7 @@
 
 #include <string>
 #include "boost/shared_ptr.hpp"
-#include "boost/unordered_map.hpp"
+#include "utils/map/unordered_map.h"
 
 namespace module
 {
@@ -39,10 +39,12 @@ namespace module
 			static const std::string innerImageFormatterFilterName = " innerImageFormatterFilter";
 			static const std::string innerPictureEncoderFilterName = " innerPictureEncoderFilter";
 			static const std::string innerCVAnalysisFilterName = " innerCVAnalysisFilter";
+			static const std::string innerAVPacketParserFilterName = " innerAVPacketParserFilter";
+			static const std::string innerVideoCaptureFilterName = "InnerVideoCaptureFilter";
+			static const std::string innerDataCallbackFilterName = "InnerDataCallbackFilter";
 
 			class Pin;
             using PinPtr = boost::shared_ptr<Pin>;
-			using PinPtrs = boost::unordered_map<const std::string, PinPtr>;
 			class AVProcessor;
 			using AVProcessorPtr = boost::shared_ptr<AVProcessor>;
 
@@ -53,16 +55,17 @@ namespace module
 				virtual ~Filter(void);
 
 			public:
-				//创建过滤器
+				//创建
+				//@param : 参数
 				//@Return : 错误码
-				virtual int createNew(void);
+				virtual int createNew(void* param = nullptr);
 
 				//输入数据
-				//@frame : 帧
+				//@data : 数据
 				//@Return : 错误码
-				virtual int input(FramePtr frame);
+				virtual int input(void* data = nullptr);
 
-				//查询针脚实例
+				//查询
 				//@name : 名称
 				//@Return : 针脚实例
 				PinPtr query(const std::string name);
@@ -75,13 +78,8 @@ namespace module
 				}
 
 			protected:
-				//创建处理器
-				//@Return : 错误码
-				virtual AVProcessorPtr createNewProcessor(void) = 0;
-
-			protected:
 				const WorkMode mode;
-				PinPtrs pins;
+				UnorderedMap<const std::string, PinPtr> pins;
 				AVProcessorPtr avprocessor;
 			};//class Filter
 		}//namespace av

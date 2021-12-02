@@ -1,0 +1,14 @@
+cmake_minimum_required(VERSION 3.5...3.16)
+
+project(dvs_host_client VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
+
+include_directories(${INCLUDE_DIR})
+link_directories(${LINK_DIR}/libxmq)
+link_directories(${LINK_DIR}/libasio)
+
+file(GLOB_RECURSE src "*.cpp")
+file(GLOB_RECURSE framework_network_src "${SOURCE_DIR}/network/*.cpp")
+file(GLOB_RECURSE framework_utils_src "${SOURCE_DIR}/utils/*.cpp")
+
+add_library(${PROJECT_NAME} SHARED ${src} ${framework_network_src} ${framework_utils_src})
+target_link_libraries(${PROJECT_NAME} PUBLIC asio boost_thread)

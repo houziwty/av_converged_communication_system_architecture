@@ -28,7 +28,7 @@ namespace module
 				virtual ~MediaTargetFilter(void);
 
 			public:
-				int createNew(void) override;
+				int createNew(void* param = nullptr) override;
 			};//class MediaTargetFilter
 		}//namespace av
 	}//namespace media

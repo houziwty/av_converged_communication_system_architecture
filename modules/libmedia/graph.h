@@ -52,6 +52,11 @@ namespace module
 				//					   该方法必须由内部调用
 				virtual int connectPin(void) = 0;
 
+				//数据处理结束通知
+				//@data [out] : 数据
+				//@Return : 错误码
+				virtual void processDataCompleteNotification(void* data = nullptr) = 0;
+
 			protected:
 				FilterPtrs filters;
 			};//class Graph

@@ -14,6 +14,8 @@
 #define DVS_HOST_SERVICE_H
 
 #include "boost/shared_ptr.hpp"
+#include "liblog/log.h"
+using namespace module::file::log;
 #include "utils/map/unordered_map.h"
 #include "avcap/av_capture.h"
 using namespace framework::media::av;
@@ -32,14 +34,15 @@ class DvsHostService final
 {
 public:
     //@port [in] : 流媒体监听端口号
-    DvsHostService(const unsigned short port = 10000);
+    DvsHostService(FileLog& log, const unsigned short port = 10000);
     ~DvsHostService(void);
 
 public:
     int start(
-        const std::string uid, 
-        const std::string ip, 
-        const unsigned short port = 0) override;
+       const std::string appid, 
+       const std::string xmqid, 
+       const std::string ip, 
+       const unsigned short port = 0) override;
     int stop(void) override;
     void removeExpiredSession(const std::string sid);
 
@@ -48,8 +51,9 @@ protected:
     void afterFetchAsyncAcceptEventNotification(boost::asio::ip::tcp::socket& s) override;
 
 private:
+    FileLog& fileLog;
     const unsigned short xmsPort;
-    AVCapturePtr capturePtr;
+    AVCapturePtr avcapturePtr;
     Sessions sessions;
 };//class DvsHostService
 

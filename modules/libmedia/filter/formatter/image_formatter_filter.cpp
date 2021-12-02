@@ -10,23 +10,13 @@ ImageFormatterFilter::ImageFormatterFilter()
 ImageFormatterFilter::~ImageFormatterFilter()
 {}
 
-int ImageFormatterFilter::createNew()
+int ImageFormatterFilter::createNew(void* param/* = nullptr*/)
 {
-	int ret{Filter::createNew()};
+	int ret{Filter::createNew(param)};
 
 	if (Error_Code_Success == ret)
 	{
 	}
 	
 	return ret;
-}
-
-int ImageFormatterFilter::input(FramePtr frame)
-{
-	return Error_Code_Success;
-}
-
-AVProcessorPtr ImageFormatterFilter::createNewProcessor()
-{
-	return 0;
 }

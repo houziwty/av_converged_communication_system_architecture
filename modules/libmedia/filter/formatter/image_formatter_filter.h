@@ -28,11 +28,7 @@ namespace module
 				virtual ~ImageFormatterFilter(void);
 
 			public:
-				int createNew(void) override;
-				int input(FramePtr frame) override;
-
-			protected:
-				AVProcessorPtr createNewProcessor(void) override;
+				int createNew(void* param = nullptr) override;
 			};//class ImageFormatterFilter
 		}//namespace av
 	}//namespace media

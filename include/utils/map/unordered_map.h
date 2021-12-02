@@ -13,6 +13,7 @@
 #ifndef FRAMEWORK_UTILS_MAP_UNORDERED_MAP_H
 #define FRAMEWORK_UTILS_MAP_UNORDERED_MAP_H
 
+#include <vector>
 #include "boost/unordered_map.hpp"
 #include "utils/lock/rw_lock.h"
 using namespace framework::utils::lock;
@@ -36,6 +37,21 @@ public:
 		items.insert(std::make_pair(k, v));
 	}
 
+	void replace(Key k, Value v)
+	{
+		typename boost::unordered_map<Key, Value>::iterator it{ items.find(k) };
+
+		WriteLock wl{ mtx };
+		if (items.end() != it)
+		{
+			it->second = v;
+		}
+		else
+		{
+			items.insert(std::make_pair(k, v));
+		}
+	}
+
 	void remove(Key k)
 	{
 		typename boost::unordered_map<Key, Value>::iterator it{ items.find(k) };
@@ -45,6 +61,20 @@ public:
 		{
 			items.erase(it);
 		}
+	}
+
+	std::vector<Key> keies(void)
+	{
+		std::vector<Key> ret;
+		typename boost::unordered_map<Key, Value>::iterator it{items.begin()};
+
+		ReadLock rl{ mtx };
+		for (; items.end() != it; ++it)
+		{
+			ret.push_back(it->first);
+		}
+		
+		return std::move(ret);
 	}
 
 	void clear(void)

@@ -9,23 +9,13 @@ VideoRenderFilter::VideoRenderFilter() : MediaTargetFilter()
 VideoRenderFilter::~VideoRenderFilter()
 {}
 
-int VideoRenderFilter::createNew()
+int VideoRenderFilter::createNew(void* param/* = nullptr*/)
 {
-	int ret{MediaTargetFilter::createNew()};
+	int ret{MediaTargetFilter::createNew(param)};
 
 	if (Error_Code_Success == ret)
 	{
 	}
 	
 	return ret;
-}
-
-int VideoRenderFilter::input(FramePtr frame)
-{
-	return Error_Code_Success;
-}
-
-AVProcessorPtr VideoRenderFilter::createNewProcessor()
-{
-	return 0;
 }

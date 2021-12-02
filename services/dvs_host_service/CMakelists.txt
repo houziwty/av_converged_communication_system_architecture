@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.5...3.16)
 project(dvs_host_service VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 
 include_directories(${INCLUDE_DIR})
+link_directories(${LINK_DIR}/liblog)
 link_directories(${LINK_DIR}/libxmq)
 link_directories(${LINK_DIR}/libasio)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -25,7 +26,7 @@ add_executable(
 target_link_libraries(
 	${PROJECT_NAME} 
 	PRIVATE 
-	asio xmq hcnetsdk 
+	asio xmq log hcnetsdk 
 	libboost_program_options.a 
 	libboost_thread.a 
 	pthread)

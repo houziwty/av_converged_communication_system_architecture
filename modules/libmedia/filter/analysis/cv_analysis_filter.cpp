@@ -10,23 +10,13 @@ CvAnalysisFilter::CvAnalysisFilter()
 CvAnalysisFilter::~CvAnalysisFilter()
 {}
 
-int CvAnalysisFilter::createNew()
+int CvAnalysisFilter::createNew(void* param/* = nullptr*/)
 {
-	int ret{Filter::createNew()};
+	int ret{Filter::createNew(param)};
 
 	if (Error_Code_Success == ret)
 	{
 	}
 	
 	return ret;
-}
-
-int CvAnalysisFilter::input(FramePtr frame)
-{
-	return Error_Code_Success;
-}
-
-AVProcessorPtr CvAnalysisFilter::createNewProcessor()
-{
-	return 0;
 }

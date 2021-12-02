@@ -1,9 +1,6 @@
-#include "boost/checked_delete.hpp"
 #include "boost/bind/bind.hpp"
 using namespace boost::placeholders;
-#include "libxmq/switcher.h"
-#include "libxmq/publisher.h"
-using namespace module::network::xmq;
+#include "boost/make_shared.hpp"
 #include "error_code.h"
 #include "utils/thread/thread.h"
 #include "utils/thread/thread_pool.h"
@@ -11,8 +8,7 @@ using namespace framework::utils::thread;
 #include "network/xmq/switcher_pub.h"
 using namespace framework::network::xmq;
 
-SwitcherPub::SwitcherPub() 
-	: switcher{nullptr}, publisher{nullptr}, thread{nullptr}, stopped{ false }
+SwitcherPub::SwitcherPub() : thread{nullptr}, stopped{ false }
 {}
 
 SwitcherPub::~SwitcherPub()
@@ -25,33 +21,27 @@ int SwitcherPub::start(
 	const unsigned short publisherPort /* = 0 */, 
 	const int hwm /* = 10 */)
 {
-	int ret{ !switcher && !publisher ? Error_Code_Success : Error_Code_Object_Existed};
+	if(switcherPtr || publisherPtr)
+	{
+		return Error_Code_Object_Existed;
+	}
+
+	int ret{0 < switcherPort && 0 < publisherPort ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
-		ret = (0 < switcherPort && 0 < publisherPort ? Error_Code_Success : Error_Code_Invalid_Param);
+		SwitcherPtr switcher{
+			boost::make_shared<Switcher>(
+				boost::bind(&SwitcherPub::afterSwitcherPolledDataHandler, this, _1, _2))};
+		PublisherPtr publisher{boost::make_shared<Publisher>()};
 
-		if(Error_Code_Success == ret)
+		if(switcher && Error_Code_Success == switcher->bind(switcherPort) && 
+			publisher && Error_Code_Success == publisher->bind(publisherPort, hwm))
 		{
-			Switcher* ps{
-				new(std::nothrow) Switcher(
-					boost::bind(&SwitcherPub::afterSwitcherPolledDataHandler, this, _1, _2))};
-			Publisher* pp{new(std::nothrow) Publisher()};
-
-			if(ps && Error_Code_Success == ps->bind(switcherPort) && 
-				pp && Error_Code_Success == pp->bind(publisherPort, hwm))
-			{
-				thread = ThreadPool().get_mutable_instance().createNew(
-					boost::bind(&SwitcherPub::pollDataFromSwitcherThread, this));
-				switcher = ps;
-				publisher = pp;
-			}
-			else
-			{
-				boost::checked_delete(ps);
-				boost::checked_delete(pp);
-				ret = Error_Code_Bad_New_Object;
-			}
+			switcherPtr.swap(switcher);
+			publisherPtr.swap(publisher);
+			thread = ThreadPool().get_mutable_instance().createNew(
+				boost::bind(&SwitcherPub::pollDataFromSwitcherThread, this));
 		}
 	}
 
@@ -60,25 +50,29 @@ int SwitcherPub::start(
 
 int SwitcherPub::stop()
 {
-	stopped = true;
-	Thread().join(thread);
-	ThreadPool().get_mutable_instance().destroy(thread);
-	boost::checked_delete(switcher);
-	boost::checked_delete(publisher);
+	int ret{switcherPtr && publisherPtr && !stopped ? Error_Code_Success : Error_Code_Operate_Failure};
 
-	return Error_Code_Success;
+	if (Error_Code_Success == ret)
+	{
+		stopped = true;
+		Thread().join(thread);
+		ThreadPool().get_mutable_instance().destroy(thread);
+		switcherPtr.reset();
+		publisherPtr.reset();
+	}
+
+	return ret;
 }
 
 int SwitcherPub::send(
 	const std::string uid, 
 	const std::string data)
 {
-	int ret{ switcher ? Error_Code_Success : Error_Code_Object_Existed };
+	int ret{ switcherPtr && !stopped ? Error_Code_Success : Error_Code_Operate_Failure };
 
 	if (Error_Code_Success == ret)
 	{
-		Switcher* ps{reinterpret_cast<Switcher*>(switcher)};
-		ret = ps->send(uid, data);
+		ret = switcherPtr->send(uid, data);
 	}
 
 	return ret;
@@ -86,12 +80,11 @@ int SwitcherPub::send(
 
 int SwitcherPub::send(const std::string data)
 {
-	int ret{ publisher ? Error_Code_Success : Error_Code_Object_Existed };
+	int ret{ publisherPtr && !stopped ? Error_Code_Success : Error_Code_Operate_Failure };
 
 	if (Error_Code_Success == ret)
 	{
-		Publisher* pp{reinterpret_cast<Publisher*>(publisher)};
-		ret = pp->send(data);
+		ret = publisherPtr->send(data);
 	}
 
 	return ret;
@@ -99,9 +92,8 @@ int SwitcherPub::send(const std::string data)
 
 void SwitcherPub::pollDataFromSwitcherThread()
 {
-	while (!stopped)
+	while (switcherPtr && !stopped)
 	{
-		Switcher* switcher{reinterpret_cast<Switcher*>(this->switcher)};
-		switcher->poll();
+		switcherPtr->poll();
 	}
 }

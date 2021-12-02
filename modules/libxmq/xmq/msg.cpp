@@ -46,7 +46,7 @@ int Msg::recv(void* s /* = nullptr */)
 			return Error_Code_Bad_New_Object;
 		}
 		
-		if (!zmq_msg_recv(&msg, s, ZMQ_DONTWAIT))
+		if (-1 < zmq_msg_recv(&msg, s, ZMQ_DONTWAIT))
 		{
 			msgs.push_back(std::string(reinterpret_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg)));
 			if (!zmq_msg_more(&msg))
@@ -71,22 +71,23 @@ int Msg::send(void* s /* = nullptr */)
 
 		for (int i = 0; i != number; ++i)
 		{
+			const int sndflag{i < number - 1 ? ZMQ_DONTWAIT | ZMQ_SNDMORE : ZMQ_DONTWAIT};
+			const std::string data{ msgs[i] };
+			const size_t len{ data.length() };
 			zmq_msg_t msg;
 
-			if (zmq_msg_init(&msg))
+			if (zmq_msg_init_size(&msg, len))
 			{
 				return Error_Code_Bad_New_Object;
 			}
 
-			const std::string data{ msgs[i] };
-			const size_t len{ data.length() };
-#ifdef OS_WINDOWS
-			memcpy_s(zmq_msg_data (&msg), len, data.c_str(), len);
+#ifdef WINDOWS
+			memcpy_s(zmq_msg_data(&msg), len, data.c_str(), len);
 #else
-			memcpy(zmq_msg_data (&msg), data.c_str(), len);
-#endif//OS_WINDOWS
+			memcpy(zmq_msg_data(&msg), data.c_str(), len);
+#endif//WINDOWS
 
-			if (len != zmq_msg_send(&msg, s, i < number - 1 ? ZMQ_DONTWAIT | ZMQ_SNDMORE : ZMQ_DONTWAIT))
+			if (len != zmq_msg_send(&msg, s, sndflag))
 			{
 				ret = Error_Code_Bad_Operate_Send;
 				break;

@@ -21,6 +21,8 @@ namespace module
 	{
 		namespace av
 		{
+			class Graph;
+
 			class AVDataCallbackFilter : public MediaTargetFilter
 			{
 			public:
@@ -28,11 +30,11 @@ namespace module
 				virtual ~AVDataCallbackFilter(void);
 
 			public:
-				int createNew(void) override;
-				int input(FramePtr frame) override;
+				int createNew(void* param = nullptr) override;
+				int input(void* data = nullptr) override;
 
-			protected:
-				AVProcessorPtr createNewProcessor(void) override;
+			private:
+				Graph* graph;
 			};//class AVDataCallbackFilter
 		}//namespace av
 	}//namespace media

@@ -10,7 +10,7 @@ CommandLineParser::~CommandLineParser()
 
 int CommandLineParser::setOption(const std::string option, const std::string param)
 {
-	int ret{ !option.empty() && !param.empty() ? Error_Code_Success : Error_Code_Invalid_Param };
+	int ret{ !option.empty() ? Error_Code_Success : Error_Code_Invalid_Param };
 
 	if (Error_Code_Success == ret)
 	{

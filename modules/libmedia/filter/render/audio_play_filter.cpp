@@ -9,23 +9,13 @@ AudioPlayFilter::AudioPlayFilter() : MediaTargetFilter()
 AudioPlayFilter::~AudioPlayFilter()
 {}
 
-int AudioPlayFilter::createNew()
+int AudioPlayFilter::createNew(void* param/* = nullptr*/)
 {
-	int ret{MediaTargetFilter::createNew()};
+	int ret{MediaTargetFilter::createNew(param)};
 
 	if (Error_Code_Success == ret)
 	{
 	}
 	
 	return ret;
-}
-
-int AudioPlayFilter::input(FramePtr frame)
-{
-	return Error_Code_Success;
-}
-
-AVProcessorPtr AudioPlayFilter::createNewProcessor()
-{
-	return 0;
 }

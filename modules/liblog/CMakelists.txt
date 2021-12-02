@@ -2,16 +2,8 @@ cmake_minimum_required(VERSION 3.5...3.16)
 
 project(log VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 
-include(FetchContent)
+include_directories(${INCLUDE_DIR})
 
-FetchContent_Declare(
-    glog 
-    GIT_REPOSITORY "https://github.com/google/glog.git" 
-    GIT_TAG "v0.5.0" 
-	SOURCE_DIR ${3RDPART_DIR}/google/glog
-)
-
-FetchContent_MakeAvailable(glog)
-
-add_library(${PROJECT_NAME} SHARED log.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC glog::glog)
+file(GLOB_RECURSE src "*.cpp")
+add_library(${PROJECT_NAME} SHARED ${src})
+target_link_libraries(${PROJECT_NAME} PUBLIC libglog.a)

@@ -32,20 +32,25 @@ int AsyncTcpServer::createNew(const unsigned short port /*= 10000*/)
 	{
 		IoServicePtr iosPtr{boost::make_shared<IoService>()};
 
-		if (iosPtr && Error_Code_Success == iosPtr->createNew(Cpu().getCount()))
+		if (iosPtr && Error_Code_Success == iosPtr->createNew())
 		{
-			//投递监听
-			for(int i = 0; i != iosPtr->getCount(); ++i)
+			IoListenPtr ptr{
+				boost::make_shared<IoListen>(iosPtr->getIdle(), port)};
+			if (ptr)
 			{
-				AsyncAcceptorPtr ptr{
-					boost::make_shared<AsyncAcceptor>(
-						iosPtr->getIdle(), 
-						port, 
-						boost::bind(&AsyncTcpServer::asyncAcceptEventCallback, this, _1, _2))};
-				
-				if (ptr)
+				ioListenPtr.swap(ptr);
+				//投递监听
+				for(int i = 0; i != iosPtr->getCount(); ++i)
 				{
-					ptr->listen();
+					AsyncAcceptorPtr ptr{
+						boost::make_shared<AsyncAcceptor>(
+							iosPtr->getIdle(), 
+							boost::bind(&AsyncTcpServer::asyncAcceptEventCallback, this, _1, _2))};
+
+					if (ptr)
+					{
+						ptr->accept(ioListenPtr);	
+					}
 				}
 			}
 
@@ -53,7 +58,7 @@ int AsyncTcpServer::createNew(const unsigned short port /*= 10000*/)
 		}
 	}
 	
-	return ioServicePtr ? Error_Code_Success : Error_Code_Bad_New_Object;
+	return ioServicePtr && ioListenPtr ? Error_Code_Success : Error_Code_Bad_New_Object;
 }
 
 int AsyncTcpServer::destroy()
@@ -73,5 +78,16 @@ void AsyncTcpServer::asyncAcceptEventCallback(boost::asio::ip::tcp::socket& s, c
 	if (!e)
 	{
 		afterFetchAsyncAcceptEventNotification(s);
+
+		//连续监听
+		AsyncAcceptorPtr ptr{
+			boost::make_shared<AsyncAcceptor>(
+				ioServicePtr->getIdle(), 
+				boost::bind(&AsyncTcpServer::asyncAcceptEventCallback, this, _1, _2))};
+
+		if (ptr)
+		{
+			ptr->accept(ioListenPtr);	
+		}
 	}
 }

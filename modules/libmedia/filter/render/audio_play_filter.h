@@ -29,11 +29,7 @@ namespace module
 				virtual ~AudioPlayFilter(void);
 
 			public:
-				int createNew(void) override;
-				int input(FramePtr frame) override;
-
-			protected:
-				AVProcessorPtr createNewProcessor(void) override;
+				int createNew(void* param = nullptr) override;
 			};//class AudioPlayFilter
 		}//namespace av
 	}//namespace media

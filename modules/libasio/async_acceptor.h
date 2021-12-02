@@ -4,7 +4,7 @@
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
 //		Date : 2021-11-23
-//		Description : 异步监听器
+//		Description : 异步监听捕获器
 //
 //		History:
 //					1. 2021-11-23 由王科威创建
@@ -27,24 +27,26 @@ namespace module
 			//@_1 : 客户端socket
 			//@_2 : 错误码
 			typedef boost::function<void(boost::asio::ip::tcp::socket&, const int)> AsyncAcceptEventCallback;
+			
+			class IoListen;
+			using IoListenPtr = boost::shared_ptr<IoListen>;
 
 			class AsyncAcceptor 
 				: public boost::enable_shared_from_this<AsyncAcceptor>
 			{
 			public:
 				AsyncAcceptor(
-					boost::asio::io_context& io,
-					const unsigned short port = 10000,
+					boost::asio::io_context& io, 
 					AsyncAcceptEventCallback callback = nullptr);
 				~AsyncAcceptor(void);
 
 			public:
 				//监听
 				//@Return : 错误码
-				int listen(void);
+				int accept(IoListenPtr listenPtr);
 
 			private:
-				boost::asio::ip::tcp::acceptor acceptor;
+				boost::asio::ip::tcp::socket so;
 				AsyncAcceptEventCallback asyncAcceptEventCallback;
 			};//class AsyncAcceptor
 

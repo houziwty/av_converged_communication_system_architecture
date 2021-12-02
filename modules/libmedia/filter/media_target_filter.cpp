@@ -9,18 +9,14 @@ MediaTargetFilter::MediaTargetFilter()
 MediaTargetFilter::~MediaTargetFilter()
 {}
 
-int MediaTargetFilter::createNew()
+int MediaTargetFilter::createNew(void* param/* = nullptr*/)
 {
-	int ret{Filter::createNew()};
+	int ret{Filter::createNew(param)};
 
 	if (Error_Code_Success == ret)
 	{
 		//源过滤器创建时去除输出针脚
-		PinPtrs::iterator out{pins.find(innerDataOutputPinName)};
-		if(pins.end() != out)
-		{
-			pins.erase(out);
-		}
+		pins.remove(innerDataOutputPinName)
 	}
 	
 	return ret;

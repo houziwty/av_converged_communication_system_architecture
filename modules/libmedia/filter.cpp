@@ -12,42 +12,24 @@ Filter::Filter(const WorkMode wm /* = WorkMode::WORK_MODE_SOURCE */)
 Filter::~Filter()
 {}
 
-int Filter::createNew()
+int Filter::createNew(void* param/* = nullptr*/)
 {
-	//清理过滤器
-	pins.clear();
-
 	//默认的过滤器都会加载输入和输出针脚
 	PinPtr in{boost::make_shared<Pin>(*this, TransportMode::TRANSPORT_MODE_INPUT)};
 	PinPtr out{boost::make_shared<Pin>(*this, TransportMode::TRANSPORT_MODE_INPUT)};
 
 	if (in && out)
 	{
-		pins.insert(std::make_pair(innerDataInputPinName, in));
-		pins.insert(std::make_pair(innerDataOutputPinName, out));
+		pins.add(std::make_pair(innerDataInputPinName, in));
+		pins.add(std::make_pair(innerDataOutputPinName, out));
 	}
 
 	return 0 < pins.size() ? Error_Code_Success : Error_Code_Bad_New_Object; 
 }
 
-int Filter::input(FramePtr frame)
+int Filter::input(void* data/* = nullptr*/)
 {
-	int ret{
-		WorkMode::WORK_MODE_SOURCE == getWorkMode() ? 
-		Error_Code_Method_Not_Support : 
-		Error_Code_Success};
-
-	if(Error_Code_Success == ret)
-	{
-		if(!avprocessor)
-		{
-			avprocessor = createNewProcessor();
-		}
-
-		ret = (avprocessor ? avprocessor->input(frame) : Error_Code_Bad_New_Object);
-	}
-
-	return ret;
+	return avprocessor ? avprocessor->input(data) : Error_Code_Operate_Failure;
 }
 
 PinPtr Filter::query(const std::string name)

@@ -1,44 +1,50 @@
 #include <iostream>
+#include "boost/format.hpp"
+#include "liblog/log.h"
+using namespace module::file::log;
 #include "error_code.h"
 #include "utils/commandline/commandline.h"
 using namespace framework::utils::parser;
 #include "dvs_host_service.h"
 
-int main(int argc, const char** argv)
+static FileLog gFileLog;
+
+int main(int argc, char* argv[])
 {
-   CommandLineParser parser;
-   parser.setOption("xmq,x", "");
-   parser.setOption("port,p", "");
-   parser.setOption("xmsport", "");
-   parser.setOption("name,n", "dvs_host_service");
+    gFileLog.createNew(argv[0]);
+    CommandLineParser parser;
+    parser.setOption("xmq_addr", "");
+    parser.setOption("xmq_port", "");
+    parser.setOption("xms_port", "");
+    parser.setOption("xmq_name", "");
+    parser.setOption("app_name", "");
 
-   if (Error_Code_Success == parser.parse())
-   {
-       const std::string xmq_addr{parser.getParameter("xmq")};
-       const std::string xmq_port{parser.getParameter("port")};
-       const std::string xms_port{parser.getParameter("xmsport")};
-       const std::string app_name{parser.getParameter("name")};
+    if (Error_Code_Success == parser.parse(argc, argv))
+    {
+        const std::string xmq_addr{parser.getParameter("xmq_addr")};
+        const std::string xmq_port{parser.getParameter("xmq_port")};
+        const std::string xms_port{parser.getParameter("xms_port")};
+        const std::string xmq_name{parser.getParameter("xmq_name")};
+        const std::string app_name{parser.getParameter("app_name")};
 
-       std::cout << "Parse command line parameters [ xmq_addr = " << xmq_addr 
-                    << ", xmq_port = " << xmq_port 
-                    << ", xms_port = " << xms_port 
-                    << ", app_name = " << app_name 
-                    << " ]." << std::endl;
+        gFileLog.write(
+            SeverityLevel::SEVERITY_LEVEL_INFO, 
+            "Parse command line parameters with xmq_addr = [ %s ], xmq_port = [ %s ], xms_port = [ %s ], xmq_name = [ %s ], app_name = [ %s ].",
+            xmq_addr.c_str(), xmq_port.c_str(), xms_port.c_str(), xmq_name.c_str(), app_name.c_str());
 
-        if (!xmq_addr.empty() && !xmq_port.empty() && !xms_port.empty() && !app_name.empty())
+        if (!xmq_addr.empty() && !xmq_port.empty() && !xms_port.empty() && !xmq_name.empty() && !app_name.empty())
         {
-            DvsHostService dhs{
-                static_cast<unsigned short>(atoi(xms_port.c_str()))};
-            int ret{dhs.start(app_name, xmq_addr, atoi(xmq_port.c_str()))};
-            std::cout << "Start service result = " << ret << "." << std::endl;
+            DvsHostService dhs{gFileLog, static_cast<unsigned short>(atoi(xms_port.c_str()))};
+            dhs.start(app_name, xmq_name, xmq_addr, atoi(xmq_port.c_str()));
             getchar();
             dhs.stop();
         }
-   }
-   else
-   {
-       std::cout << "Parse command line failed." << std::endl;
-   }
+    }
+    else
+    {
+        gFileLog.write(SeverityLevel::SEVERITY_LEVEL_ERROR, "Parse command line failed.");
+    }
 
+    gFileLog.destroy();
     return 0;
 }

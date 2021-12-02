@@ -13,7 +13,12 @@
 #ifndef FRAMEWORK_NETWORK_XMQ_SWITCHER_PUBLISHER_H
 #define FRAMEWORK_NETWORK_XMQ_SWITCHER_PUBLISHER_H
 
-#include <string>
+#include "boost/shared_ptr.hpp"
+#include "libxmq/switcher.h"
+#include "libxmq/publisher.h"
+using namespace module::network::xmq;
+using SwitcherPtr = boost::shared_ptr<Switcher>;
+using PublisherPtr = boost::shared_ptr<Publisher>;
 
 namespace framework
 {
@@ -40,7 +45,7 @@ namespace framework
 
 				//停止
 				//@Return : 错误码
-				virtual int stop();
+				virtual int stop(void);
 
 				//交换端发送
 				//@uid [in] : 用户ID标识
@@ -66,8 +71,8 @@ namespace framework
 				void pollDataFromSwitcherThread(void);
 
 			private:
-				void* switcher;
-				void* publisher;
+				SwitcherPtr switcherPtr;
+				PublisherPtr publisherPtr;
 				void* thread;
 				bool stopped;
 			};//class SwitcherPub

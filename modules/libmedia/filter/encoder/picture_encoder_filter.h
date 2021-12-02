@@ -29,11 +29,7 @@ namespace module
 				virtual ~PictureEncoderFilter(void);
 
 			public:
-				int createNew(void) override;
-				int input(FramePtr frame) override;
-
-			protected:
-				AVProcessorPtr createNewProcessor(void) override;
+				int createNew(void* param = nullptr) override;
 			};//class PictureEncoderFilter
 		}//namespace av
 	}//namespace media

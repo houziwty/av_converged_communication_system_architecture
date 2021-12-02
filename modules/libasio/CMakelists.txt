@@ -6,4 +6,4 @@ file(GLOB src *.cpp)
 include_directories(${INCLUDE_DIR})
 
 add_library(${PROJECT_NAME} SHARED ${src})
-target_link_libraries(${PROJECT_NAME} PUBLIC pthread)
+target_link_libraries(${PROJECT_NAME} PUBLIC libboost_thread.a)

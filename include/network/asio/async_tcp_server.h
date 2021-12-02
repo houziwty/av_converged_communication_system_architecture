@@ -15,8 +15,10 @@
 
 #include "boost/shared_ptr.hpp"
 #include "libasio/io_service.h"
+#include "libasio/io_listen.h"
 using namespace module::network::asio;
 using IoServicePtr = boost::shared_ptr<IoService>;
+using IoListenPtr = boost::shared_ptr<IoListen>;
 
 namespace framework
 {
@@ -53,6 +55,7 @@ namespace framework
 
 			private:
 				IoServicePtr ioServicePtr;
+				IoListenPtr ioListenPtr;
 			};//class AsyncTcpServer
 		}//namespace asio
 	}//namespace network

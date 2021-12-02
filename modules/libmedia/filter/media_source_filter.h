@@ -28,7 +28,8 @@ namespace module
 				virtual ~MediaSourceFilter(void);
 
 			public:
-				int createNew(void) override;
+				int createNew(void* param = nullptr) override;
+				int input(void* data = nullptr) override;
 			};//class MediaSourceFilter
 		}//namespace av
 	}//namespace media

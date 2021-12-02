@@ -28,11 +28,7 @@ namespace module
 				virtual ~VideoDecoderFilter(void);
 
 			public:
-				int createNew(void) override;
-				int input(FramePtr frame) override;
-
-			protected:
-				AVProcessorPtr createNewProcessor(void) override;
+				int createNew(void* param = nullptr) override;
 			};//class VideoDecoderFilter
 		}//namespace av
 	}//namespace media

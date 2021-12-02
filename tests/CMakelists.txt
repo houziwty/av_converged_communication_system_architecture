@@ -1,46 +1,13 @@
-#cmake_minimum_required(VERSION 3.5...3.16)
+cmake_minimum_required(VERSION 3.5...3.16)
 
-#project(test_log VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
+project(test VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 
-#include_directories(${INCLUDE_DIR})
-#add_executable(${PROJECT_NAME} test_log.cpp)
-#target_link_libraries(${PROJECT_NAME} PRIVATE log)
+include_directories(${SAMPLE_DIR}/libvideo_encode_image)
 
-#include(FetchContent)
-#FetchContent_Declare(jsoncpp
-#        GIT_REPOSITORY https://github.com/open-source-parsers/jsoncpp.git
-#        GIT_TAG 1.9.4)
-# 建议使用压缩包的方式依赖，下载速度更快
-#FetchContent_Declare(boost URL https://codeload.github.com/boostorg/boost/zip/refs/heads/master)
-#FetchContent_MakeAvailable(boost)
-#add_executable(${PROJECT_NAME} main.cpp)
-#include_directories(${boostorg_SOURCE_DIR})
-#target_link_libraries(${PROJECT_NAME} boost)
+link_directories(${3RDPART_DIR}/sdk/hikvision/lib/linux)
+link_directories(${3RDPART_DIR}/sdk/ffmpeg)
 
+file(GLOB_RECURSE src "*.cpp")
 
-cmake_minimum_required(VERSION 3.16)
-project(test_log)
-message(STATUS "Test-log")
-
-include(FetchContent)
-
-set(CMAKE_CXX_STANDARD 14)
-
-FetchContent_Declare(
-    boost 
-    GIT_REPOSITORY "https://github.com/boostorg/boost.git" 
-    GIT_TAG "boost-1.77.0"
-	SOURCE_DIR ${ROOT_DIR}/3rd)
-FetchContent_MakeAvailable(boost)
-
-message(STATUS ${boost_SOURCE_DIR})
-message(STATUS ${boost_BINARY_DIR})
-#FetchContent_GetProperties(boost)
-#if (NOT boostorg_POPULATED)
-#    FetchContent_Populate(boost)
-#    add_subdirectory(${boost_SOURCE_DIR} ${boost_BINARY_DIR})
-#endif ()
-
-#include_directories(${boost_SOURCE_DIR})
-add_executable(${PROJECT_NAME} main.cpp)
-#target_link_libraries(${PROJECT_NAME} boost)
+add_executable(${PROJECT_NAME} ${src})
+target_link_libraries(${PROJECT_NAME} PRIVATE video_encode_image)

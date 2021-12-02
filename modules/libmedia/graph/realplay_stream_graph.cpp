@@ -61,13 +61,11 @@ int RealplayStreamGraph::connectPin()
 		PinPtr adf_out{adf->query(innerDataOutputPinName)};
 		PinPtr apf_in{apf->query(innerDataInputPinName)};
 
-		if (vdf_out && vrf_in)
+		if (vdf_out && vrf_in && adf_out && apf_in)
 		{
-			ret = vdf_out->next(vrf_in);
-			if (adf_out && apf_in)
-			{
-				adf_out->next(apf_in);
-			}
+			vdf_out->next(vrf_in);
+			adf_out->next(apf_in);
+			ret = Error_Code_Success;
 		}
 	}
 	

@@ -10,23 +10,13 @@ AudioDecoderFilter::AudioDecoderFilter()
 AudioDecoderFilter::~AudioDecoderFilter()
 {}
 
-int AudioDecoderFilter::createNew()
+int AudioDecoderFilter::createNew(void* param/* = nullptr*/)
 {
-	int ret{Filter::createNew()};
+	int ret{Filter::createNew(param)};
 
 	if (Error_Code_Success == ret)
 	{
 	}
 	
 	return ret;
-}
-
-int AudioDecoderFilter::input(FramePtr frame)
-{
-	return Error_Code_Success;
-}
-
-AVProcessorPtr AudioDecoderFilter::createNewProcessor()
-{
-	return 0;
 }

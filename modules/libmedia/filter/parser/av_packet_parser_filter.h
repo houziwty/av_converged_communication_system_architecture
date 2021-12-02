@@ -28,11 +28,7 @@ namespace module
 				virtual ~AVPacketParserFilter(void);
 
 			public:
-				int createNew(void) override;
-				int input(FramePtr frame) override;
-
-			protected:
-				AVProcessorPtr createNewProcessor(void) override;
+				int input(void* data = nullptr) override;
 			};//class AVPacketParserFilter
 		}//namespace av
 	}//namespace media

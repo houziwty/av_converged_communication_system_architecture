@@ -1,38 +1,36 @@
 #include "error_code.h"
+#include "io_listen.h"
 #include "async_acceptor.h"
 using namespace module::network::asio;
 
 AsyncAcceptor::AsyncAcceptor(
-	boost::asio::io_context& io,
-	const unsigned short port /* = 10000 */, 
+	boost::asio::io_context& io, 
 	AsyncAcceptEventCallback callback /* = nullptr */)
-	: acceptor{ io, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port) }, 
-	asyncAcceptEventCallback{ callback }
+	: so{io}, asyncAcceptEventCallback{ callback }
 {}
 
 AsyncAcceptor::~AsyncAcceptor()
 {}
 
-int AsyncAcceptor::listen()
+int AsyncAcceptor::accept(IoListenPtr listenPtr)
 {
-	int ret{Error_Code_Success};
-	auto self{ 
-		boost::enable_shared_from_this<AsyncAcceptor>::shared_from_this() };
+	int ret{listenPtr ? Error_Code_Success : Error_Code_Invalid_Param};
 
-	acceptor.async_accept(
-		[this, self](boost::system::error_code e, boost::asio::ip::tcp::socket s)
-		{
-			if (asyncAcceptEventCallback)
-			{
-				asyncAcceptEventCallback(s, e.value());
-			}
+	if (Error_Code_Success == ret)
+	{
+		auto self{ 
+			boost::enable_shared_from_this<AsyncAcceptor>::shared_from_this() };
 
-			//持续监听
-			if (!e)
+		listenPtr->getListener().async_accept(
+			so,
+			[this, self](boost::system::error_code e)
 			{
-				listen();
-			}
-		});
+				if (asyncAcceptEventCallback)
+				{
+					asyncAcceptEventCallback(so, e.value());
+				}
+			});
+	}
 
 	return ret;
 }

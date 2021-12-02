@@ -1,3 +1,5 @@
+#include "libavp/av_frame.h"
+#include "libavp/ps_2_es_parser.h"
 #include "error_code.h"
 #include "av_packet_parser_filter.h"
 using namespace module::media::av;
@@ -9,23 +11,28 @@ AVPacketParserFilter::AVPacketParserFilter()
 AVPacketParserFilter::~AVPacketParserFilter()
 {}
 
-int AVPacketParserFilter::createNew()
+int AVPacketParserFilter::input(void* data/* = nullptr*/)
 {
-	int ret{Filter::createNew()};
+	int ret{data ? Error_Code_Success : Error_Code_Invalid_Param};
 
-	if (Error_Code_Success == ret)
+	if(Error_Code_Success == ret && !avprocessor)
 	{
+		AVFrame* avframe{reinterpret_cast<AVFrame*>(data)};
+		const MainType mt{avframe->getMainType()};
+
+		if(MainType::MAIN_TYPE_HIKVISION_PS == mt)
+		{
+			AVProcessorPtr ptr{boost::make_shared<PS2ESParser>()};
+			if(ptr)
+			{
+				avprocessor.swap(ptr);
+			}
+		}
+		else
+		{
+			ret = Error_Code_Not_Support;
+		}
 	}
-	
-	return ret;
-}
 
-int AVPacketParserFilter::input(FramePtr frame)
-{
-	return Error_Code_Success;
-}
-
-AVProcessorPtr AVPacketParserFilter::createNewProcessor()
-{
-	return 0;
+	return Error_Code_Success == ret ? Filter::input(data) : ret;
 }

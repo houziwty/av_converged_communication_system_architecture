@@ -10,23 +10,13 @@ VideoDecoderFilter::VideoDecoderFilter()
 VideoDecoderFilter::~VideoDecoderFilter()
 {}
 
-int VideoDecoderFilter::createNew()
+int VideoDecoderFilter::createNew(void* param/* = nullptr*/)
 {
-	int ret{Filter::createNew()};
+	int ret{Filter::createNew(param)};
 
 	if (Error_Code_Success == ret)
 	{
 	}
 	
 	return ret;
-}
-
-int VideoDecoderFilter::input(FramePtr frame)
-{
-	return Error_Code_Success;
-}
-
-AVProcessorPtr VideoDecoderFilter::createNewProcessor()
-{
-	return 0;
 }

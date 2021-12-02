@@ -36,6 +36,15 @@
 
 
    # 2. 基本约定
+   ## 2.1 命名规则
+   所有命名采用小写字母，每个单词间使用一个下划线连接。
+   ## 2.2 服务标识
+|名称|标识|默认端口|说明|
+|-|-|-|-|
+|XMQ主机服务|xmq_host_service|50531 50927|消息主机服务|
+|设备主机服务|dvs_host_service|50820|设备接入主机服务，服务第三方监控设备接入|
+|流媒体转发主机服务|xms_host_service|50820|流媒体转发主机服务|
+|算法主机服务|video_cv_host_service|-|算法运算主机服务|
 
    # 3. 系统设计
 
@@ -1235,10 +1244,56 @@
 
    ```HTTP/1.1 200 OK```
 
-   # 4. 开发计划
-   # 5. 测试计划
-   # 6. 迭代计划
-   # 7. 版本
-   # 8. 授权
-   # 9. 附表
+   # 4. 通信协议
+   ## 4.1 协议格式
+   >>> ``` 协议名称://目的地址 [ /路由地址/... [ ? 参数名=参数值 [ & ...] ] ]```
+
+   ## 4.2 xmq_host_service
+   ### 4.2.1 服务查询请求
+   >>> 系统内个服务可以向XMQ服务查询系统内在线的服务信息。
+
+   >>> ```query://xmq_host_service?from=video_cv_host_service```
+
+   ### 4.2.2 服务查询应答
+   >>> ```query://video_cv_host_service?name=dvs_host_service&name=video_cv_host_service```
+
+   或者
+
+   >>> ```query://video_cv_host_service?data_encoding=json&data=(序列化JSON字节流)```
+
+   >>> data_encoding建议支持json、xml和protobuf。
+
+   ## 4.3 dvs_host_service
+   ### 4.3.1 注册请求
+   >>> ```register://xmq_host_service?tick=(时间戳)[&sequence=1]```
+
+   ### 4.3.2 注册应答
+   >>> 无
+
+   ### 4.3.3 设备查询请求
+   >>> ```register://dvs_host_service?from=client_uuid[&sequence=1]```
+
+   ### 4.3.4 设备查询应答
+   >>> ```query://client_uuid?data_encoding=json&data=(序列化JSON字节流)[&sequence=1]```
+
+   >>> data_encoding建议支持json、xml和protobuf。
+
+   ### 4.3.5 设备配置请求
+   >>> ```config://dvs_host_service?data_encoding=json&data=(序列化JSON字节流)[&sequence=1]```
+
+   ### 4.3.6 设备配置应答
+   >>> ```config://client_uuid?data_encoding=json&data=(序列化JSON字节流)[&sequence=1]```
+
+   ### 4.3.7 通道实时流抓图请求
+   >>> ```config://dvs_host_service?data_encoding=json&data=(序列化JSON字节流)[&sequence=1]```
+
+   ### 4.3.8 通道实时流抓图应答
+   >>> ```config://client_uuid?data_encoding=json&data=(序列化JSON字节流)[&sequence=1]```
+
+   # 5. 开发计划
+   # 6. 测试计划
+   # 7. 迭代计划
+   # 8. 版本
+   # 9. 授权
+   # 10. 附表
    
