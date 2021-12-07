@@ -1296,4 +1296,28 @@
    # 8. 版本
    # 9. 授权
    # 10. 附表
+   ## 10.1 第三方依赖库编译方法
+   ### 10.1.1 boost
+   >>> + ./bootstrap.sh
+
+   >>> + ./b2 cxxflags=-fPIC cflags=-fPIC link=static threading=multi runtime-link=static
+
+   >>> + ./b2 install
+
+   ### 10.1.2 libzmq
+   >>> + apt install libzmq-dev
+
+   ### 10.1.3 glog
+   >>> + apt install libgoogle-glog-dev
+
+   ### 10.1.4 ffmpeg
+   >>> + apt install ubuntu-restricted-addons
+
+   >>> + apt install va-driver-all vdpau-driver-all
+
+   >>> + apt update & apt upgrade
+   
+   >>> + ./configure --prefix=/usr/local --enable-gpl --enable-static --enable-shared --enable-small --disable-swscale-alpha --disable-programs --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-avdevice --disable-avfilter --disable-network --disable-vaapi --disable-vdpau --disable-everything --enable-decoder=h264 --enable-asm --enable-mmx --enable-mmxext --enable-sse --enable-sse2 --enable-sse3 --enable-ssse3 --enable-sse4 --enable-sse42 --enable-avx --enable-avx2 --enable-inline-asm --enable-x86asm --disable-iconv --disable-debug --enable-fma3 --enable-fma4 --enable-pic --extra-cflags=-fPIC --extra-cxxflags=-fPIC
+
+
    

@@ -3,7 +3,8 @@
 #include "io_session.h"
 using namespace module::network::asio;
 
-IoSession::IoSession() : buffer{ nullptr }, bufBytes{0}
+IoSession::IoSession(boost::asio::io_context& ctx) 
+	: buffer{ nullptr }, bufBytes{0}, so{ctx}
 {}
 
 IoSession::~IoSession()
@@ -12,9 +13,9 @@ IoSession::~IoSession()
 }
 
 int IoSession::createNew(
-	const int bytes/* = 1048576*/, 
-	AsyncSendEventCallback scb/* = nullptr*/, 
-	AsyncReceiveEventCallback rcb/* = nullptr*/)
+	SentDataEventCallback sent, 
+	ReceivedDataEventCallback recved, 
+	const unsigned int bytes/* = 1048576*/)
 {
 	boost::checked_array_delete(buffer);
 	buffer = new(std::nothrow) unsigned char[bytes];
@@ -23,8 +24,8 @@ int IoSession::createNew(
 	if(Error_Code_Success == ret)
 	{
 		bufBytes = bytes;
-		asyncSendEventCallback = scb;
-		asyncReceiveEventCallback = rcb;
+		sentDataEventCBFunc = sent;
+		receivedDataEventCBFunc = recved;
 	}
 
 	return ret;
@@ -32,12 +33,12 @@ int IoSession::createNew(
 
 int IoSession::destroy()
 {
+	so.close();
 	boost::checked_array_delete(buffer);
-	return Error_Code_Success;
+	return !so.is_open() && !buffer ? Error_Code_Success : Error_Code_Operate_Failure;
 }
 
 int IoSession::send(
-	boost::asio::ip::tcp::socket& s, 
 	const void* data /* = nullptr */, 
 	const int bytes /* = 0 */)
 {
@@ -51,13 +52,13 @@ int IoSession::send(
 		{
 			transferred = bytes - pos;
 			transferred = (transferred > 1048576 ? 1048576 : transferred);
-			s.async_write_some(
+			so.async_write_some(
 				boost::asio::buffer(data + pos, transferred),
 				[this](boost::system::error_code e, std::size_t bytes_transferred)
 				{
-					if (asyncSendEventCallback)
+					if (sentDataEventCBFunc)
 					{
-						asyncSendEventCallback(e.value(), static_cast<int>(bytes_transferred));
+						sentDataEventCBFunc(e.value(), static_cast<int>(bytes_transferred));
 					}
 				});
 			pos += transferred;
@@ -67,19 +68,19 @@ int IoSession::send(
 	return ret;
 }
 
-int IoSession::receive(boost::asio::ip::tcp::socket& s)
+int IoSession::receive()
 {
 	int ret{ buffer && 0 < bufBytes ? Error_Code_Success : Error_Code_Operate_Failure };
 
 	if (Error_Code_Success == ret)
 	{
-		s.async_read_some(
+		so.async_read_some(
 			boost::asio::buffer(buffer, bufBytes),
 			[this](boost::system::error_code e, std::size_t bytes_transferred)
 			{
-				if (asyncReceiveEventCallback)
+				if (receivedDataEventCBFunc)
 				{
-					asyncReceiveEventCallback(e.value(), buffer, static_cast<int>(bytes_transferred));
+					receivedDataEventCBFunc(e.value(), buffer, static_cast<int>(bytes_transferred));
 				}
 			});
 	}

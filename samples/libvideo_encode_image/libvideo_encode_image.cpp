@@ -48,6 +48,7 @@ int CLT_LIB_VideoEncodeImage_AddDevice(
         if(0 < did && ptr && -1 < (ret = ptr->login(ip, port, username, passwd)))
         {
             dvss.replace(did, ptr);
+            ret = did;
         }
         else
         {

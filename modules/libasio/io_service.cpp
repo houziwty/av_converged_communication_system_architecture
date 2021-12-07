@@ -14,13 +14,8 @@ IoService::IoService() : idle{ 0 }, ctxs(Cpu().getCount()), works(ctxs.size())
 
 	for (int i = 0; i != ctxs.size(); ++i)
 	{
-		threads.emplace_back(
-			[this, i]()
-			{
-				ctxs[i].run();
-			});
-	}        
-
+		threads.emplace_back([this, i](){ctxs[i].run();});
+	}
 }
 
 IoService::~IoService()
@@ -35,7 +30,6 @@ boost::asio::io_context& IoService::getIdle()
 
 int IoService::createNew()
 {
-	return Error_Code_Success;
 	const int cpuNumber{static_cast<const int>(ctxs.size())};
 
 	for (int i = 0; i != cpuNumber; ++i)

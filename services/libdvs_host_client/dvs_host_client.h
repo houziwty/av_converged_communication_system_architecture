@@ -16,6 +16,8 @@
 //#include "boost/shared_ptr.hpp"
 // #include "network/asio/async_tcp_server.h"
 // using namespace framework::network::asio;
+#include "utils/thread/thread_pool.h"
+using namespace framework::utils::thread;
 #include "network/xmq/worker_deal.h"
 using namespace framework::network::xmq;
 
@@ -36,6 +38,9 @@ public:
 
 protected:
 	void afterWorkerPolledDataHandler(const std::string data) override;
+
+private:
+    ThreadPool tp;
 };//class DvsHostClient
 
 #endif//DVS_HOST_CLIENT_H

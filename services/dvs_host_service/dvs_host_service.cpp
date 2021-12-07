@@ -11,7 +11,7 @@ using DvsHostSessionPtr = boost::shared_ptr<DvsHostSession>;
 #include "dvs_host_service.h"
 
 DvsHostService::DvsHostService(FileLog& log, const unsigned short port/* = 10000*/) 
-    : WorkerDeal(), AsyncTcpServer(), xmsPort{port}, fileLog{log}
+    : WorkerDeal()//, AsyncTcpServer(), xmsPort{port}, fileLog{log}
 {}
 
 DvsHostService::~DvsHostService()

@@ -37,25 +37,29 @@ const std::string Msg::popFront()
 int Msg::recv(void* s /* = nullptr */)
 {
 	int ret{ s ? Error_Code_Success : Error_Code_Invalid_Param };
-	zmq_msg_t msg;
 
-	while (Error_Code_Success == ret)
+	if (Error_Code_Success == ret)
 	{
-		if (zmq_msg_init(&msg))
-		{
-			return Error_Code_Bad_New_Object;
-		}
-		
-		if (-1 < zmq_msg_recv(&msg, s, ZMQ_DONTWAIT))
-		{
-			msgs.push_back(std::string(reinterpret_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg)));
-			if (!zmq_msg_more(&msg))
-			{
-				break;
-			}
-		}
+		zmq_msg_t msg;
 
-		zmq_msg_close(&msg);
+		while (1)
+		{
+			if (zmq_msg_init(&msg))
+			{
+				return Error_Code_Bad_New_Object;
+			}
+
+			if (-1 < zmq_msg_recv(&msg, s, ZMQ_DONTWAIT))
+			{
+				msgs.push_back(std::string(reinterpret_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg)));
+				if (!zmq_msg_more(&msg))
+				{
+					break;
+				}
+			}
+
+			zmq_msg_close(&msg);
+		}
 	}
 
 	return ret;

@@ -25,54 +25,60 @@ namespace module
 			//数据发送回调
 			//@_1 : socket错误码
 			//@_2 : 发送字节数
-			typedef boost::function<void(const int, const int)> AsyncSendEventCallback;
+			typedef boost::function<void(const int, const int)> SentDataEventCallback;
 
 			//数据接收回调
 			//@_1 : socket错误码
 			//@_2 : 数据
 			//@_3 : 接收字节数
-			typedef boost::function<void(const int, const void*, const int)> AsyncReceiveEventCallback;
+			typedef boost::function<void(const int, const void*, const int)> ReceivedDataEventCallback;
 
 			class IoSession
 			{
 			public:
-				IoSession(void);
+				//@ctx : 上下文
+				IoSession(boost::asio::io_context& ctx);
 				virtual ~IoSession(void);
 
 			public:
 				//创建
 				//@bytes [in] : 缓存大小，默认1MB
-				//@scb [in] : 数据发送回调
-				//@Return : 数据接收回调
+				//@sent [in] : 数据发送回调
+				//@recved [in] : 数据接收回调
+				//@Return : 错误码
 				virtual int createNew(
-					const int bytes = 1048576, 
-					AsyncSendEventCallback scb = nullptr,
-					AsyncReceiveEventCallback rcb = nullptr);
+					SentDataEventCallback sent, 
+					ReceivedDataEventCallback recved, 
+					const unsigned int bytes = 1048576);
 
 				//销毁
 				//@Return : 错误码
 				virtual int destroy(void);
 				
 				//发送
-				//@s : socket
 				//@data : 数据
 				//@bytes : 大小
 				//@Return : 错误码
 				int send(
-					boost::asio::ip::tcp::socket& s, 
 					const void* data = nullptr,
 					const int bytes = 0);
 
 				//接收
-				//@s : socket
 				//@Return : 错误码
-				int receive(boost::asio::ip::tcp::socket& s);
+				int receive(void);
+
+				//获取socket实例
+				inline boost::asio::ip::tcp::socket& sock(void)
+				{
+					return so;
+				}
 
 			private:
+				boost::asio::ip::tcp::socket so;
 				void* buffer;
-				int bufBytes;
-				AsyncSendEventCallback asyncSendEventCallback;
-				AsyncReceiveEventCallback asyncReceiveEventCallback;
+				unsigned int bufBytes;
+				SentDataEventCallback sentDataEventCBFunc;
+				ReceivedDataEventCallback receivedDataEventCBFunc;
 			};//class IoSession
 		}//namespace asio
 	}//namespace network
