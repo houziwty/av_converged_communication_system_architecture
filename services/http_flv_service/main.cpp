@@ -3,8 +3,8 @@
 
 int main(int argc, char* argv[])
 {
-    using ServerPtr = boost::shared_ptr<Server>;
-    ServerPtr server{boost::make_shared<HttpFlvStreamServer>()};
+    using TcpServerPtr = boost::shared_ptr<TcpServer>;
+    TcpServerPtr server{boost::make_shared<HttpFlvStreamServer>()};
     server->start(50927);
     getchar();
     server->stop();

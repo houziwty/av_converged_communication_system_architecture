@@ -21,7 +21,7 @@ namespace module
 	{
 		namespace xmq
 		{
-			class Publisher
+			class NETWORK_XMQ_EXPORT Publisher
 			{
 			public:
 				Publisher(void);

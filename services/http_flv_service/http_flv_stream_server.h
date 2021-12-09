@@ -13,8 +13,8 @@
 #ifndef HTTP_FLV_STREAM_SERVER_H
 #define HTTP_FLV_STREAM_SERVER_H
 
-#include "network/asio/tcp/http/http_server.h"
-using namespace framework::network::asio;
+#include "libasio/tcp/http/http_server.h"
+using namespace module::network::asio;
 
 class HttpFlvStreamServer 
 	: public HttpServer
@@ -24,7 +24,7 @@ public:
 	virtual ~HttpFlvStreamServer(void);
 
 protected:
-	void fetchAcceptedEventNotification(IoSessionPtr sessionPtr, const int e = 0) override;
+	void fetchAcceptedEventNotification(SessionPtr session, const int e = 0) override;
 };//class HttpFlvStreamServer
 
 #endif//HTTP_FLV_STREAM_SERVER_H

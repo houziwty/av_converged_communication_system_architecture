@@ -4,14 +4,12 @@ project(asio VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 
 include_directories(${INCLUDE_DIR})
 
-file(GLOB_RECURSE src *.cpp)
-file(GLOB_RECURSE framework_utils_src "${SOURCE_DIR}/utils/hardware/*.cpp")
+file(GLOB_RECURSE main *.cpp)
 
 add_library(
 	${PROJECT_NAME} 
 	SHARED 
-	${src} 
-	${framework_utils_src})
+	${main})
 target_link_libraries(
 	${PROJECT_NAME} 
 	PUBLIC 

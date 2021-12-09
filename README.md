@@ -10,7 +10,11 @@
 |-|-|-|-|-|
 | V0.0.1| 初稿 | 王科威 | | 2021-11-20|
 
-   # 1. 引言
+   * 1. [引言](#First)
+   * 2. [基本约定](#Second)
+   * 3. [系统设计](#SystemDesign)
+
+   # 1. <a name='First'></a>引言
    
    ## 1.1 编写目的
 
@@ -1259,13 +1263,13 @@
 
    或者
 
-   >>> ```query://video_cv_host_service?data_encoding=json&data=(序列化JSON字节流)```
+   >>> ```query://video_cv_host_service?content_type=json&content=(序列化JSON字节流)```
 
-   >>> data_encoding建议支持json、xml和protobuf。
+   >>> content_type建议支持json、xml和protobuf。
 
    ## 4.3 dvs_host_service
    ### 4.3.1 注册请求
-   >>> ```register://xmq_host_service?tick=(时间戳)[&sequence=1]```
+   >>> ```register://dvs_host_service?tick=(时间戳)[&sequence=1]```
 
    ### 4.3.2 注册应答
    >>> 无

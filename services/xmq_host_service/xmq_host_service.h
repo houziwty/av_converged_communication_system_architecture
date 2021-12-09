@@ -16,13 +16,14 @@
 #include "liblog/log.h"
 using namespace module::file::log;
 #include "utils/map/unordered_map.h"
-#include "network/xmq/switcher_pub.h"
+#include "network/xmq/switcher_pub_model.h"
 using namespace framework::network::xmq;
 
-class XmqHostService final : public SwitcherPub
+class XmqHostService final 
+	: public SwitcherPubModel
 {
 public:
-	XmqHostService(const std::string aid, FileLog& log);
+	XmqHostService(const std::string name, FileLog& log);
 	~XmqHostService(void);
 
 public:
@@ -43,9 +44,9 @@ private:
 	void checkRegisterExpiredOfServiceThread(void);
 
 private:
-	const std::string appid;
+	const std::string serviceName;
 	FileLog& fileLog;
-	UnorderedMap<std::string, unsigned long long> registeredServices;
+	UnorderedMap<const std::string, unsigned long long> registeredServices;
 	bool stopped;
 	void* thread;
 };//class XmqHostService

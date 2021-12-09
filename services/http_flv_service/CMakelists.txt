@@ -5,13 +5,11 @@ project(http_flv_stream_server VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 include_directories(${INCLUDE_DIR})
 link_directories(${LINK_DIR}/libasio)
 
-file(GLOB_RECURSE src "*.cpp")
-file(GLOB_RECURSE framework_network_src "${SOURCE_DIR}/network/asio/*.cpp")
+file(GLOB_RECURSE main "*.cpp")
 
 add_executable(
 	${PROJECT_NAME} 
-	${src} 
-	${framework_network_src})
+	${main})
 target_link_libraries(
 	${PROJECT_NAME} 
 	PRIVATE 

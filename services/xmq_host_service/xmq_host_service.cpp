@@ -12,8 +12,8 @@ using namespace framework::utils::thread;
 using namespace framework::utils::time;
 #include "xmq_host_service.h"
 
-XmqHostService::XmqHostService(const std::string aid, FileLog& log) 
-    : SwitcherPub(), appid{aid}, fileLog{log}, stopped{false}, thread{nullptr}
+XmqHostService::XmqHostService(const std::string name, FileLog& log) 
+    : SwitcherPubModel(), serviceName{name}, fileLog{log}, stopped{false}, thread{nullptr}
 {}
 
 XmqHostService::~XmqHostService()
@@ -24,7 +24,7 @@ int XmqHostService::start(
 	const unsigned short publisherPort /* = 0 */, 
 	const int hwm /* = 10 */)
 {
-    int ret{SwitcherPub::start(switcherPort, publisherPort, hwm)};
+    int ret{SwitcherPubModel::start(switcherPort, publisherPort, hwm)};
 
     if (Error_Code_Success == ret)
     {
@@ -37,7 +37,7 @@ int XmqHostService::start(
 
 int XmqHostService::stop()
 {
-    int ret{SwitcherPub::stop()};
+    int ret{SwitcherPubModel::stop()};
 
     if (Error_Code_Success == ret && false == stopped)
     {

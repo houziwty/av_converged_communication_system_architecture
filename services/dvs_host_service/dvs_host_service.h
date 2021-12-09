@@ -17,24 +17,20 @@
 #include "liblog/log.h"
 using namespace module::file::log;
 #include "utils/map/unordered_map.h"
-#include "avcap/av_capture.h"
-using namespace framework::media::av;
-#include "network/asio/async_tcp_server.h"
-using namespace framework::network::asio;
-#include "network/xmq/worker_deal.h"
+#include "libasio/tcp/tcp_server.h"
+#include "libasio/tcp/tcp_session.h"
+using namespace module::network::asio;
+#include "network/xmq/worker_model.h"
 using namespace framework::network::xmq;
 
-class DvsHostSession;
-using DvsHostSessionPtr = boost::shared_ptr<DvsHostSession>;
-using Sessions = UnorderedMap<const std::string, DvsHostSessionPtr>;
- using AVCapturePtr = boost::shared_ptr<AVCapture>;
+using TcpSessionPtr = boost::shared_ptr<TcpSession>;
+using DvsHostSessions = UnorderedMap<const std::string, TcpSessionPtr>;
 
 class DvsHostService final 
-    : public WorkerDeal, protected AsyncTcpServer
+    : public WorkerModel, protected TcpServer
 {
 public:
-    //@port [in] : 流媒体监听端口号
-    DvsHostService(FileLog& log, const unsigned short port = 10000);
+    DvsHostService(FileLog& log);
     ~DvsHostService(void);
 
 public:
@@ -44,17 +40,26 @@ public:
        const std::string ip, 
        const unsigned short port = 0) override;
     int stop(void) override;
+
+    //移除超时未更新会话
     void removeExpiredSession(const std::string sid);
+
+    //启动XMS
+    //@port [in] : 端口号
+    //@Return : 错误码
+    int startXMS(const unsigned short port = 0);
+
+    //停止XMS
+    //@Return : 错误码
+    int stopXMS(void);
 
 protected:
 	void afterWorkerPolledDataHandler(const std::string data) override;
-    void afterFetchAsyncAcceptEventNotification(boost::asio::ip::tcp::socket& s) override;
+    void fetchAcceptedEventNotification(SessionPtr session, const int e = 0) override;
 
 private:
     FileLog& fileLog;
-    const unsigned short xmsPort;
-    AVCapturePtr avcapturePtr;
-    Sessions sessions;
+    DvsHostSessions sessions;
 };//class DvsHostService
 
 #endif//DVS_HOST_SERVICE_H

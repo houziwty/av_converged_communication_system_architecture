@@ -1,17 +1,14 @@
 #include "boost/make_shared.hpp"
 #include "liblog/log.h"
 using namespace module::file::log;
+#include "error_code.h"
 #include "utils/uuid/uuid.h"
 using namespace framework::utils::uuid;
-#include "avcap/sdk/hk_dvs_capture.h"
-using namespace framework::media::av;
-#include "error_code.h"
 #include "dvs_host_session.h"
-using DvsHostSessionPtr = boost::shared_ptr<DvsHostSession>;
 #include "dvs_host_service.h"
 
-DvsHostService::DvsHostService(FileLog& log, const unsigned short port/* = 10000*/) 
-    : WorkerDeal()//, AsyncTcpServer(), xmsPort{port}, fileLog{log}
+DvsHostService::DvsHostService(FileLog& log) 
+    : WorkerModel(), TcpServer(), fileLog{log}
 {}
 
 DvsHostService::~DvsHostService()
@@ -23,7 +20,7 @@ int DvsHostService::start(
     const std::string ip,
     const unsigned short port)
 {
-    int ret{WorkerDeal::start(appid, xmqid, ip, port)};
+    int ret{WorkerModel::start(appid, xmqid, ip, port)};
 
     if (Error_Code_Success == ret)
     {
@@ -38,7 +35,45 @@ int DvsHostService::start(
         return ret;
     }
 
-    ret = AsyncTcpServer::createNew(xmsPort);
+    // AVCapturePtr ptr{boost::make_shared<HKSdkCapture>()};
+    // if (ptr)
+    // {
+    //     ret = ptr->createNew();
+
+    //     if(Error_Code_Success == ret)
+    //     {
+    //         avcapturePtr.swap(ptr);
+    //         fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Create Hikvision SDK capture service successed.");
+    //     }
+    //     else
+    //     {
+    //         fileLog.write(SeverityLevel::SEVERITY_LEVEL_ERROR, "Create Hikvision SDK capture service failed, result = [ %d ].", ret);
+    //     }
+    // }
+    // else
+    // {
+    //     ret = Error_Code_Bad_New_Object;
+    //     fileLog.write(SeverityLevel::SEVERITY_LEVEL_ERROR, "Create Hikvision SDK capture instance failed.");
+    // }
+    
+    return ret;
+}
+
+int DvsHostService::stop()
+{
+    WorkerModel::stop();
+    sessions.clear();
+    // if (avcapturePtr)
+    // {
+    //     avcapturePtr->destroy();
+    // }
+    
+    return Error_Code_Success;
+}
+
+int DvsHostService::startXMS(const unsigned short port/* = 0*/)
+{
+    int ret{TcpServer::start(port)};
 
     if (Error_Code_Success == ret)
     {
@@ -49,45 +84,15 @@ int DvsHostService::start(
         fileLog.write(
             SeverityLevel::SEVERITY_LEVEL_ERROR, 
             "Start XMS service failed, result = [ %d ] port = [ %d ].", 
-            ret, xmsPort);
-        return ret;
+            ret, port);
     }
 
-    AVCapturePtr ptr{boost::make_shared<HKSdkCapture>()};
-    if (ptr)
-    {
-        ret = ptr->createNew();
-
-        if(Error_Code_Success == ret)
-        {
-            avcapturePtr.swap(ptr);
-            fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Create Hikvision SDK capture service successed.");
-        }
-        else
-        {
-            fileLog.write(SeverityLevel::SEVERITY_LEVEL_ERROR, "Create Hikvision SDK capture service failed, result = [ %d ].", ret);
-        }
-    }
-    else
-    {
-        ret = Error_Code_Bad_New_Object;
-        fileLog.write(SeverityLevel::SEVERITY_LEVEL_ERROR, "Create Hikvision SDK capture instance failed.");
-    }
-    
     return ret;
 }
 
-int DvsHostService::stop()
+int DvsHostService::stopXMS()
 {
-    AsyncTcpServer::destroy();
-    WorkerDeal::stop();
-    sessions.clear();
-    if (avcapturePtr)
-    {
-        avcapturePtr->destroy();
-    }
-    
-    return Error_Code_Success;
+    return TcpServer::stop();
 }
 
 void DvsHostService::removeExpiredSession(const std::string sid)
@@ -102,19 +107,22 @@ void DvsHostService::afterWorkerPolledDataHandler(const std::string data)
     }
 }
 
-void DvsHostService::afterFetchAsyncAcceptEventNotification(boost::asio::ip::tcp::socket& s)
+void DvsHostService::fetchAcceptedEventNotification(SessionPtr session, const int e/* = 0*/)
 {
-    const std::string sid{Uuid().createNew()};
-
-    if(!sid.empty())
+    if (session && !e)
     {
-        DvsHostSessionPtr ptr{boost::make_shared<DvsHostSession>(s, *this, sid)};
+        const std::string sid{Uuid().createNew()};
 
-        if(ptr && 
-            Error_Code_Success == ptr->createNew() &&
-            Error_Code_Success == ptr->receive())
+        if(!sid.empty())
         {
-            sessions.add(sid, ptr);
+            TcpSessionPtr ptr{boost::make_shared<DvsHostSession>(session, *this, sid)};
+
+            if(ptr && 
+                Error_Code_Success == ptr->createNew() &&
+                Error_Code_Success == ptr->receive())
+            {
+                sessions.add(sid, ptr);
+            }
         }
     }
 }

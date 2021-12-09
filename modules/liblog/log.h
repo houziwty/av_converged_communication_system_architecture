@@ -15,6 +15,16 @@
 
 #include <string>
 
+#if defined(WINDOWS)
+#ifdef USE_MODULE_FILE_LOG
+#define FILE_LOG_EXPORT __declspec(dllimport)
+#else
+#define FILE_LOG_EXPORT __declspec(dllexport)
+#endif//USE_MODULE_FILE_LOG
+#elif defined(__linux__)
+#define FILE_LOG_EXPORT
+#endif//WINDOWS
+
 namespace module
 {
     namespace file
@@ -28,7 +38,7 @@ namespace module
                 SEVERITY_LEVEL_ERROR
             }SeverityLevel;
 
-            class FileLog
+            class FILE_LOG_EXPORT FileLog
             {
             public:
                 FileLog(void);

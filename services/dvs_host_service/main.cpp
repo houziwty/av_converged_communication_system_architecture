@@ -34,9 +34,11 @@ int main(int argc, char* argv[])
 
         if (!xmq_addr.empty() && !xmq_port.empty() && !xms_port.empty() && !xmq_name.empty() && !app_name.empty())
         {
-            DvsHostService dhs{gFileLog, static_cast<unsigned short>(atoi(xms_port.c_str()))};
+            DvsHostService dhs{gFileLog};
             dhs.start(app_name, xmq_name, xmq_addr, atoi(xmq_port.c_str()));
+            dhs.startXMS(static_cast<unsigned short>(atoi(xms_port.c_str())));
             getchar();
+            dhs.stopXMS();
             dhs.stop();
         }
     }

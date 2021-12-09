@@ -12,17 +12,15 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	link_directories(${3RDPART_DIR}/sdk/hikvision/lib/win32)
 endif()
 
-file(GLOB_RECURSE src "*.cpp")
-file(GLOB_RECURSE framework_avcap_src "${SOURCE_DIR}/avcap/*.cpp")
-file(GLOB_RECURSE framework_network_src "${SOURCE_DIR}/network/*.cpp")
-file(GLOB_RECURSE framework_utils_src "${SOURCE_DIR}/utils/*.cpp")
+file(GLOB_RECURSE main "*.cpp")
+file(GLOB_RECURSE xmq "${SOURCE_DIR}/network/xmq/worker_model.cpp")
+file(GLOB_RECURSE utils "${SOURCE_DIR}/utils/*.cpp")
 
 add_executable(
 	${PROJECT_NAME} 
-	${src} 
-	${framework_avcap_src} 
-	${framework_network_src}
-	${framework_utils_src})
+	${main} 
+	${xmq}
+	${utils})
 target_link_libraries(
 	${PROJECT_NAME} 
 	PRIVATE 

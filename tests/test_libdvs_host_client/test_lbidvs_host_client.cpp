@@ -2,7 +2,7 @@
 
 int main()
 {
-  DvsHostClientSdk sdk;
+  DvsHostClient sdk;
   sdk.connectXMQService("xmq_host_service", "127.0.0.1", 50531);
   return 0;
 }

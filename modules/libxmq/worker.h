@@ -21,7 +21,7 @@ namespace module
 	{
 		namespace xmq
 		{
-			class Worker
+			class NETWORK_XMQ_EXPORT Worker
 			{
 			public:
 				//@callback [in] : 数据接收回调
