@@ -1,73 +1,46 @@
+#include "boost/format.hpp"
 #include "boost/make_shared.hpp"
-#include "liblog/log.h"
-using namespace module::file::log;
 #include "error_code.h"
 #include "utils/uuid/uuid.h"
 using namespace framework::utils::uuid;
+#include "utils/url/url.h"
+using namespace framework::utils::url;
 #include "dvs_host_session.h"
 #include "dvs_host_service.h"
 
 DvsHostService::DvsHostService(FileLog& log) 
-    : WorkerModel(), TcpServer(), fileLog{log}
+    : LibXmqHostClient(), TcpServer(), fileLog{log}
 {}
 
 DvsHostService::~DvsHostService()
 {}
 
 int DvsHostService::start(
-    const std::string appid, 
-    const std::string xmqid, 
-    const std::string ip,
-    const unsigned short port)
+    const std::string name, 
+    const std::string ip, 
+    const unsigned short port/* = 0*/)
 {
-    int ret{WorkerModel::start(appid, xmqid, ip, port)};
+    int ret{LibXmqHostClient::registerXmqHostClient(name, ip, port)};
 
     if (Error_Code_Success == ret)
     {
-        fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Start XMQ service successed.");
+        fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Start xmq host client successed.");
     }
     else
     {
         fileLog.write(
             SeverityLevel::SEVERITY_LEVEL_ERROR, 
-            "Start XMQ service failed, result = [ %d ] app_name = [ %s ] xmq_name ip = [ %s ] port = [ %d ].", 
-            ret, appid.c_str(), xmqid.c_str(), ip.c_str(), port);
-        return ret;
+            "Start xmq host client failed with name = [ %s ] ip = [ %s ] port = [ %d ], result = [ %d ].", 
+            name.c_str(), ip.c_str(), port, ret);
     }
-
-    // AVCapturePtr ptr{boost::make_shared<HKSdkCapture>()};
-    // if (ptr)
-    // {
-    //     ret = ptr->createNew();
-
-    //     if(Error_Code_Success == ret)
-    //     {
-    //         avcapturePtr.swap(ptr);
-    //         fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Create Hikvision SDK capture service successed.");
-    //     }
-    //     else
-    //     {
-    //         fileLog.write(SeverityLevel::SEVERITY_LEVEL_ERROR, "Create Hikvision SDK capture service failed, result = [ %d ].", ret);
-    //     }
-    // }
-    // else
-    // {
-    //     ret = Error_Code_Bad_New_Object;
-    //     fileLog.write(SeverityLevel::SEVERITY_LEVEL_ERROR, "Create Hikvision SDK capture instance failed.");
-    // }
     
     return ret;
 }
 
 int DvsHostService::stop()
 {
-    WorkerModel::stop();
-    sessions.clear();
-    // if (avcapturePtr)
-    // {
-    //     avcapturePtr->destroy();
-    // }
-    
+    unregisterXmqHostClient();
+    sessions.clear();    
     return Error_Code_Success;
 }
 
@@ -100,10 +73,53 @@ void DvsHostService::removeExpiredSession(const std::string sid)
     sessions.remove(sid);
 }
 
-void DvsHostService::afterWorkerPolledDataHandler(const std::string data)
+void DvsHostService::fetchXmqHostClientOnlineStatusNotification(bool online)
 {
-    if (!data.empty())
+    fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch dvs host service online status = [ %d ].", online);
+}
+
+void DvsHostService::fetchXmqHostServiceCapabilitiesNotification(const std::vector<std::string> services)
+{
+    const int number{static_cast<int>(services.size())};
+    fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch xmq host service capabilities size = [ %d ].", number);
+
+    for(int i = 0; i != number; ++i)
     {
+        fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, " ****** Service name = [ %s ].", services[i].c_str());
+    }
+}
+
+void DvsHostService::fetchXmqHostClientReceivedDataNotification(const std::string data)
+{
+    fileLog.write(
+        SeverityLevel::SEVERITY_LEVEL_INFO, 
+        "Fetch forward data = [ %s ] from xmq host service.", 
+        data.c_str());
+
+    Url requestUrl;
+    int ret{requestUrl.parse(data)};
+
+    if(Error_Code_Success == ret)
+    {
+        if (!requestUrl.getProtocol().compare("dvs"))
+        {
+            processDvsControlMessage(requestUrl);
+        }
+        else
+        {
+            fileLog.write(
+                SeverityLevel::SEVERITY_LEVEL_WARNING, 
+                "Parsed unknown data = [ %s ] from xmq host service.",  
+                data.c_str());
+        }
+    }
+    else
+    {
+        fileLog.write(
+            SeverityLevel::SEVERITY_LEVEL_ERROR, 
+            "Parsed forward data = [ %s ] from xmq host service failed, result = [ %d ].",  
+            data.c_str(), 
+            ret);
     }
 }
 
@@ -124,5 +140,63 @@ void DvsHostService::fetchAcceptedEventNotification(SessionPtr session, const in
                 sessions.add(sid, ptr);
             }
         }
+    }
+}
+
+void DvsHostService::processDvsControlMessage(Url& requestUrl)
+{
+    const std::vector<ParamItem> parameters{requestUrl.getParameters()};
+    const std::string host{requestUrl.getHost()};
+    std::string command, from, ip, port, user, passwd, id, error;
+
+    for(int i = 0; i != parameters.size(); ++i)
+    {
+        if (!parameters[i].key.compare("command"))
+        {
+            command = parameters[i].value;
+        }
+        else if (!parameters[i].key.compare("from"))
+        {
+            from = parameters[i].value;
+        }
+        else if (!parameters[i].key.compare("ip"))
+        {
+            ip = parameters[i].value;
+        }
+        else if (!parameters[i].key.compare("port"))
+        {
+            port = parameters[i].value;
+        }
+        else if (!parameters[i].key.compare("user"))
+        {
+            user = parameters[i].value;
+        }
+        else if (!parameters[i].key.compare("passwd"))
+        {
+            passwd = parameters[i].value;
+        }
+        else if (!parameters[i].key.compare("id"))
+        {
+            id = parameters[i].value;
+        }
+        else if (!parameters[i].key.compare("error"))
+        {
+            error = parameters[i].value;
+        }
+    }
+
+    if (!command.compare("query"))
+    {
+        const std::string url{
+            (boost::format("dvs://%s?from=%s&command=query&dvs=1_192.168.2.225_1") % from % host).str()};
+        LibXmqHostClient::send(url);
+    }
+    else if (!command.compare("add"))
+    {
+        /* code */
+    }
+    else if (!command.compare("remove"))
+    {
+        /* code */
     }
 }

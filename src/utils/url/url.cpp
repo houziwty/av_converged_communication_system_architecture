@@ -28,7 +28,10 @@ int Url::parse(const std::string data)
         {
             const int splashPos{static_cast<const int>(hostpath.find_first_of('/'))};
             host = hostpath.substr(0, splashPos);
-            path = hostpath.substr(splashPos, hostpath.length());
+            if (-1 < splashPos)
+            {
+                path = hostpath.substr(splashPos, hostpath.length());
+            }
         }
 
         const std::string params{-1 < questionPos ? data.substr(questionPos + 1, totalLength - questionPos) : ""};
@@ -53,8 +56,15 @@ int Url::parse(const std::string data)
 const std::string Url::encode()
 {
     std::string url{
-        (boost::format("%s://%s/%s") % protocol % host % path).str()};
+        (boost::format("%s://%s") % protocol % host).str()};
     const int paramNumber{static_cast<int>(parameters.size())};
+
+    if (!path.empty())
+    {
+        url.append("/");
+        url.append(path);
+    }
+    
 
     for (int i = 0; i != paramNumber; ++i)
     {
@@ -100,15 +110,8 @@ int Url::addParameter(const std::string key, const std::string value)
 
     if (Error_Code_Success == ret)
     {
-        for(int i = 0; i !=parameters.size(); ++i)
-        {
-            if (0 == key.compare(parameters[i].key))
-            {
-                ret = Error_Code_Object_Existed;
-                break;
-            }
-        }
-
+        //参数列表中可能存在key相同的项
+        //必须支持这种参数列表
         if (Error_Code_Success == ret)
         {
             ParamItem item{key, value};

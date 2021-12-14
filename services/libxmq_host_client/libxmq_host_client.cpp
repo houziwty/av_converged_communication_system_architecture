@@ -1,6 +1,4 @@
 #include "boost/make_shared.hpp"
-#include "utils/uuid/uuid.h"
-using namespace framework::utils::uuid;
 #include "error_code.h"
 #include "xmq_host_client.h"
 using XmqHostClientPtr = boost::shared_ptr<XmqHostClient>;
@@ -13,10 +11,10 @@ LibXmqHostClient::LibXmqHostClient()
 
 LibXmqHostClient::~LibXmqHostClient()
 {
-    disconnect();
+    unregisterXmqHostClient();
 }
 
-int LibXmqHostClient::connect(
+int LibXmqHostClient::registerXmqHostClient(
     const std::string name, 
     const std::string ip, 
     const unsigned short port/* = 0*/)
@@ -30,10 +28,9 @@ int LibXmqHostClient::connect(
 
     if (Error_Code_Success == ret)
     {
-        const std::string appid{Uuid().createNew()};
-        XmqHostClientPtr ptr{boost::make_shared<XmqHostClient>()};
+        XmqHostClientPtr ptr{boost::make_shared<XmqHostClient>(*this)};
         
-        if (ptr && Error_Code_Success == ptr->start(appid, name, ip, port))
+        if (ptr && Error_Code_Success == ptr->start(name, ip, port))
         {
             xmqHostClientPtr.swap(ptr);
         }
@@ -42,7 +39,7 @@ int LibXmqHostClient::connect(
     return xmqHostClientPtr ? Error_Code_Success : Error_Code_Bad_New_Object;
 }
 
-int LibXmqHostClient::disconnect()
+int LibXmqHostClient::unregisterXmqHostClient()
 {
     int ret{xmqHostClientPtr ? Error_Code_Success : Error_Code_Operate_Failure};
 
@@ -53,4 +50,9 @@ int LibXmqHostClient::disconnect()
     }
     
     return ret;
+}
+
+int LibXmqHostClient::send(const std::string data)
+{
+    return xmqHostClientPtr ? xmqHostClientPtr->send(data) : Error_Code_Operate_Failure;
 }

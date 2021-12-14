@@ -65,7 +65,7 @@ namespace framework
                 }
 
                 //设置主机名
-                //@host : 主机名，格式为IP:Port
+                //@host : 主机名称或[IP:Port]
                 //@Return : 错误码
                 int setHost(const std::string host);
 

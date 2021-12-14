@@ -3,8 +3,6 @@ using namespace boost::placeholders;
 #include "liblog/log.h"
 using namespace module::file::log;
 #include "error_code.h"
-#include "utils/url/url.h"
-using namespace framework::utils::url;
 #include "utils/thread/thread.h"
 #include "utils/thread/thread_pool.h"
 using namespace framework::utils::thread;
@@ -49,39 +47,56 @@ int XmqHostService::stop()
     return ret;
 }
 
-void XmqHostService::afterSwitcherPolledDataHandler(const std::string appid, const std::string data)
+void XmqHostService::afterSwitcherPolledDataHandler(const std::string name, const std::string data)
 {
+    //数据解析逻辑说明：
+    // 1. 解析协议名称，如果是register则处理服务注册业务，否则到（2）；
+    // 2. 解析主机名称，与服务名称对比是否一致，如果是则由服务执行业务处理， 否则到（3）；
+    // 3. 在注册服务表中查找主机名称，如果存在，则执行转发消息，否则应答消息不可达错误。
+    
+    fileLog.write(
+        SeverityLevel::SEVERITY_LEVEL_INFO, 
+        "Polled switcher message with serivce name = [ %s ] and data = [ %s ].",  
+        name.c_str(), 
+        data.c_str());
     Url requestUrl;
+    int ret{requestUrl.parse(data)};
 
-    if(Error_Code_Success == requestUrl.parse(data))
+    if(Error_Code_Success == ret)
     {
-        if (0 == requestUrl.getProtocol().compare("register"))
+        if (!requestUrl.getProtocol().compare("register"))
         {
-            const std::vector<ParamItem> items{requestUrl.getParameters()};
-            for(int i = 0; i != items.size(); ++i)
-            {
-                if(0 == items[i].key.compare("tick"))
-                {
-                    registeredServices.replace(appid, std::stoull(items[i].value));
-                    fileLog.write(
-                        SeverityLevel::SEVERITY_LEVEL_INFO, "Add register app_name = [ %s ] with data = [ %s ].",  appid.c_str(), data.c_str());
-                }
-            }
+            processRegisterMessage(name, requestUrl);
         }
-        else if (0 == requestUrl.getProtocol().compare("query"))
+        else if (!requestUrl.getHost().compare(serviceName))
         {
-
+            processRequestMessage(name, requestUrl);
         }
         else
         {
-            fileLog.write(
-                SeverityLevel::SEVERITY_LEVEL_WARNING, "Parsed unknown data app_name = [ %s ] with data = [ %s ].",  appid.c_str(), data.c_str());
+            const std::string hostName{requestUrl.getHost()};
+            const unsigned long long timestamp{registeredServices.at(hostName)};
+
+            if (0 < timestamp)
+            {
+                forwardMessage(hostName, data);
+            }
+            else
+            {
+                fileLog.write(
+                    SeverityLevel::SEVERITY_LEVEL_WARNING, 
+                    "Parsed unknown data from service name = [ %s ].",  
+                    name.c_str());
+            }
         }
     }
     else
     {
         fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_ERROR, "Parsed data from = [ %s ] failed with data = [ %s ].",  appid.c_str(), data.c_str());
+            SeverityLevel::SEVERITY_LEVEL_ERROR, 
+            "Parsed data from service name = [ %s ] failed, result = [ %d ].",  
+            name.c_str(), 
+            ret);
     }
 }
 
@@ -102,10 +117,110 @@ void XmqHostService::checkRegisterExpiredOfServiceThread()
             {
                 registeredServices.remove(keies[i]);
                 fileLog.write(
-                    SeverityLevel::SEVERITY_LEVEL_WARNING, "Remove app_name = [ %s ] with expired tick = [ %ld ].",  keies[i].c_str(), diff);
+                    SeverityLevel::SEVERITY_LEVEL_WARNING, "Remove service name = [ %s ] with expired = [ %ld ].",  keies[i].c_str(), diff);
             }
         }
         
 		xt.sleep(1000);
 	}
+}
+
+void XmqHostService::processRegisterMessage(const std::string name, Url& requestUrl)
+{
+    const std::string hostName{requestUrl.getHost()};
+    int ret{!hostName.compare(name) ? Error_Code_Success : Error_Code_Bad_RequestUrl};
+
+    if (Error_Code_Success == ret)
+    {
+        const std::vector<ParamItem> items{requestUrl.getParameters()};
+
+        for(int i = 0; i != items.size(); ++i)
+        {
+            if(!items[i].key.compare("timestamp"))
+            {
+                registeredServices.replace(hostName, std::stoull(items[i].value));
+
+                Url responseUrl;
+                responseUrl.setProtocol(requestUrl.getProtocol());
+                responseUrl.setHost(serviceName);
+                responseUrl.addParameter(items[i].key, items[i].value);
+                ret = SwitcherPubModel::send(hostName, responseUrl.encode());
+                break;
+            }
+        }
+    }
+
+    if (Error_Code_Success == ret)
+    {
+        fileLog.write(
+            SeverityLevel::SEVERITY_LEVEL_INFO, 
+            "Process register message with serivce name = [ %s ] successfully.",  
+            hostName.c_str());
+    }
+    else
+    {
+        fileLog.write(
+            SeverityLevel::SEVERITY_LEVEL_WARNING, 
+            "Process register message with serivce name = [ %s ] failed, result = [ %d ].",  
+            hostName.c_str(),
+            ret);
+    }
+}
+
+void XmqHostService::processRequestMessage(const std::string name, Url& requestUrl)
+{
+    const std::string protocol{requestUrl.getProtocol()};
+
+    if (!protocol.compare("query"))
+    {
+        const std::vector<std::string> services{registeredServices.keies()};
+        Url responseUrl;
+        responseUrl.setProtocol(requestUrl.getProtocol());
+        responseUrl.setHost(name);
+        for(int i = 0; i != services.size(); ++i)
+        {
+            responseUrl.addParameter("name", services[i]);
+        }
+
+        int ret{SwitcherPubModel::send(name, responseUrl.encode())};
+
+        if (Error_Code_Success == ret)
+        {
+            fileLog.write(
+                SeverityLevel::SEVERITY_LEVEL_INFO, 
+                "Process query message with serivce name = [ %s ] successfully.",  
+                name.c_str());
+        }
+        else
+        {
+            fileLog.write(
+                SeverityLevel::SEVERITY_LEVEL_WARNING, 
+                "Process query message with serivce name = [ %s ] failed, result = [ %d ].",  
+                name.c_str(), 
+                ret);
+        }
+    }
+}
+
+void XmqHostService::forwardMessage(const std::string name, const std::string data)
+{
+    int ret{SwitcherPubModel::send(name, data)};
+
+    if (Error_Code_Success == ret)
+    {
+        fileLog.write(
+            SeverityLevel::SEVERITY_LEVEL_INFO, 
+            "Forward message to serivce name = [ %s ] and data = [ %s ] successfully.",  
+            name.c_str(), 
+            data.c_str());
+    }
+    else
+    {
+        fileLog.write(
+            SeverityLevel::SEVERITY_LEVEL_ERROR, 
+            "Forward message to serivce name = [ %s ] and data = [ %s ] failed, result = [ %d ].",  
+            name.c_str(), 
+            data.c_str(), 
+            ret);
+    }
 }

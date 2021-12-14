@@ -33,5 +33,14 @@ static const int Error_Code_Bad_Operate_Connect = -1002;
 static const int Error_Code_Bad_Operate_Term = -1003;
 static const int Error_Code_Bad_Operate_Send = -1004;
 static const int Error_Code_Bad_Operate_Recv = -1005;
+static const int Error_Code_Bad_RequestUrl = -1006;
+
+//SDK
+static const int Error_Code_Init_Sdk_Failure = -2000;
+static const int Error_Code_Uninit_Sdk_Failure = -2001;
+static const int Error_Code_Device_Login_Failure = -2002;
+static const int Error_Code_Device_Logout_Failure = -2003;
+static const int Error_Code_Stream_Open_Failure = -2004;
+static const int Error_Code_Stream_Close_Failure = -2005;
 
 #endif//GLOBAL_ERROR_CODE_H

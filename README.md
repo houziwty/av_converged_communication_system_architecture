@@ -1253,46 +1253,46 @@
    >>> ``` 协议名称://目的地址 [ /路由地址/... [ ? 参数名=参数值 [ & ...] ] ]```
 
    ## 4.2 xmq_host_service
+   
    ### 4.2.1 服务查询请求
    >>> 系统内个服务可以向XMQ服务查询系统内在线的服务信息。
 
-   >>> ```query://xmq_host_service?from=video_cv_host_service```
+   >>> ```query://xmq_host_service```
 
    ### 4.2.2 服务查询应答
    >>> ```query://video_cv_host_service?name=dvs_host_service&name=video_cv_host_service```
 
-   或者
-
-   >>> ```query://video_cv_host_service?content_type=json&content=(序列化JSON字节流)```
-
-   >>> content_type建议支持json、xml和protobuf。
-
    ## 4.3 dvs_host_service
+   
    ### 4.3.1 注册请求
-   >>> ```register://dvs_host_service?tick=(时间戳)[&sequence=1]```
+   >>> ```register://dvs_host_service?timestamp=*[&sequence=*]```
 
    ### 4.3.2 注册应答
-   >>> 无
+   >>> ```register://xmq_host_service?timestamp=*[&sequence=*]```
 
-   ### 4.3.3 设备查询请求
-   >>> ```register://dvs_host_service?from=client_uuid[&sequence=1]```
+   ### 4.3.3 服务查询请求
+   >>> ```query://xmq_host_service[?&sequence=1]```
 
-   ### 4.3.4 设备查询应答
-   >>> ```query://client_uuid?data_encoding=json&data=(序列化JSON字节流)[&sequence=1]```
-
-   >>> data_encoding建议支持json、xml和protobuf。
-
-   ### 4.3.5 设备配置请求
-   >>> ```config://dvs_host_service?data_encoding=json&data=(序列化JSON字节流)[&sequence=1]```
-
-   ### 4.3.6 设备配置应答
-   >>> ```config://client_uuid?data_encoding=json&data=(序列化JSON字节流)[&sequence=1]```
-
-   ### 4.3.7 通道实时流抓图请求
-   >>> ```config://dvs_host_service?data_encoding=json&data=(序列化JSON字节流)[&sequence=1]```
-
-   ### 4.3.8 通道实时流抓图应答
-   >>> ```config://client_uuid?data_encoding=json&data=(序列化JSON字节流)[&sequence=1]```
+   ### 4.3.4 服务查询应答
+   >>> ```query://dvs_host_service[?name=*[&name=*[&sequence=1]]]```
+   
+   ### 4.3.5 转发设备查询请求
+   >>> ```dvs://dvs_host_service?from=client_uuid&command=query[&sequence=1]```
+   
+   ### 4.3.6 转发设备查询应答
+   >>> ```dvs://client_uuid?from=dvs_host_service&command=query[&dvs=1_192.168.0.100_4[&dvs=*[&sequence=1]]]```
+   
+   ### 4.3.7 转发设备新增请求
+   >>> ```dvs://dvs_host_service?from=client_uuid&command=add&ip=192.168.0.100&port=8000&user=admin&passwd=Vrc123456[&sequence=1]```
+   
+   ### 4.3.8 转发设备新增应答
+   >>> ```dvs://client_uuid?from=dvs_host_service&command=add&error=0[&dvs=1_192.168.0.100_4[&sequence=1]]]```
+   
+   ### 4.3.9 转发设备删除请求
+   >>> ```dvs://dvs_host_service?from=client_uuid&command=remove&id=1[&sequence=1]```
+   
+   ### 4.3.10 转发设备删除应答
+   >>> ```dvs://client_uuid?from=dvs_host_service&command=remove&error=0[&sequence=1]```
 
    # 5. 开发计划
    # 6. 测试计划

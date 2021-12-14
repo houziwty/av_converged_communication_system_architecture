@@ -4,27 +4,32 @@ project(dvs_host_service VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 
 include_directories(${INCLUDE_DIR})
 link_directories(${LINK_DIR}/liblog)
-link_directories(${LINK_DIR}/libxmq)
+link_directories(${LINK_DIR}/libxmq_host_client)
 link_directories(${LINK_DIR}/libasio)
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-	link_directories(${3RDPART_DIR}/sdk/hikvision/lib/linux)
-elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
-	link_directories(${3RDPART_DIR}/sdk/hikvision/lib/win32)
-endif()
+link_directories(${LINK_DIR}/libdvshost)
 
 file(GLOB_RECURSE main "*.cpp")
-file(GLOB_RECURSE xmq "${SOURCE_DIR}/network/xmq/worker_model.cpp")
-file(GLOB_RECURSE utils "${SOURCE_DIR}/utils/*.cpp")
+file(GLOB_RECURSE 
+	utils 
+	"${SOURCE_DIR}/utils/commandline/*.cpp" 
+	"${SOURCE_DIR}/utils/time/*.cpp"
+	"${SOURCE_DIR}/utils/uuid/*.cpp")
+file(GLOB_RECURSE 
+	dvs 
+	"${SOURCE_DIR}/dvs/*.cpp")
 
 add_executable(
 	${PROJECT_NAME} 
 	${main} 
-	${xmq}
-	${utils})
+	${utils}
+	${dvs})
 target_link_libraries(
 	${PROJECT_NAME} 
 	PRIVATE 
-	asio xmq log hcnetsdk 
+	asio 
+	log 
 	libboost_program_options.a 
 	libboost_thread.a 
-	pthread)
+	pthread 
+	xmq_host_client 
+	dvshost)

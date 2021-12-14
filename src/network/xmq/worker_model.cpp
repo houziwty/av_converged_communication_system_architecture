@@ -13,7 +13,8 @@ using namespace framework::utils::url;
 #include "network/xmq/worker_model.h"
 using namespace framework::network::xmq;
 
-WorkerModel::WorkerModel() : thread{nullptr}, stopped{ false }
+WorkerModel::WorkerModel() 
+	: pollDataThread{nullptr}, keepaliveThread{nullptr}, stopped{ false }
 {}
 
 WorkerModel::~WorkerModel()
@@ -22,8 +23,7 @@ WorkerModel::~WorkerModel()
 }
 
 int WorkerModel::start(
-	const std::string appid, 
-	const std::string xmqid, 
+	const std::string name, 
 	const std::string ip, 
 	const unsigned short port /*= 0*/)
 {
@@ -32,7 +32,7 @@ int WorkerModel::start(
 		return Error_Code_Object_Existed;
 	}
 	
-	int ret{ !appid.empty() &&  !appid.empty() && !ip.empty() && 0 < port ? Error_Code_Success : Error_Code_Invalid_Param};
+	int ret{!name.empty() && !ip.empty() && 0 < port ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
@@ -40,14 +40,15 @@ int WorkerModel::start(
 			boost::make_shared<Worker>(
 				boost::bind(&WorkerModel::afterWorkerPolledDataHandler, this, _1))};
 
-		if(ptr && Error_Code_Success == ptr->connect(appid, ip, port))
+		if(ptr && Error_Code_Success == ptr->connect(name, ip, port))
 		{
+			serviceName = name;
 			workerPtr.swap(ptr);
-			thread = ThreadPool().get_mutable_instance().createNew(
+			pollDataThread = ThreadPool().get_mutable_instance().createNew(
 				boost::bind(&WorkerModel::pollDataFromWorkerThread, this));
+			keepaliveThread = ThreadPool().get_mutable_instance().createNew(
+				boost::bind(&WorkerModel::keepAliveWorkerThread, this));
 		}
-
-		ret = (workerPtr ? keepalive(appid, xmqid) : Error_Code_Bad_New_Object);
 	}
 
 	return ret;
@@ -60,8 +61,10 @@ int WorkerModel::stop()
 	if (Error_Code_Success == ret)
 	{
 		stopped = true;
-		Thread().join(thread);
-		ThreadPool().get_mutable_instance().destroy(thread);
+		Thread().join(pollDataThread);
+		Thread().join(keepaliveThread);
+		ThreadPool().get_mutable_instance().destroy(pollDataThread);
+		ThreadPool().get_mutable_instance().destroy(keepaliveThread);
 		workerPtr.reset();
 	}
 
@@ -80,22 +83,6 @@ int WorkerModel::send(const std::string data)
 	return ret;
 }
 
-int WorkerModel::keepalive(
-	const std::string appid, 
-	const std::string xmqid,  
-	const int interval/* = 30*/)
-{	
-	int ret{workerPtr && !stopped ? Error_Code_Success : Error_Code_Operate_Failure};
-
-	if(Error_Code_Success == ret)
-	{
-		ThreadPool().get_mutable_instance().createNew(
-			boost::bind(&WorkerModel::keepAliveWorkerThread, this, appid, xmqid, interval));
-	}
-
-	return ret;
-}
-
 void WorkerModel::pollDataFromWorkerThread()
 {
 	while (workerPtr && !stopped)
@@ -104,10 +91,7 @@ void WorkerModel::pollDataFromWorkerThread()
 	}
 }
 
-void WorkerModel::keepAliveWorkerThread(
-	const std::string appid, 
-	const std::string xmqid,  
-	const int interval/* = 30*/)
+void WorkerModel::keepAliveWorkerThread()
 {
 	int sequence{1};
 	unsigned long long lastTickCout{0};
@@ -117,13 +101,13 @@ void WorkerModel::keepAliveWorkerThread(
 	{
 		unsigned long long currentTickCount{xt.tickcount()};
 
-		if(currentTickCount - lastTickCout > interval * 1000)
+		if(currentTickCount - lastTickCout > 30000)
 		{
 			//Register and heartbeat
 			Url url;
 			url.setProtocol("register");
-			url.setHost(xmqid);
-			url.addParameter("tick", (boost::format("%ld") % currentTickCount).str());
+			url.setHost(serviceName);
+			url.addParameter("timestamp", (boost::format("%ld") % currentTickCount).str());
 			url.addParameter("sequence", (boost::format("%d") % sequence++).str());
 			const std::string data{url.encode()};
 
