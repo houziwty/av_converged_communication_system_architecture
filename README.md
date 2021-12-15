@@ -1309,7 +1309,10 @@
    >>> + ./b2 install
 
    ### 10.1.2 libzmq
-   >>> + apt install libzmq-dev
+
+   >>> + apt install gnutls-dev
+
+   >>> + apt install pkg-config
 
    ### 10.1.3 glog
    >>> + apt install libgoogle-glog-dev

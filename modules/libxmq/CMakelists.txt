@@ -4,16 +4,18 @@ project(xmq VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 
 include_directories(${INCLUDE_DIR})
 
-file(GLOB_RECURSE framework_utils_src "${SOURCE_DIR}/utils/hardware/*.cpp")
-file(GLOB_RECURSE src "*.cpp")
+file(GLOB_RECURSE main "*.cpp")
+file(GLOB_RECURSE utils "${SOURCE_DIR}/utils/hardware/*.cpp")
 
 add_library(
 	${PROJECT_NAME} 
-	SHARED ${src} 
-	${framework_utils_src})
+	SHARED 
+	${main} 
+	${utils})
 target_link_libraries(
 	${PROJECT_NAME} 
-	PUBLIC 
+	PRIVATE 
 	libzmq.a 
-	libboost_thread.a 
-	pthread)
+	gnutls 
+	sodium 
+	bsd)
