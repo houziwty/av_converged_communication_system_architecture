@@ -193,7 +193,8 @@ void DvsHostService::processDvsControlMessage(Url& requestUrl)
     }
     else if (!command.compare("add"))
     {
-        /* code */
+        const std::string uuid{Uuid().createNew()};
+        dvsHostMan.addDevice(uuid, user, passwd, ip, port, )
     }
     else if (!command.compare("remove"))
     {

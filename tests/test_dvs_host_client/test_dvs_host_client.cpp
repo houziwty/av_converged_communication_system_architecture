@@ -74,4 +74,20 @@ void TestDvsHostClient::fetchXmqHostServiceCapabilitiesNotification(const std::v
 void TestDvsHostClient::fetchXmqHostClientReceivedDataNotification(const std::string data)
 {
     fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch test dvs host client received data = [ %s ].", data.c_str());
+
+    const std::string url{
+        "dvs://dvs_host_service?from=test_dvs_host_client&command=add&ip=192.168.2.225&port=8000&user=admin&passwd=Vrc123456"};
+    int ret{send(url)};
+
+    if (Error_Code_Success == ret)
+    {
+        fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Send add device information to dvs host service successed.");
+    }
+    else
+    {
+        fileLog.write(
+            SeverityLevel::SEVERITY_LEVEL_ERROR, 
+            "Send add device information to dvs host service failed, result = [ %d ].", 
+            ret);
+    }
 }
