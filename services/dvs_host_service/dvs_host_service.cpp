@@ -194,7 +194,26 @@ void DvsHostService::processDvsControlMessage(Url& requestUrl)
     else if (!command.compare("add"))
     {
         const std::string uuid{Uuid().createNew()};
-        dvsHostMan.addDevice(uuid, user, passwd, ip, port, )
+        int ret{
+            dvsHostMan.addDevice(
+                uuid, 
+                user, 
+                passwd, 
+                ip, 
+                static_cast<unsigned short>(atoi(port.c_str())), 
+                FactoryType::FACTORY_TYPE_HK)};
+
+        if (Error_Code_Success == ret)
+        {
+            fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Add new device [ %s ] successed.", uuid.c_str());
+        }
+        else
+        {
+            fileLog.write(
+                SeverityLevel::SEVERITY_LEVEL_WARNING, 
+                "Add new device failed with uuid = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ], result = [ %d ].", 
+                uuid.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str(), ret);
+        }
     }
     else if (!command.compare("remove"))
     {
