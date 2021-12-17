@@ -1,6 +1,6 @@
 #include "boost/make_shared.hpp"
 #include "error_code.h"
-#include "utils/memory/xstr.h"
+#include "utils/memory/xmemcpy.h"
 using namespace framework::utils::memory;
 #include "hikvision_camera.h"
 #include "hikvision_device.h"
@@ -29,15 +29,20 @@ int HikvisionDevice::login(
 	if (Error_Code_Success == ret && 
 		Error_Code_Success == (ret = initialize()))
 	{
-		XStr xstr;
+		XMemory xmem;
 		NET_DVR_USER_LOGIN_INFO user{0};
 		user.bUseAsynLogin = 0;
-		xstr.copy(ip.c_str(), user.sDeviceAddress);
+		xmem.copy(ip.c_str(), user.sDeviceAddress, ip.length());
 		user.wPort = port;
-		xstr.copy(username.c_str(), user.sUserName);
-		xstr.copy(userpwd.c_str(), user.sPassword);
+		xmem.copy(username.c_str(), user.sUserName, username.length());
+		xmem.copy(userpwd.c_str(), user.sPassword, userpwd.length());
 
 		ret = NET_DVR_Login_V40(&user, &deviceInfo);
+
+		if(Error_Code_Success != ret)
+		{
+			uninitialize();
+		}
 	}
 
 	return -1 < ret ? ret : Error_Code_Device_Login_Failure;

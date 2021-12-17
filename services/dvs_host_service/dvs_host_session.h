@@ -24,7 +24,7 @@ class DvsHostSession final
 public:
     DvsHostSession(
         SessionPtr ptr, 
-        DvsHostService& dhs,
+        DvsHostService& host,
         const std::string sid);
     ~DvsHostSession(void);
 

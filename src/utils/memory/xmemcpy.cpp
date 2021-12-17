@@ -11,7 +11,7 @@ XMemory::~XMemory()
 {}
 
 void XMemory::copy(
-    void* src/* = nullptr*/, 
+    const void* src/* = nullptr*/, 
     void* dest/* = nullptr*/, 
     const unsigned long long bytes/* = 0*/)
 {

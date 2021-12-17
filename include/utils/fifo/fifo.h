@@ -34,53 +34,44 @@ public:
 		const unsigned long long itemNumber{ queue.size() };
 		if (capacity > itemNumber)
 		{
-			//WriteLock wl{ mtx };
-			mtx.lock();
+			WriteLock wl{ mtx };
 			queue.push_back(e);
-			mtx.unlock();
 		}
 	}
 
 	void remove(void)
 	{
-		//WriteLock wl{ mtx };
-		mtx.lock();
+		WriteLock wl{ mtx };
 		typename std::deque<T>::iterator it{ queue.begin() };
 		if (queue.end() != it)
 		{
 			queue.erase(it);
 		}
-		mtx.unlock();
 	}
 	
 	T front(void)
 	{
 		T e{};
 
-		mtx.lock();
 		const unsigned long long itemNumber{ queue.size() };
 		if (0 < queue.size())
 		{
-			//ReadLock rl{ mtx };
+			ReadLock rl{ mtx };
 			e = queue[0];
 		}
-		mtx.unlock();
 
 		return e;
 	}
 
 	const unsigned long long size(void)
 	{
-		//ReadLock rl{ mtx };
 		return queue.size();
 	}
 
 	void clear()
 	{
-		//WriteLock wl{ mtx };
-		mtx.lock();
+		WriteLock wl{ mtx };
 		queue.clear();
-		mtx.unlock();
 	}
 
 private:

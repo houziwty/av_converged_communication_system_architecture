@@ -13,6 +13,7 @@ DvsHostMan::~DvsHostMan()
 
 int DvsHostMan::addDevice(
     const std::string uuid, 
+    const std::string devicename, 
     const std::string username, 
     const std::string userpwd, 
     const std::string ip, 
@@ -32,6 +33,9 @@ int DvsHostMan::addDevice(
         if (dvsinfo.dvs && -1 < (ret = dvsinfo.dvs->login(username, userpwd, ip, port)))
         {
             dvsinfo.userID = ret;
+            dvsinfo.uuid = uuid;
+            dvsinfo.name = devicename;
+            dvsinfo.ip = ip;
             dvsinfo.cameras = dvsinfo.dvs->cameras();
             dvss.replace(uuid, dvsinfo);
         }
@@ -58,6 +62,11 @@ int DvsHostMan::removeDevice(const std::string uuid)
     }
     
     return ret;
+}
+
+const std::vector<DeviceInfo> DvsHostMan::queryDeviceInfos()
+{
+    return std::move(dvss.values());
 }
 
 const CameraPtrs DvsHostMan::queryCameraPtrs(const std::string uuid)

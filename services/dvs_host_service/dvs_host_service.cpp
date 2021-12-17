@@ -147,7 +147,7 @@ void DvsHostService::processDvsControlMessage(Url& requestUrl)
 {
     const std::vector<ParamItem> parameters{requestUrl.getParameters()};
     const std::string host{requestUrl.getHost()};
-    std::string command, from, ip, port, user, passwd, id, error;
+    std::string command, from, ip, port, user, passwd, id, name;
 
     for(int i = 0; i != parameters.size(); ++i)
     {
@@ -179,16 +179,27 @@ void DvsHostService::processDvsControlMessage(Url& requestUrl)
         {
             id = parameters[i].value;
         }
-        else if (!parameters[i].key.compare("error"))
+        else if (!parameters[i].key.compare("name"))
         {
-            error = parameters[i].value;
+            name = parameters[i].value;
         }
     }
 
     if (!command.compare("query"))
     {
-        const std::string url{
-            (boost::format("dvs://%s?from=%s&command=query&dvs=1_192.168.2.225_1") % from % host).str()};
+        std::string url{
+            (boost::format("dvs://%s?from=%s&command=query") % from % host).str()};
+        const std::vector<DeviceInfo> infos{dvsHostMan.queryDeviceInfos()};
+        for (int i = 0; i != infos.size(); ++i)
+        {
+            std::string dvs{
+                (boost::format("&dvs=%s_%s_%d_%s") 
+                % infos[i].uuid.c_str() 
+                % infos[i].ip.c_str() 
+                % static_cast<int>(infos[i].cameras.size()) 
+                % infos[i].name.c_str()).str()};
+            url.append(dvs);
+        }
         LibXmqHostClient::send(url);
     }
     else if (!command.compare("add"))
@@ -197,6 +208,7 @@ void DvsHostService::processDvsControlMessage(Url& requestUrl)
         int ret{
             dvsHostMan.addDevice(
                 uuid, 
+                name, 
                 user, 
                 passwd, 
                 ip, 
@@ -205,18 +217,48 @@ void DvsHostService::processDvsControlMessage(Url& requestUrl)
 
         if (Error_Code_Success == ret)
         {
-            fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Add new device [ %s ] successed.", uuid.c_str());
+             fileLog.write(
+                SeverityLevel::SEVERITY_LEVEL_INFO, 
+                "Add new device successfully with uuid = [ %s ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ].", 
+                uuid.c_str(), name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str());
+
+            const CameraPtrs cameras{dvsHostMan.queryCameraPtrs(uuid)};
+            const std::string url{
+                (boost::format("dvs://%s?from=%s&command=add&error=%d&dvs=%s_%s_%d_%s") 
+                % from % host % ret % uuid % ip % static_cast<int>(cameras.size()) % name).str()};
+            LibXmqHostClient::send(url);
         }
         else
         {
             fileLog.write(
                 SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                "Add new device failed with uuid = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ], result = [ %d ].", 
-                uuid.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str(), ret);
+                "Add new device failed with uuid = [ %s ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ], result = [ %d ].", 
+                uuid.c_str(), name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str(), ret);
+
+            const std::string url{
+                (boost::format("dvs://%s?from=%s&command=add&error=%d") % from % host % ret).str()};
+            LibXmqHostClient::send(url);
         }
     }
     else if (!command.compare("remove"))
     {
-        /* code */
+        int ret{dvsHostMan.removeDevice(id)};
+        std::string url;
+
+        if (Error_Code_Success == ret)
+        {
+            fileLog.write(
+                SeverityLevel::SEVERITY_LEVEL_INFO, "Remove device successfully with uuid = [ %s ].", id.c_str());
+        }
+        else
+        {
+            fileLog.write(
+                SeverityLevel::SEVERITY_LEVEL_WARNING, 
+                "Remove device failed with uuid = [ %s ] result = [ %d ].", id.c_str(), ret);
+        }
+
+        url.append(
+            (boost::format("dvs://%s?from=%s&command=remove&error=%d&id=%s") % from % host % ret % id).str());
+        LibXmqHostClient::send(url);
     }
 }

@@ -26,7 +26,10 @@ namespace framework
                 ~XMemory(void);
 
             public:
-                void copy(void* src = nullptr, void* dest = nullptr, const unsigned long long bytes = 0);
+                void copy(
+                    const void* src = nullptr, 
+                    void* dest = nullptr, 
+                    const unsigned long long bytes = 0);
             };//class XMemory
         }//namespace memory
     }//namespace utils

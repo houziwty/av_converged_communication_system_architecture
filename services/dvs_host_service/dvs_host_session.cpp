@@ -11,9 +11,9 @@ using namespace framework::utils::time;
 
 DvsHostSession::DvsHostSession(
     SessionPtr ptr, 
-    DvsHostService& dhs,
+    DvsHostService& host,
     const std::string sid) 
-    : TcpSession(ptr), dvsHostService{dhs}, sessionId{sid}, totalSendBytes{0}, totalRecvBytes{0}
+    : TcpSession(ptr), dvsHostService{host}, sessionId{sid}, totalSendBytes{0}, totalRecvBytes{0}
 {}
 
 DvsHostSession::~DvsHostSession()

@@ -24,6 +24,9 @@ namespace framework
         typedef struct tagDeviceInfo_t
 		{
 			int userID;
+            std::string uuid;
+            std::string name;//设备名称
+            std::string ip;
 			DevicePtr dvs;
             CameraPtrs cameras;
 		}DeviceInfo;
@@ -44,6 +47,7 @@ namespace framework
         public:
             //添加
             //@uuid : 设备UUID
+            //@devicename [in] : 设备名称
 			//@username [in] : 用户名
 			//@userpwd [in] : 密码
 			//@ip [in] : IP地址
@@ -52,6 +56,7 @@ namespace framework
 			//@Return : 错误码
 			int addDevice(
                 const std::string uuid, 
+                const std::string devicename, 
 				const std::string username, 
 				const std::string userpwd, 
 				const std::string ip, 
@@ -62,6 +67,10 @@ namespace framework
 			//@uuid : 设备UUID
 			//@Return : 错误码
 			int removeDevice(const std::string uuid);
+
+            //获取设备信息
+			//@Return : 设备信息集合
+            const std::vector<DeviceInfo> queryDeviceInfos(void);
 
             //获取设备摄像机信息
             //@uuid : 设备UUID

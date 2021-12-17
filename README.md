@@ -1277,22 +1277,22 @@
    >>> ```query://dvs_host_service[?name=*[&name=*[&sequence=1]]]```
    
    ### 4.3.5 转发设备查询请求
-   >>> ```dvs://dvs_host_service?from=client_uuid&command=query[&sequence=1]```
+   >>> ```dvs://dvs_host_service?from=client_uuid&command=query```
    
    ### 4.3.6 转发设备查询应答
-   >>> ```dvs://client_uuid?from=dvs_host_service&command=query[&dvs=1_192.168.0.100_4[&dvs=*[&sequence=1]]]```
+   >>> ```dvs://client_uuid?from=dvs_host_service&command=query[&dvs=1_192.168.0.100_4_test[&dvs=*]]```
    
    ### 4.3.7 转发设备新增请求
-   >>> ```dvs://dvs_host_service?from=client_uuid&command=add&ip=192.168.0.100&port=8000&user=admin&passwd=Vrc123456[&sequence=1]```
+   >>> ```dvs://dvs_host_service?from=client_uuid&command=add&ip=192.168.0.100&port=8000&user=admin&passwd=Vrc123456&name=test```
    
    ### 4.3.8 转发设备新增应答
-   >>> ```dvs://client_uuid?from=dvs_host_service&command=add&error=0[&dvs=1_192.168.0.100_4[&sequence=1]]]```
+   >>> ```dvs://client_uuid?from=dvs_host_service&command=add&error=0[&dvs=1_192.168.0.100_4_test]```
    
    ### 4.3.9 转发设备删除请求
-   >>> ```dvs://dvs_host_service?from=client_uuid&command=remove&id=1[&sequence=1]```
+   >>> ```dvs://dvs_host_service?from=client_uuid&command=remove&id=1```
    
    ### 4.3.10 转发设备删除应答
-   >>> ```dvs://client_uuid?from=dvs_host_service&command=remove&error=0[&sequence=1]```
+   >>> ```dvs://client_uuid?from=dvs_host_service&command=remove&error=0&id=1```
 
    # 5. 开发计划
    # 6. 测试计划

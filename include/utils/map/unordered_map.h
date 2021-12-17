@@ -33,18 +33,15 @@ public:
 public:
 	void add(Key k, Value v)
 	{
-		//WriteLock wl{ mtx };
-		mtx.lock();
+		WriteLock wl{mtx};
 		items.insert(std::make_pair(k, v));
-		mtx.unlock();
 	}
 
 	void replace(Key k, Value v)
 	{
+		WriteLock wl{mtx};
 		typename boost::unordered_map<Key, Value>::iterator it{ items.find(k) };
 
-		//WriteLock wl{ mtx };
-		mtx.lock();
 		if (items.end() != it)
 		{
 			it->second = v;
@@ -53,56 +50,62 @@ public:
 		{
 			items.insert(std::make_pair(k, v));
 		}
-		mtx.unlock();
 	}
 
 	void remove(Key k)
 	{
+		WriteLock wl{mtx};
 		typename boost::unordered_map<Key, Value>::iterator it{ items.find(k) };
 
-		//WriteLock wl{ mtx };
-		mtx.lock();
 		if (items.end() != it)
 		{
 			items.erase(it);
 		}
-		mtx.unlock();
 	}
 
 	std::vector<Key> keies(void)
 	{
-		mtx.lock();
 		std::vector<Key> ret;
+		ReadLock rl{mtx};
 		typename boost::unordered_map<Key, Value>::iterator it{items.begin()};
 
-		//ReadLock rl{ mtx };
 		for (; items.end() != it; ++it)
 		{
 			ret.push_back(it->first);
 		}
-		mtx.unlock();
+		
+		return std::move(ret);
+	}
+
+	std::vector<Value> values(void)
+	{
+		std::vector<Value> ret;
+		ReadLock rl{mtx};
+		typename boost::unordered_map<Key, Value>::iterator it{items.begin()};
+
+		for (; items.end() != it; ++it)
+		{
+			ret.push_back(it->second);
+		}
 		
 		return std::move(ret);
 	}
 
 	void clear(void)
 	{
-		//WriteLock wl{ mtx };
 		items.clear();
 	}
 	
 	Value at(Key k)
 	{
-		mtx.lock();
 		Value ret{};
+		ReadLock rl{mtx};
 		typename boost::unordered_map<Key, Value>::const_iterator it{ items.find(k) };
 
-		//ReadLock rl{ mtx };
 		if (items.end() != it)
 		{
 			ret = it->second;
 		}
-		mtx.unlock();
 
 		return ret;
 	}
