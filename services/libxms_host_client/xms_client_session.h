@@ -16,11 +16,16 @@
 #include "libasio/tcp/tcp_session.h"
 using namespace module::network::asio;
 
+class LibXmsHostClient;
+
 class XmsClientSession final
     : public TcpSession
 {
 public:
-    XmsClientSession(SessionPtr ptr, const std::string sid);
+    XmsClientSession(
+        LibXmsHostClient& host, 
+        SessionPtr ptr, 
+        const std::string sid);
     ~XmsClientSession(void);
 
 protected:
@@ -33,6 +38,7 @@ protected:
         const int bytes = 0) override;
 
 private:
+    LibXmsHostClient& libXmsHostClient;
     const std::string sessionID;
 };//class XmsClientSession
 

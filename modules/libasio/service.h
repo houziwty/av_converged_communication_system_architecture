@@ -61,8 +61,9 @@ namespace module
 
 			private:
 				std::vector<boost::asio::io_context> ctxs;
-				std::vector<std::unique_ptr<boost::asio::io_context::work>> works;
-				std::vector<std::thread> threads;
+				//std::vector<boost::movelib::unique_ptr<boost::asio::io_context::work>> works;
+				std::vector<boost::asio::io_context::work*> works;
+				std::vector<boost::thread*> threads;
 				//轮询获取空闲上下文
 				int idle;
 			};//class Service

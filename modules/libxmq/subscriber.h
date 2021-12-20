@@ -25,7 +25,7 @@ namespace module
 			{
 			public:
 				//@callback [in] : 数据接收回调
-				Subscriber(PolledDataWithoutIDCallback callback = nullptr);
+				Subscriber(PolledDataWithoutIDCallback callback);
 				~Subscriber(void);
 
 			public:

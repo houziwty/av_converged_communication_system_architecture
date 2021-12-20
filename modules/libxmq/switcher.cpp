@@ -6,7 +6,7 @@
 #include "switcher.h"
 using namespace module::network::xmq;
 
-Switcher::Switcher(PolledDataWithIDCallback callback /*= nullptr*/) 
+Switcher::Switcher(PolledDataWithIDCallback callback) 
 	: ctx{nullptr}, router{nullptr}, handler{callback}
 {}
 

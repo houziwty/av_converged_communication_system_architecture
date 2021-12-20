@@ -6,7 +6,7 @@
 #include "worker.h"
 using namespace module::network::xmq;
 
-Worker::Worker(PolledDataWithoutIDCallback callback /*= nullptr*/) 
+Worker::Worker(PolledDataWithoutIDCallback callback) 
 	: ctx{nullptr}, dealer{nullptr}, handler{callback}
 {}
 

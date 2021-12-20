@@ -6,7 +6,7 @@
 #include "subscriber.h"
 using namespace module::network::xmq;
 
-Subscriber::Subscriber(PolledDataWithoutIDCallback callback /*= nullptr*/) 
+Subscriber::Subscriber(PolledDataWithoutIDCallback callback) 
 	: ctx{nullptr}, sub{nullptr}, handler{callback}
 {}
 

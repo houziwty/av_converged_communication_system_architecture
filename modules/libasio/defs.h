@@ -24,11 +24,12 @@
 #endif//WINDOWS
 
 #include <memory>
-#include <thread>
 #include <vector>
 #include "boost/asio.hpp"
 #include "boost/enable_shared_from_this.hpp"
 #include "boost/function.hpp"
+//#include "boost/move/unique_ptr.hpp"
+#include "boost/thread.hpp"
 
 namespace module
 {

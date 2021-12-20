@@ -29,19 +29,19 @@ class XMS_HOST_CLIENT_EXPORT LibXmsHostClient
 {
 public:
     LibXmsHostClient(void);
-    ~LibXmsHostClient(void);
+    virtual ~LibXmsHostClient(void);
 
 public:
     //启动
     //@Return : 错误码
-    int startXmsHostClient(void);
+    virtual int start(void);
 
     //停止
     //@Return : 错误码
-    int stopXmsHostClient(void);
+    virtual int stop(void);
 
     //连接
-    //@ip [in] : IP
+    //@ip [in] : IP地址
     //@port [in] : 端口号
     //@Return : 错误码
     //Comment : 异步连接
@@ -52,10 +52,42 @@ public:
     //@Return : 错误码
     int disconnect(const std::string sid);
 
+    //发送
+    //@sid [in] : 会话ID
+    //@data [in] : 数据
+    //@bytes [in] : 大小
+    //@Return : 错误码
+    int send(
+        const std::string sid, 
+        const void* data = nullptr, 
+        const int bytes = 0);
+
     //连接事件通知
     //@sid [out] : 会话ID
     //@e [out] : 错误码
-    virtual void fetchXmsHostClientConnectedNotification(const std::string sid, const int e = 0);
+    virtual void fetchXmsClientSessionConnectedNotification(
+        const std::string sid, 
+        const int e = 0) = 0;
+
+    //发送事件通知
+    //@sid [out] : 会话ID
+    //@e [out] : 错误码
+    //@bytes [out] : 大小
+    virtual void fetchXmsClientSessionSentDataEventNotification(
+        const std::string sid, 
+        const int e = 0, 
+        const int bytes = 0) = 0;
+
+    //接收事件通知
+    //@sid [out] : 会话ID
+    //@e [out] : 错误码
+    //@data [out] : 数据
+    //@bytes [out] : 大小
+    virtual void fetchXmsClientSessionReceivedDataEventNotification(
+        const std::string sid, 
+        const int e = 0, 
+        const void* data = nullptr, 
+        const int bytes = 0) = 0;
 };//class LibXmsHostClient
 
 #endif//LIB_XMS_HOST_CLIENT_H

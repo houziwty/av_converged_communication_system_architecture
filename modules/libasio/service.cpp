@@ -4,7 +4,10 @@
 using namespace module::network::asio;
 
 Service::Service() 
-	: idle{ 0 }, ctxs(std::max(static_cast<int>(std::thread::hardware_concurrency()), 1)), works(ctxs.size())
+	: idle{ 0 }, 
+	ctxs(std::max(static_cast<int>(std::thread::hardware_concurrency()), 1)), 
+	works{ ctxs.size() },
+	threads{ ctxs.size() }
 {}
 
 Service::~Service()
@@ -23,18 +26,22 @@ int Service::start()
 
 	for (int i = 0; i != cpuNumber; ++i)
 	{
-		std::unique_ptr<boost::asio::io_context::work> work{
-			new(std::nothrow) boost::asio::io_context::work(ctxs[i])};
+// 		boost::movelib::unique_ptr<boost::asio::io_context::work> work{
+// 			new(std::nothrow) boost::asio::io_context::work(ctxs[i])};
+		boost::asio::io_context::work* work{
+			new(std::nothrow) boost::asio::io_context::work(ctxs[i]) };
 
 		if(work)
 		{
-			works[i].swap(work);
+			//works[i].swap(work);
+			works[i] = work;
 		}
 	}
 
 	for (int j = 0; j != cpuNumber; ++j)
 	{
-		threads.emplace_back([&](){ctxs[j].run();});
+		//threads.emplace_back([&](){ctxs[j].run();});
+		threads.push_back(new(std::nothrow) boost::thread([&]() {ctxs[j].run(); }));
 	}        
 
 	return 0 < threads.size() ? Error_Code_Success : Error_Code_Operate_Failure;
@@ -44,12 +51,15 @@ int Service::stop()
 {
 	for (auto& work : works)
 	{
-		work.reset();
+		//work.reset();
+		boost::checked_delete(work);
 	}
 
 	for (auto& thread : threads)
 	{
-		thread.join();
+		//thread.join();
+		thread->join();
+		boost::checked_delete(thread);
 	}
 
 	return Error_Code_Success;

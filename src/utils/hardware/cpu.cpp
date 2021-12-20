@@ -6,11 +6,6 @@
 #include <sched.h>
 #include <pthread.h>
 #endif//WINDOWS
-#ifdef OS_WINDOWS
-#include "boost/winapi/system.hpp"
-#else
-#include <sys/sysinfo.h>
-#endif//OS_WINDOWS
 #include "utils/hardware/cpu.h"
 using namespace framework::utils::hardware;
 

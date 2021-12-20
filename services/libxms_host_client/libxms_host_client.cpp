@@ -20,18 +20,34 @@ LibXmsHostClient::LibXmsHostClient()
 
 LibXmsHostClient::~LibXmsHostClient()
 {
-    stopXmsHostClient();
+    stop();
 }
 
-int LibXmsHostClient::startXmsHostClient()
+int LibXmsHostClient::start()
 {
     return service.start();
 }
 
-int LibXmsHostClient::stopXmsHostClient()
+int LibXmsHostClient::stop()
 {
     sessions.clear();
     return service.stop();
+}
+
+int LibXmsHostClient::send(
+    const std::string sid, 
+    const void* data/* = nullptr*/, 
+    const int bytes/* = 0*/)
+{
+    int ret{!sid.empty() && !data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
+
+    if (Error_Code_Success == ret)
+    {
+        TcpSessionPtr ptr{sessions.at(sid)};
+        ret = (ptr ? ptr->send(data, bytes) : Error_Code_Object_Not_Exist);
+    }
+
+    return ret;
 }
 
 int LibXmsHostClient::connect(const std::string ip, const unsigned short port/* = 0*/)
@@ -42,16 +58,18 @@ int LibXmsHostClient::connect(const std::string ip, const unsigned short port/* 
     {
         ConnectorPtr ptr{
             boost::make_shared<Connector>(
-                [](SessionPtr session, const int e)
+                [&](SessionPtr session, const int e)
                 {
                     const std::string uuid{Uuid().createNew()};
                     TcpSessionPtr ptr{
-                        boost::make_shared<XmsClientSession>(session, uuid)};
+                        boost::make_shared<XmsClientSession>(*this, session, uuid)};
 
                     if(!uuid.empty() && ptr)
                     {
-                        sessions.insert(uuid, ptr);
-                        fetchXmsHostClientConnectedNotification(uuid, e);
+                        sessions.add(uuid, ptr);
+                        //开始读取
+                        ptr->receive();
+                        fetchXmsClientSessionConnectedNotification(uuid, e);
                     }
                 })};
 

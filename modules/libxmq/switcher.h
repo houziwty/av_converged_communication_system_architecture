@@ -25,7 +25,7 @@ namespace module
 			{
 			public:
 				//@callback [in] : 数据接收回调
-				Switcher(PolledDataWithIDCallback callback = nullptr);
+				Switcher(PolledDataWithIDCallback callback);
 				~Switcher(void);
 
 			public:

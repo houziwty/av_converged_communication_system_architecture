@@ -1,38 +1,28 @@
 #include "error_code.h"
-#include "dvs_host_client.h"
+#include "libxms_host_client.h"
+#include "xms_client_session.h"
 
-DvsHostClient::DvsHostClient() : WorkerModel()
+XmsClientSession::XmsClientSession(
+    LibXmsHostClient& host, 
+    SessionPtr ptr, 
+    const std::string sid) 
+    : TcpSession(ptr), libXmsHostClient{host}, sessionID{sid}
 {}
 
-DvsHostClient::~DvsHostClient()
+XmsClientSession::~XmsClientSession()
 {}
 
-int DvsHostClient::start(
-    const std::string appid, 
-    const std::string xmqid, 
-    const std::string ip,
-    const unsigned short port)
+void XmsClientSession::fetchSentDataEventNotification(
+    const int e/* = 0*/, 
+    const int bytes/* = 0*/)
 {
-    int ret{WorkerModel::start(appid, xmqid, ip, port)};
-    
-    if(Error_Code_Success == ret)
-    {
-        ret = service.start();
-    }
-
-    return ret;
+    libXmsHostClient.fetchXmsClientSessionSentDataEventNotification(sessionID, e, bytes);
 }
 
-int DvsHostClient::stop()
+void XmsClientSession::fetchReceivedDataEventNotification(
+    const int e/* = 0*/, 
+    const void* data/* = nullptr*/, 
+    const int bytes/* = 0*/)
 {
-    WorkerModel::stop();
-    service.stop();
-    return Error_Code_Success;
-}
-
-void DvsHostClient::afterWorkerPolledDataHandler(const std::string data)
-{
-    if (!data.empty())
-    {
-    }
+    libXmsHostClient.fetchXmsClientSessionReceivedDataEventNotification(sessionID, e, data, bytes);
 }

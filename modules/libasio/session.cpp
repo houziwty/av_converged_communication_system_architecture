@@ -17,7 +17,7 @@ int Session::createNew(
 	ReceivedDataEventCallback recved, 
 	const unsigned int bytes/* = 1048576*/)
 {
-	boost::checked_array_delete(buffer);
+	boost::checked_array_delete((const char*)buffer);
 	buffer = new(std::nothrow) unsigned char[bytes];
 	int ret{buffer ? Error_Code_Success : Error_Code_Bad_New_Memory};
 
@@ -53,7 +53,7 @@ int Session::send(
 			transferred = bytes - pos;
 			transferred = (transferred > 1048576 ? 1048576 : transferred);
 			so.async_write_some(
-				boost::asio::buffer(data + pos, transferred),
+				boost::asio::buffer((const char*)data + pos, transferred),
 				[&](boost::system::error_code e, std::size_t bytes_transferred)
 				{
 					if (sentDataEventCBFunc)
