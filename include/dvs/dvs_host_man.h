@@ -13,7 +13,7 @@
 #ifndef FRAMEWORK_DVS_HOST_MAN_H
 #define FRAMEWORK_DVS_HOST_MAN_H
 
-#include "libdvshost/dvs_host_creator.h"
+#include "dvs_host_creator.h"
 using namespace module::dvs;
 #include "utils/map/unordered_map.h"
 

@@ -13,7 +13,7 @@
 #ifndef MODULE_AV_STREAM_GRAPH_DEFS_H
 #define MODULE_AV_STREAM_GRAPH_DEFS_H
 
-#if defined(WINDOWS)
+#if defined(_WINDOWS)
 #ifdef USE_MODULE_AV_STREAM
 #define AV_STREAM_EXPORT __declspec(dllimport)
 #else
@@ -21,7 +21,7 @@
 #endif//USE_MODULE_AV_STREAM
 #elif defined(__linux__)
 #define AV_STREAM_EXPORT
-#endif//WINDOWS
+#endif//_WINDOWS
 
 #include <string>
 #include "boost/function.hpp"

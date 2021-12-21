@@ -13,7 +13,7 @@
 #ifndef LIB_XMS_HOST_CLIENT_H
 #define LIB_XMS_HOST_CLIENT_H
 
-#if defined(WINDOWS)
+#if defined(_WINDOWS)
 #ifdef USE_XMS_HOST_CLIENT
 #define XMS_HOST_CLIENT_EXPORT __declspec(dllimport)
 #else
@@ -21,7 +21,7 @@
 #endif//USE_XMS_HOST_CLIENT
 #elif defined(__linux__)
 #define XMS_HOST_CLIENT_EXPORT
-#endif//WINDOWS
+#endif//_WINDOWS
 
 #include <string>
 

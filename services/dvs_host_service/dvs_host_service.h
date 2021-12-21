@@ -14,14 +14,14 @@
 #define SERVICE_DVS_HOST_SERVICE_H
 
 #include "boost/shared_ptr.hpp"
-#include "liblog/log.h"
+#include "log.h"
 using namespace module::file::log;
 #include "utils/map/unordered_map.h"
-#include "libasio/tcp/tcp_server.h"
-#include "libasio/tcp/tcp_session.h"
+#include "tcp/tcp_server.h"
+#include "tcp/tcp_session.h"
 using namespace module::network::asio;
-#include "libxmq_host_client/libxmq_host_client.h"
-#include "libdvshost/dvs_host_creator.h"
+#include "libxmq_host_client.h"
+#include "dvs_host_creator.h"
 using namespace module::dvs;
 #include "dvs/dvs_host_man.h"
 using namespace framework::dvs;

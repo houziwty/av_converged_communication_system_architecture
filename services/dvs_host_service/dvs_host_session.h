@@ -13,10 +13,10 @@
 #ifndef SERVICE_DVS_HOST_SESSION_H
 #define SERVICE_DVS_HOST_SESSION_H
 
-#include "libasio/tcp/tcp_session.h"
+#include "tcp/tcp_session.h"
 using namespace module::network::asio;
 
-class DvsHostService;
+//class DvsHostService;
 
 class DvsHostSession final 
     : public TcpSession
@@ -24,7 +24,7 @@ class DvsHostSession final
 public:
     DvsHostSession(
         SessionPtr ptr, 
-        DvsHostService& host,
+//        DvsHostService& host,
         const std::string sid);
     ~DvsHostSession(void);
 
@@ -41,7 +41,7 @@ protected:
         const int bytes = 0) override;
 
 private:
-    DvsHostService& dvsHostService;
+//    DvsHostService& dvsHostService;
     const std::string sessionId;
     unsigned long long totalSendBytes;
     unsigned long long totalRecvBytes;

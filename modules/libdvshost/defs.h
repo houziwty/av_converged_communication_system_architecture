@@ -13,15 +13,15 @@
 #ifndef MODULE_DVS_HOST_DEFS_H
 #define MODULE_DVS_HOST_DEFS_H
 
-#if defined(WINDOWS)
+#if defined(_WINDOWS)
 #ifdef USE_MODULE_DVS_HOST
-#define DVS_HOST_EXPORT extern "C" __declspec(dllimport)
+#define DVS_HOST_EXPORT __declspec(dllimport)
 #else
-#define DVS_HOST_EXPORT extern "C" __declspec(dllexport)
+#define DVS_HOST_EXPORT __declspec(dllexport)
 #endif//USE_MODULE_DVS_HOST
 #elif defined(__linux__)
 #define DVS_HOST_EXPORT
-#endif//WINDOWS
+#endif//_WINDOWS
 
 #include <string>
 #include <vector>

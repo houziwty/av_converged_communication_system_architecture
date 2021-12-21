@@ -1,7 +1,5 @@
 #include "boost/bind/bind.hpp"
 using namespace boost::placeholders;
-#include "liblog/log.h"
-using namespace module::file::log;
 #include "error_code.h"
 #include "utils/thread/thread.h"
 #include "utils/thread/thread_pool.h"

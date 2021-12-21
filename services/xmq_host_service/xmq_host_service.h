@@ -13,7 +13,7 @@
 #ifndef XMQ_HOST_SERVICE_H
 #define XMQ_HOST_SERVICE_H
 
-#include "liblog/log.h"
+#include "log.h"
 using namespace module::file::log;
 #include "utils/map/unordered_map.h"
 #include "network/xmq/switcher_pub_model.h"

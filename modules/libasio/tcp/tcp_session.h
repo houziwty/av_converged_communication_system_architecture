@@ -13,7 +13,7 @@
 #ifndef MODULE_NETWORK_ASIO_TCP_SESSION_H
 #define MODULE_NETWORK_ASIO_TCP_SESSION_H
 
-#include "libasio/defs.h"
+#include "defs.h"
 
 namespace module
 {
@@ -21,7 +21,7 @@ namespace module
 	{
 		namespace asio
 		{
-			class NETWORK_ASIO_EXPORT TcpSession
+			class /*NETWORK_ASIO_EXPORT*/ TcpSession
 			{
 			public:
 				TcpSession(SessionPtr ptr);

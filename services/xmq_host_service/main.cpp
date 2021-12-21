@@ -1,6 +1,4 @@
 #include <iostream>
-#include "liblog/log.h"
-using namespace module::file::log;
 #include "error_code.h"
 #include "utils/commandline/commandline.h"
 using namespace framework::utils::parser;

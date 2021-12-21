@@ -13,7 +13,7 @@
 #ifndef MODULE_NETWORK_ASIO_HTTP_SESSION_H
 #define MODULE_NETWORK_ASIO_HTTP_SESSION_H
 
-#include "libasio/tcp/tcp_session.h"
+#include "tcp/tcp_session.h"
 
 namespace module
 {

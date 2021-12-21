@@ -13,8 +13,11 @@
 #ifndef MODULE_DVS_HOST_HIKVISION_DEVICE_H
 #define MODULE_DVS_HOST_HIKVISION_DEVICE_H
 
-#include "libdvshost/device.h"
+extern "C"
+{
 #include "HCNetSDK.h"
+}
+#include "device.h"
 
 namespace module
 {

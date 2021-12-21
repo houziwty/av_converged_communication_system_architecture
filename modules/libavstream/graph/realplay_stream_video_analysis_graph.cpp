@@ -1,11 +1,11 @@
 #include "boost/make_shared.hpp"
 #include "error_code.h"
-#include "libavstream/av_stream_pin.h"
-#include "libavstream/filter/decoder/av_stream_decoder_filter.h"
-#include "libavstream/filter/converter/av_stream_converter_filter.h"
-#include "libavstream/filter/analysis/av_stream_analysis_filter.h"
-#include "libavstream/filter/encoder/av_stream_encoder_filter.h"
-#include "libavstream/filter/callback/av_stream_callback_filter.h"
+#include "av_stream_pin.h"
+#include "filter/decoder/av_stream_decoder_filter.h"
+#include "filter/converter/av_stream_converter_filter.h"
+#include "filter/analysis/av_stream_analysis_filter.h"
+#include "filter/encoder/av_stream_encoder_filter.h"
+#include "filter/callback/av_stream_callback_filter.h"
 #include "realplay_stream_video_analysis_graph.h"
 using namespace module::avstream;
 

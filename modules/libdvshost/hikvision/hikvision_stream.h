@@ -14,7 +14,7 @@
 #define MODULE_DVS_HOST_HIKVISION_STREAM_H
 
 #include "HCNetSDK.h"
-#include "libdvshost/stream.h"
+#include "stream.h"
 
 namespace module
 {

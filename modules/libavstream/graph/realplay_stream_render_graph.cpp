@@ -1,8 +1,8 @@
 #include "boost/make_shared.hpp"
 #include "error_code.h"
-#include "libavstream/av_stream_pin.h"
-#include "libavstream/filter/decoder/av_stream_decoder_filter.h"
-#include "libavstream/filter/render/av_stream_render_filter.h"
+#include "av_stream_pin.h"
+#include "filter/decoder/av_stream_decoder_filter.h"
+#include "filter/render/av_stream_render_filter.h"
 #include "realplay_stream_render_graph.h"
 using namespace module::avstream;
 

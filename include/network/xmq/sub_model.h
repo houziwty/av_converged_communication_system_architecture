@@ -14,7 +14,7 @@
 #define FRAMEWORK_NETWORK_XMQ_SUB_MODEL_H
 
 #include "boost/shared_ptr.hpp"
-#include "libxmq/subscriber.h"
+#include "subscriber.h"
 using namespace module::network::xmq;
 using SubscriberPtr = boost::shared_ptr<Subscriber>;
 
