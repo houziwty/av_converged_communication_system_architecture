@@ -5,9 +5,8 @@ using namespace module::network::asio;
 
 Service::Service() 
 	: idle{ 0 }, 
-	ctxs(std::max(static_cast<int>(std::thread::hardware_concurrency()), 1)), 
-	works{ ctxs.size() },
-	threads{ ctxs.size() }
+	ctxs{ std::max(static_cast<int>(std::thread::hardware_concurrency()), 1) },
+	works{ ctxs.size() }, threads{ ctxs.size() }
 {}
 
 Service::~Service()
@@ -15,52 +14,56 @@ Service::~Service()
 	stop();
 }
 
-boost::asio::io_context& Service::ctx()
-{
-	return ctxs.at(idle++ % ctxs.size());
-}
-
 int Service::start()
 {
-	const int cpuNumber{static_cast<const int>(ctxs.size())};
+	const size_t number{ ctxs.size() };
 
-	for (int i = 0; i != cpuNumber; ++i)
+	for (int i = 0; i != number; ++i)
 	{
-// 		boost::movelib::unique_ptr<boost::asio::io_context::work> work{
-// 			new(std::nothrow) boost::asio::io_context::work(ctxs[i])};
-		boost::asio::io_context::work* work{
-			new(std::nothrow) boost::asio::io_context::work(ctxs[i]) };
+		ctxs[i] = new(std::nothrow) boost::asio::io_context();
 
-		if(work)
+		if (ctxs[i])
 		{
-			//works[i].swap(work);
-			works[i] = work;
+			works[i] = new(std::nothrow) boost::asio::io_context::work(*ctxs[i]);
+			boost::thread* thread{ new(std::nothrow) boost::thread([&]() {ctxs[i]->run(); }) };
+
+			if (thread)
+			{
+				threads.push_back(thread);
+			}
 		}
 	}
 
-	for (int j = 0; j != cpuNumber; ++j)
-	{
-		//threads.emplace_back([&](){ctxs[j].run();});
-		threads.push_back(new(std::nothrow) boost::thread([&]() {ctxs[j].run(); }));
-	}        
-
-	return 0 < threads.size() ? Error_Code_Success : Error_Code_Operate_Failure;
+	return 0 < threads.size() ? Error_Code_Success : Error_Code_Bad_New_Thread;
 }
 
 int Service::stop()
 {
-	for (auto& work : works)
+	for (auto& ctx : ctxs)
 	{
-		//work.reset();
-		boost::checked_delete(work);
+		ctx->stop();
+		boost::checked_delete(ctx);
 	}
 
 	for (auto& thread : threads)
 	{
-		//thread.join();
 		thread->join();
 		boost::checked_delete(thread);
 	}
 
+	for (auto& work : works)
+	{
+		boost::checked_delete(work);
+	}
+
+	ctxs.clear();
+	works.clear();
+	threads.clear();
+
 	return Error_Code_Success;
+}
+
+boost::asio::io_context* Service::ctx()
+{
+	return ctxs.at(idle++ % ctxs.size());
 }

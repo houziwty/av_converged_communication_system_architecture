@@ -1,9 +1,10 @@
 #include "boost/thread.hpp"
-#ifdef OS_WINDOWS
+#ifdef WINDOWS
+#include <windows.h>
 #include "boost/winapi/system.hpp"
 #else
 #include <pthread.h>
-#endif//OS_WINDOWS
+#endif//WINDOWS
 #include "error_code.h"
 #include "utils/thread/thread.h"
 using namespace framework::utils::thread;
@@ -22,11 +23,11 @@ int Thread::setAffinity(thread_t* t/* = nullptr*/, const int idx /* = 0 */)
 	{
 		boost::thread* thread{reinterpret_cast<boost::thread*>(t)};
 
-#ifdef OS_WINDOWS
+#ifdef WINDOWS
 		if(-1 < idx)
 		{
-			DWORD mask{0x01 << idx};
-			ret = (!SetThreadAffinityMask(thread->native_handle(), &mask) ? Error_Code_Operate_Failure : Error_Code_Success);
+			DWORD mask{static_cast<DWORD>(0x01 << idx)};
+			ret = (!SetThreadAffinityMask(thread->native_handle(), mask) ? Error_Code_Operate_Failure : Error_Code_Success);
 		}
 #else
 		cpu_set_t param;
@@ -36,7 +37,7 @@ int Thread::setAffinity(thread_t* t/* = nullptr*/, const int idx /* = 0 */)
 			CPU_SET(idx, &param);
 		}
 		ret = (!pthread_setaffinity_np(thread->native_handle(), sizeof(param), &param) ? Error_Code_Success : Error_Code_Operate_Failure);
-#endif//OS_WINDOWS
+#endif//WINDOWS
 	}
 
 	return ret;

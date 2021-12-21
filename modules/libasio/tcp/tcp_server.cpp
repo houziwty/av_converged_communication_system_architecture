@@ -25,7 +25,7 @@ int TcpServer::start(const unsigned short port /*= 0*/)
 		{
 			boost::shared_ptr<Acceptor> acceptor{
 				boost::make_shared<Acceptor>(
-					service.ctx(), 
+					*service.ctx(), 
 					[&](SessionPtr session, const int e)
 					{
 						fetchAcceptedEventNotification(session, e);
@@ -33,7 +33,7 @@ int TcpServer::start(const unsigned short port /*= 0*/)
 						//持续监听
 						if (!e && acceptor)
 						{
-							acceptor->listen(service.ctx());
+							acceptor->listen(*service.ctx());
 						}
 					}, 
 					port)};
@@ -42,7 +42,7 @@ int TcpServer::start(const unsigned short port /*= 0*/)
 			{
 				for(int i = 0; i != service.size(); ++i)
 				{
-					acceptor->listen(service.ctx());
+					acceptor->listen(*service.ctx());
 				}
 			}
 		}

@@ -23,7 +23,7 @@
 #define NETWORK_ASIO_EXPORT
 #endif//WINDOWS
 
-#include <memory>
+//#include <memory>
 #include <vector>
 #include "boost/asio.hpp"
 #include "boost/enable_shared_from_this.hpp"
@@ -46,12 +46,12 @@ namespace module
 			typedef boost::function<void(SessionPtr, const int)> RemoteConnectedEventCallback;
 
             //数据发送回调
-			//@_1 : socket错误码
+			//@_1 : 错误码
 			//@_2 : 发送字节数
 			typedef boost::function<void(const int, const int)> SentDataEventCallback;
 
 			//数据接收回调
-			//@_1 : socket错误码
+			//@_1 : 错误码
 			//@_2 : 数据
 			//@_3 : 接收字节数
 			typedef boost::function<void(const int, const void*, const int)> ReceivedDataEventCallback;

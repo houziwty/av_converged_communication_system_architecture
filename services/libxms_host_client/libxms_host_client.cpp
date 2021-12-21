@@ -75,7 +75,7 @@ int LibXmsHostClient::connect(const std::string ip, const unsigned short port/* 
 
         if (ptr)
         {
-            ret = ptr->connect(service.ctx(), ip.c_str(), port);
+            ret = ptr->connect(*service.ctx(), ip.c_str(), port);
         }   
     }
     

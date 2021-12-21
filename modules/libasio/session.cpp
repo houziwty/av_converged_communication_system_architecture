@@ -17,7 +17,7 @@ int Session::createNew(
 	ReceivedDataEventCallback recved, 
 	const unsigned int bytes/* = 1048576*/)
 {
-	boost::checked_array_delete((const char*)buffer);
+	boost::checked_array_delete(reinterpret_cast<char*>(buffer));
 	buffer = new(std::nothrow) unsigned char[bytes];
 	int ret{buffer ? Error_Code_Success : Error_Code_Bad_New_Memory};
 
@@ -34,7 +34,7 @@ int Session::createNew(
 int Session::destroy()
 {
 	so.close();
-	boost::checked_array_delete(buffer);
+	boost::checked_array_delete(reinterpret_cast<char*>(buffer));
 	return !so.is_open() && !buffer ? Error_Code_Success : Error_Code_Operate_Failure;
 }
 

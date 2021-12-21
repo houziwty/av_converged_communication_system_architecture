@@ -57,11 +57,13 @@ namespace module
 				
 				//获取上下文
 				//@Return : 上下文
-				boost::asio::io_context& ctx(void);
+				boost::asio::io_context* ctx(void);
 
 			private:
-				std::vector<boost::asio::io_context> ctxs;
-				//std::vector<boost::movelib::unique_ptr<boost::asio::io_context::work>> works;
+				//io_context是禁止拷贝构造的
+				//在Linux下可以编译，在Windows下编译失败
+				//为保证编译修改为指针
+				std::vector<boost::asio::io_context*> ctxs;
 				std::vector<boost::asio::io_context::work*> works;
 				std::vector<boost::thread*> threads;
 				//轮询获取空闲上下文

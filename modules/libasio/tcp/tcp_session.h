@@ -21,7 +21,7 @@ namespace module
 	{
 		namespace asio
 		{
-			class TcpSession
+			class NETWORK_ASIO_EXPORT TcpSession
 			{
 			public:
 				TcpSession(SessionPtr ptr);
