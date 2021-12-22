@@ -3,7 +3,7 @@
 #include "session.h"
 using namespace module::network::asio;
 
-Session::Session(boost::asio::io_context& ctx) 
+Session::Session(boost::asio::io_context& ctx)
 	: buffer{ nullptr }, bufBytes{0}, so{ctx}
 {}
 

@@ -1,6 +1,6 @@
 #include "error_code.h"
-#include "libdvshost/device.h"
-#include "libdvshost/stream.h"
+#include "device.h"
+#include "stream.h"
 using namespace module::dvs;
 #include "dvs/dvs_host_man.h"
 using namespace framework::dvs;

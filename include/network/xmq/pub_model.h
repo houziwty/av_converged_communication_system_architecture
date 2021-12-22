@@ -14,7 +14,7 @@
 #define FRAMEWORK_NETWORK_XMQ_PUB_MODEL_H
 
 #include "boost/shared_ptr.hpp"
-#include "libxmq/publisher.h"
+#include "publisher.h"
 using namespace module::network::xmq;
 using PublisherPtr = boost::shared_ptr<Publisher>;
 

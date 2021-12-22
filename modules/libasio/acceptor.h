@@ -13,7 +13,7 @@
 #ifndef MODULE_NETWORK_ASIO_ACCEPTOR_H
 #define MODULE_NETWORK_ASIO_ACCEPTOR_H
 
-#include "defs.h"
+#include "session.h"
 
 namespace module
 {
@@ -21,27 +21,34 @@ namespace module
 	{
 		namespace asio
 		{
+			using SessionPtr = boost::shared_ptr<Session>;
+
+			//监听事件回调
+			//@_1 : 会话
+			//@_2 : 错误码
+			typedef boost::function<void(SessionPtr, const int)> AcceptedRemoteConnectEventCallback;
+
 			class NETWORK_ASIO_EXPORT Acceptor 
 				: public boost::enable_shared_from_this<Acceptor>
 			{
 			public:
-				//@ctx [in] : io实例
+				//@ctx [in] : 上下文实例
 				//@port [in] : 端口号
 				Acceptor(
 					boost::asio::io_context& ctx, 
-					RemoteConnectedEventCallback callback, 
+					AcceptedRemoteConnectEventCallback callback,
 					const unsigned short port = 0);
 				~Acceptor(void);
 
 			public:
 				//监听
-				//@ctx [in] : io实例
+				//@ctx [in] : 上下文实例
 				//@Return : 错误码
 				int listen(boost::asio::io_context& ctx);
 
 			private:
 				boost::asio::ip::tcp::acceptor acceptor;
-				RemoteConnectedEventCallback remoteConnectedCBFunc;
+				AcceptedRemoteConnectEventCallback acceptedRemoteConnectCBFunc;
 			};//class Acceptor
 		}//namespace asio
 	}//namespace network

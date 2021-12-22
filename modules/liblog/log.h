@@ -15,7 +15,7 @@
 
 #include <string>
 
-#if defined(WINDOWS)
+#if defined(_WINDOWS)
 #ifdef USE_MODULE_FILE_LOG
 #define FILE_LOG_EXPORT __declspec(dllimport)
 #else
@@ -23,7 +23,7 @@
 #endif//USE_MODULE_FILE_LOG
 #elif defined(__linux__)
 #define FILE_LOG_EXPORT
-#endif//WINDOWS
+#endif//_WINDOWS
 
 namespace module
 {
@@ -59,7 +59,8 @@ namespace module
                 //@fmt : 格式
                 //@... : 参数列表
                 //@Return : 错误码
-                int write(const SeverityLevel severity, const std::string fmt, ...);
+                //@Comment : Windows下fmt不能使用std::string
+                int write(const SeverityLevel severity, const char* fmt, ...);
             };//class FileLog
         }//namespace log
     }//namespace file

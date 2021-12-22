@@ -16,18 +16,18 @@ int FileLog::createNew(const std::string path)
 
 	if (Error_Code_Success == ret)
 	{
-#ifdef WINDOWS
+#ifdef _WINDOWS
 		std::size_t pos{path.rfind('\\')};
 		const std::string dir{path.substr(0, pos) + "\\log"};
 #else
 		std::size_t pos{path.rfind('/')};
 		const std::string dir{path.substr(0, pos) + "/log"};
-#endif
+#endif//_WINDOWS
 		
-		FLAGS_stderrthreshold = google::INFO;
+		FLAGS_stderrthreshold = google::GLOG_INFO;
 		FLAGS_colorlogtostderr = 1;
 		google::InitGoogleLogging(path.c_str());
-		google::SetLogDestination(google::INFO, dir.c_str());
+		google::SetLogDestination(google::GLOG_INFO, dir.c_str());
 	}
 	
 	return ret;
@@ -39,12 +39,12 @@ int FileLog::destroy()
 	return Error_Code_Success;
 }
 
-int FileLog::write(const SeverityLevel severity, const std::string fmt, ...)
+int FileLog::write(const SeverityLevel severity, const char* fmt, ...)
 {
 	char text[4096]{0};
 	va_list list;
-	va_start(list, fmt.c_str());
-	vsnprintf(text, 4096, fmt.c_str(), list);
+	va_start(list, fmt);
+	vsnprintf(text, 4096, fmt, list);
 	va_end(list);
 
 	int ret{Error_Code_Success};

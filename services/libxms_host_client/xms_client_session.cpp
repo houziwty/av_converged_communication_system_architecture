@@ -4,9 +4,8 @@
 
 XmsClientSession::XmsClientSession(
     LibXmsHostClient& host, 
-    SessionPtr ptr, 
     const std::string sid) 
-    : TcpSession(ptr), libXmsHostClient{host}, sessionID{sid}
+    : TcpSession(), libXmsHostClient{host}, sessionId{sid}
 {}
 
 XmsClientSession::~XmsClientSession()
@@ -16,7 +15,7 @@ void XmsClientSession::fetchSentDataEventNotification(
     const int e/* = 0*/, 
     const int bytes/* = 0*/)
 {
-    libXmsHostClient.fetchXmsClientSessionSentDataEventNotification(sessionID, e, bytes);
+    libXmsHostClient.fetchXmsClientSessionSentDataEventNotification(sessionId, e, bytes);
 }
 
 void XmsClientSession::fetchReceivedDataEventNotification(
@@ -24,5 +23,5 @@ void XmsClientSession::fetchReceivedDataEventNotification(
     const void* data/* = nullptr*/, 
     const int bytes/* = 0*/)
 {
-    libXmsHostClient.fetchXmsClientSessionReceivedDataEventNotification(sessionID, e, data, bytes);
+    libXmsHostClient.fetchXmsClientSessionReceivedDataEventNotification(sessionId, e, data, bytes);
 }

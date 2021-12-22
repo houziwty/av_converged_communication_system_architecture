@@ -13,7 +13,8 @@
 #ifndef MODULE_NETWORK_ASIO_TCP_SERVER_H
 #define MODULE_NETWORK_ASIO_TCP_SERVER_H
 
-#include "libasio/service.h"
+#include "service.h"
+#include "session.h"
 
 namespace module
 {
@@ -21,6 +22,8 @@ namespace module
 	{
 		namespace asio
 		{
+			using SessionPtr = boost::shared_ptr<Session>;
+
 			class NETWORK_ASIO_EXPORT TcpServer
 			{
 			public:
@@ -39,9 +42,11 @@ namespace module
 
 			protected:
 				//监听事件通知
-				//@sessionPtr [in] : 会话
-				//@e [in] : socket错误码
-				virtual void fetchAcceptedEventNotification(SessionPtr sessionPtr, const int e = 0) = 0;
+				//@ptr [out] : 会话
+				//@e [out] : 错误码
+				virtual void fetchAcceptedEventNotification(
+					SessionPtr ptr,
+					const int e = 0) = 0;
 
 			private:
 				Service service;

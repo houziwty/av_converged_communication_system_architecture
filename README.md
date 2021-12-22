@@ -1304,7 +1304,7 @@
    ### 10.1.1 boost
    >>> + ./bootstrap.sh
 
-   >>> + ./b2 cxxflags=-fPIC cflags=-fPIC link=static threading=multi runtime-link=static
+   >>> + ./b2 cxxflags=-fPIC cflags=-fPIC address-model=64 link=static threading=multi runtime-link=static variant=debug|release
 
    >>> + ./b2 install
 

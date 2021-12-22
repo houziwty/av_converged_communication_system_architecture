@@ -13,7 +13,7 @@
 #ifndef MODULE_AV_REALPLAY_STREAM_RENDER_GRAPH_H
 #define MODULE_AV_REALPLAY_STREAM_RENDER_GRAPH_H
 
-#include "libavstream/av_stream_graph.h"
+#include "av_stream_graph.h"
 
 namespace module
 {

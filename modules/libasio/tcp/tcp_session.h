@@ -13,7 +13,7 @@
 #ifndef MODULE_NETWORK_ASIO_TCP_SESSION_H
 #define MODULE_NETWORK_ASIO_TCP_SESSION_H
 
-#include "libasio/defs.h"
+#include "session.h"
 
 namespace module
 {
@@ -21,17 +21,22 @@ namespace module
 	{
 		namespace asio
 		{
+			using SessionPtr = boost::shared_ptr<Session>;
+
 			class NETWORK_ASIO_EXPORT TcpSession
 			{
 			public:
-				TcpSession(SessionPtr ptr);
+				TcpSession(void);
 				virtual ~TcpSession(void);
 
 			public:
 				//创建
+				//@ptr [in] : 会话实例
 				//@bytes [in] : 缓存大小，默认1MB
 				//@Return : 错误码
-				virtual int createNew(const unsigned int bytes = 1048576);
+				virtual int createNew(
+					SessionPtr ptr, 
+					const unsigned int bytes = 1048576);
 
 				//销毁
 				//@Return : 错误码
@@ -51,14 +56,15 @@ namespace module
 
 			protected:
 				//发送事件通知
-				//@e [out] : socket错误码
+				//@e [out] : 错误码
 				//@bytes [out] : 大小
 				virtual void fetchSentDataEventNotification(
 					const int e = 0, 
 					const int bytes = 0) = 0;
 
 				//接收事件通知
-				//@e [out] : socket错误码
+				//@e [out] : 错误码
+				//@data [out] : 数据
 				//@bytes [out] : 大小
 				virtual void fetchReceivedDataEventNotification(
 					const int e = 0, 

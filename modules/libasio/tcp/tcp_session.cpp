@@ -1,15 +1,14 @@
 #include "error_code.h"
-#include "libasio/session.h"
 #include "tcp_session.h"
 using namespace module::network::asio;
 
-TcpSession::TcpSession(SessionPtr ptr) : sessionPtr{ptr}
+TcpSession::TcpSession()
 {}
 
 TcpSession::~TcpSession()
 {}
 
-int TcpSession::createNew(const unsigned int bytes/* = 1048576*/)
+int TcpSession::createNew(SessionPtr ptr, const unsigned int bytes/* = 1048576*/)
 {
     if (!sessionPtr)
     {
@@ -20,6 +19,7 @@ int TcpSession::createNew(const unsigned int bytes/* = 1048576*/)
 
     if (Error_Code_Success == ret)
     {
+        sessionPtr.swap(ptr);
         ret = sessionPtr->createNew(
             [&](const int e, const int bytes)
             {

@@ -1,9 +1,9 @@
 #include "boost/make_shared.hpp"
 #include "error_code.h"
-#include "libasio/service.h"
-#include "libasio/connector.h"
+#include "service.h"
+#include "connector.h"
 using namespace module::network::asio;
-#include "libasio/tcp/tcp_session.h"
+#include "tcp/tcp_session.h"
 #include "utils/uuid/uuid.h"
 using namespace framework::utils::uuid;
 #include "utils/map/unordered_map.h"
@@ -62,9 +62,9 @@ int LibXmsHostClient::connect(const std::string ip, const unsigned short port/* 
                 {
                     const std::string uuid{Uuid().createNew()};
                     TcpSessionPtr ptr{
-                        boost::make_shared<XmsClientSession>(*this, session, uuid)};
+                        boost::make_shared<XmsClientSession>(*this, uuid)};
 
-                    if(!uuid.empty() && ptr)
+                    if(!uuid.empty() && ptr && Error_Code_Success == ptr->createNew(session))
                     {
                         sessions.add(uuid, ptr);
                         //开始读取

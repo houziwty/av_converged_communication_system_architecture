@@ -14,8 +14,8 @@
 #define FRAMEWORK_NETWORK_XMQ_SWITCHER_PUB_MODEL_H
 
 #include "boost/shared_ptr.hpp"
-#include "libxmq/switcher.h"
-#include "libxmq/publisher.h"
+#include "switcher.h"
+#include "publisher.h"
 using namespace module::network::xmq;
 using SwitcherPtr = boost::shared_ptr<Switcher>;
 using PublisherPtr = boost::shared_ptr<Publisher>;

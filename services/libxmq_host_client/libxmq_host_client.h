@@ -13,7 +13,7 @@
 #ifndef SERVICE_LIB_XMQ_HOST_CLIENT_H
 #define SERVICE_LIB_XMQ_HOST_CLIENT_H
 
-#if defined(WINDOWS)
+#if defined(_WINDOWS)
 #ifdef USE_XMQ_HOST_CLIENT
 #define XMQ_HOST_CLIENT_EXPORT __declspec(dllimport)
 #else
@@ -21,7 +21,7 @@
 #endif//USE_DVS_HOST_CLIENT
 #elif defined(__linux__)
 #define XMQ_HOST_CLIENT_EXPORT
-#endif//WINDOWS
+#endif//_WINDOWS
 
 #include <string>
 #include <vector>

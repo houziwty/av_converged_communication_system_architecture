@@ -13,7 +13,7 @@
 #ifndef MODULE_AV_STREAM_CALLBACK_FILTER_H
 #define MODULE_AV_STREAM_CAPTURE_FILTER_H
 
-#include "libavstream/av_stream_filter.h"
+#include "av_stream_filter.h"
 
 namespace module
 {

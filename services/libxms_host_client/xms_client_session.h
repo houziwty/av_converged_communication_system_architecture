@@ -13,7 +13,7 @@
 #ifndef SERVICE_XMS_CLIENT_SESSION_H
 #define SERVICE_XMS_CLIENT_SESSION_H
 
-#include "libasio/tcp/tcp_session.h"
+#include "tcp/tcp_session.h"
 using namespace module::network::asio;
 
 class LibXmsHostClient;
@@ -24,7 +24,6 @@ class XmsClientSession final
 public:
     XmsClientSession(
         LibXmsHostClient& host, 
-        SessionPtr ptr, 
         const std::string sid);
     ~XmsClientSession(void);
 
@@ -39,7 +38,7 @@ protected:
 
 private:
     LibXmsHostClient& libXmsHostClient;
-    const std::string sessionID;
+    const std::string sessionId;
 };//class XmsClientSession
 
 #endif//SERVICE_XMS_CLIENT_SESSION_H

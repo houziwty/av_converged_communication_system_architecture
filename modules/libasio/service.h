@@ -62,7 +62,7 @@ namespace module
 			private:
 				//io_context是禁止拷贝构造的
 				//在Linux下可以编译，在Windows下编译失败
-				//为保证编译修改为指针
+				//为保证可移植编译修改为指针
 				std::vector<boost::asio::io_context*> ctxs;
 				std::vector<boost::asio::io_context::work*> works;
 				std::vector<boost::thread*> threads;

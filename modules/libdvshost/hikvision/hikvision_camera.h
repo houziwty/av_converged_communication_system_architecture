@@ -13,7 +13,7 @@
 #ifndef MODULE_DVS_HOST_HIKVISION_CAMERA_H
 #define MODULE_DVS_HOST_HIKVISION_CAMERA_H
 
-#include "libdvshost/camera.h"
+#include "camera.h"
 
 namespace module
 {

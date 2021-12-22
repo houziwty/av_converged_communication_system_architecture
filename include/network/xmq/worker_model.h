@@ -14,7 +14,7 @@
 #define FRAMEWORK_NETWORK_XMQ_WORKER_MODEL_H
 
 #include "boost/shared_ptr.hpp"
-#include "libxmq/worker.h"
+#include "worker.h"
 using namespace module::network::xmq;
 using WorkerPtr = boost::shared_ptr<Worker>;
 
