@@ -51,17 +51,31 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(
 		DVS_HOST_LINK_DIR 
 		${ROOT_DIR}/win32/modules/libdvshost/${CMAKE_BUILD_TYPE})
-	set(
-		LINK_LIBS 
-		${BOOST_LINK_DIR}/libboost_thread-vc142-mt-gd-x64-1_78.lib 
-		${BOOST_LINK_DIR}/libboost_chrono-vc142-mt-gd-x64-1_78.lib 
-		${BOOST_LINK_DIR}/libboost_program_options-vc142-mt-gd-x64-1_78.lib	
-		${BOOST_LINK_DIR}/libboost_serialization-vc142-mt-gd-x64-1_78.lib 		
-		${XMQ_LINK_DIR}/xmq.lib 
-		${LOG_LINK_DIR}/log.lib 
-		${ASIO_LINK_DIR}/asio.lib 
-		${XMQ_CLIENT_LINK_DIR}/xmq_host_client.lib 
-		${DVS_HOST_LINK_DIR}/dvshost.lib)
+	if(CMAKE_BUILD_TYPE MATCHES "Debug")
+		set(
+			LINK_LIBS 
+			${BOOST_LINK_DIR}/libboost_thread-vc142-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_chrono-vc142-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_program_options-vc142-mt-sgd-x64-1_78.lib	
+			${BOOST_LINK_DIR}/libboost_serialization-vc142-mt-sgd-x64-1_78.lib 		
+			${XMQ_LINK_DIR}/xmq.lib 
+			${LOG_LINK_DIR}/log.lib 
+			${ASIO_LINK_DIR}/asio.lib 
+			${XMQ_CLIENT_LINK_DIR}/xmq_host_client.lib 
+			${DVS_HOST_LINK_DIR}/dvshost.lib)
+	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
+		set(
+			LINK_LIBS 
+			${BOOST_LINK_DIR}/libboost_thread-vc142-mt-s-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_chrono-vc142-mt-s-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_program_options-vc142-mt-s-x64-1_78.lib	
+			${BOOST_LINK_DIR}/libboost_serialization-vc142-mt-s-x64-1_78.lib 		
+			${XMQ_LINK_DIR}/xmq.lib 
+			${LOG_LINK_DIR}/log.lib 
+			${ASIO_LINK_DIR}/asio.lib 
+			${XMQ_CLIENT_LINK_DIR}/xmq_host_client.lib 
+			${DVS_HOST_LINK_DIR}/dvshost.lib)
+	endif()
 	add_definitions(-DUSE_MODULE_FILE_LOG -DUSE_MODULE_NETWORK_XMQ -DUSE_MODULE_NETWORK_ASIO -DUSE_XMQ_HOST_CLIENT -DUSE_MODULE_DVS_HOST)
 endif()
 

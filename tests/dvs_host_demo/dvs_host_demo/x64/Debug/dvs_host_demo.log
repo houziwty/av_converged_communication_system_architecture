@@ -1,7 +1,0 @@
-﻿  pch.cpp
-  dvs_host_demo.cpp
-D:\av_converged_communication_system_architecture\services\libxmq_host_client\libxmq_host_client.h(1,1): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
-  dvs_host_demoDlg.cpp
-D:\av_converged_communication_system_architecture\services\libxmq_host_client\libxmq_host_client.h(1,1): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
-  Generating Code...
-  dvs_host_demo.vcxproj -> D:\av_converged_communication_system_architecture\tests\dvs_host_demo\Demo\x64\Debug\dvs_host_demo.exe

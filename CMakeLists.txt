@@ -16,6 +16,26 @@ message(STATUS "******   Project Version : ${PROJECT_NAME}_${BUILD_VERSION_STRIN
 message(STATUS "******   System Name : ${CMAKE_SYSTEM_NAME}")
 message(STATUS "******   Build Type : ${CMAKE_BUILD_TYPE}")
 
+if(MSVC)     
+  # Use the static C library for all build types
+  MESSAGE(STATUS "link to static  C and C++ runtime lirbary(/MT /MTd)")
+  foreach(var 
+        CMAKE_C_FLAGS_DEBUG_INIT 
+        CMAKE_C_FLAGS_RELEASE_INIT
+        CMAKE_C_FLAGS_MINSIZEREL_INIT 
+        CMAKE_C_FLAGS_RELWITHDEBINFO_INIT
+        CMAKE_CXX_FLAGS_DEBUG_INIT 
+        CMAKE_CXX_FLAGS_RELEASE_INIT
+        CMAKE_CXX_FLAGS_MINSIZEREL_INIT 
+        CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT
+    )
+    if(${var} MATCHES "/MD")
+      string(REGEX REPLACE "/MD" "/MT" ${var} "${${var}}")
+      MESSAGE(STATUS  "${var}:${${var}}")
+    endif()    
+  endforeach()    
+endif(MSVC)
+
 set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(3RDPART_DIR ${ROOT_DIR}/3rd)
 set(INCLUDE_DIR ${ROOT_DIR}/include)

@@ -28,13 +28,23 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(
 		LOG_LINK_DIR 
 		${ROOT_DIR}/win32/modules/liblog/${CMAKE_BUILD_TYPE})
-	set(
-		LINK_LIBS 
-		${BOOST_LINK_DIR}/libboost_thread-vc142-mt-s-x64-1_78.lib 
-		${BOOST_LINK_DIR}/libboost_chrono-vc142-mt-s-x64-1_78.lib 
-		${BOOST_LINK_DIR}/libboost_serialization-vc142-mt-s-x64-1_78.lib 
-		${XMQ_LINK_DIR}/xmq.lib 
-		${LOG_LINK_DIR}/log.lib)
+	if(CMAKE_BUILD_TYPE MATCHES "Debug")
+		set(
+			LINK_LIBS 
+			${BOOST_LINK_DIR}/libboost_thread-vc142-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_chrono-vc142-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_serialization-vc142-mt-sgd-x64-1_78.lib 
+			${XMQ_LINK_DIR}/xmq.lib 
+			${LOG_LINK_DIR}/log.lib)
+	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
+		set(
+			LINK_LIBS 
+			${BOOST_LINK_DIR}/libboost_thread-vc142-mt-s-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_chrono-vc142-mt-s-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_serialization-vc142-mt-s-x64-1_78.lib 
+			${XMQ_LINK_DIR}/xmq.lib 
+			${LOG_LINK_DIR}/log.lib)
+	endif()
 	add_definitions(-DUSE_MODULE_FILE_LOG -DUSE_MODULE_NETWORK_XMQ)
 endif()
 
