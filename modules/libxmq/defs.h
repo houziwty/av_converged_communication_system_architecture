@@ -13,12 +13,8 @@
 #ifndef MODULE_NETWORK_XMQ_DEFS_H
 #define MODULE_NETWORK_XMQ_DEFS_H
 
-#include <vector>
-#include <string>
-#include "boost/function.hpp"
-#include "boost/serialization/singleton.hpp"
-
 #if defined(_WINDOWS)
+#define CALLBACK __stdcall
 #ifdef USE_MODULE_NETWORK_XMQ
 #define NETWORK_XMQ_EXPORT __declspec(dllimport)
 #else
@@ -26,11 +22,22 @@
 #endif//USE_MODULE_NETWORK_XMQ
 #elif defined(__linux__)
 #define NETWORK_XMQ_EXPORT
+#define CALLBACK
 #endif//_WINDOWS
 
-typedef void ctx_t;
-typedef void socket_t;
-typedef boost::function<void(const std::string, const std::string)> PolledDataWithIDCallback;
-typedef boost::function<void(const std::string)> PolledDataWithoutIDCallback;
+typedef void* ctx_t;
+typedef void* socket_t;
+
+//数据回调函数
+//_1 [out] : 标识
+//_2 [out] : 大小
+//_3 [out] : 数据
+//_4 [out] : 大小
+typedef void (CALLBACK *PolledDataWithIDCallback)(const void*, const int, const void*, const int);
+
+//数据回调函数
+//_1 [out] : 标识
+//_2 [out] : 大小
+typedef void (CALLBACK *PolledDataWithoutIDCallback)(const void*, const int);
 
 #endif//MODULE_NETWORK_XMQ_DEFS_H

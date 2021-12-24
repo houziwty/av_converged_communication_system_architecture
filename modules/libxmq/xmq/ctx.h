@@ -21,8 +21,7 @@ namespace module
 	{
 		namespace xmq
 		{
-			class /*NETWORK_XMQ_EXPORT*/ Ctx 
-				: public boost::serialization::singleton<Ctx>
+			class NETWORK_XMQ_EXPORT Ctx
 			{
 			public:
 				Ctx(void);
@@ -31,11 +30,11 @@ namespace module
 			public:
 				//创建
 				//@Return : 上下文实例
-				void* createNew(void);
+				ctx_t createNew(void);
 
 				//销毁
 				//@c : 上下文实例
-				int destroy(void* c = nullptr);
+				int destroy(ctx_t c = nullptr);
 			};//class Ctx
 		}//namespace xmq
 	}//namespace network

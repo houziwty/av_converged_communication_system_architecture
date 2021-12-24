@@ -1,4 +1,3 @@
-#include "boost/checked_delete.hpp"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -18,9 +17,9 @@ Ctx::Ctx()
 Ctx::~Ctx()
 {}
 
-void* Ctx::createNew()
+ctx_t Ctx::createNew()
 {
-	void* c{zmq_ctx_new()};
+	ctx_t c{zmq_ctx_new()};
 
 	if (c)
 	{
@@ -31,7 +30,7 @@ void* Ctx::createNew()
 	return c;
 }
 
-int Ctx::destroy(void* c/* = nullptr*/)
+int Ctx::destroy(ctx_t c/* = nullptr*/)
 {
 	int ret{Error_Code_Invalid_Param};
 

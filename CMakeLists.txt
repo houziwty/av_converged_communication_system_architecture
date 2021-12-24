@@ -16,6 +16,13 @@ message(STATUS "******   Project Version : ${PROJECT_NAME}_${BUILD_VERSION_STRIN
 message(STATUS "******   System Name : ${CMAKE_SYSTEM_NAME}")
 message(STATUS "******   Build Type : ${CMAKE_BUILD_TYPE}")
 
+if(MSVC)
+    add_compile_options(
+        $<$<CONFIG:>:/MT> #---------|
+        $<$<CONFIG:Debug>:/MTd> #---|-- Statically link the runtime libraries
+        $<$<CONFIG:Release>:/MT> #--|
+		)
+endif()
 set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(3RDPART_DIR ${ROOT_DIR}/3rd)
 set(INCLUDE_DIR ${ROOT_DIR}/include)

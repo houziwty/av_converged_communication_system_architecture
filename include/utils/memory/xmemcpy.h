@@ -26,10 +26,28 @@ namespace framework
                 ~XMemory(void);
 
             public:
-                void copy(
+                //直接目标拷贝
+				//@src [in] : 源数据
+				//@src_bytes [in] : 大小
+                //@dest [in] : 目标数据
+                //@dest_bytes [in] : 大小
+				//@Return : 错误码
+				//@Comment : 1.数据深拷贝
+                //           2.如果src_bytes > dest_bytes，只拷贝dest_bytes大小的数据
+                int copy(
                     const void* src = nullptr, 
+                    const int src_bytes = 0, 
                     void* dest = nullptr, 
-                    const unsigned long long bytes = 0);
+                    const int dest_bytes = 0);
+
+                //新建目标拷贝
+				//@src [in] : 源数据
+				//@src_bytes [in] : 大小
+				//@Return : 目标数据
+				//@Comment : 1.目标数据大小为src_bytes大小
+                void* copyNew(
+                    const void* src = nullptr, 
+                    const int src_bytes = 0);
             };//class XMemory
         }//namespace memory
     }//namespace utils

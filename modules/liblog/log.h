@@ -13,8 +13,6 @@
 #ifndef MODULE_FILE_LOG_FILELOG_H
 #define MODULE_FILE_LOG_FILELOG_H
 
-#include <string>
-
 #if defined(_WINDOWS)
 #ifdef USE_MODULE_FILE_LOG
 #define FILE_LOG_EXPORT __declspec(dllimport)
@@ -48,7 +46,7 @@ namespace module
                 //创建
                 //@path [in] : 应用程序路径，通常为argv[0]
                 //@Return : 错误码
-                int createNew(const std::string path);
+                int createNew(const char* path = nullptr);
 
                 //销毁
                 //@Return : 错误码

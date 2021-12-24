@@ -26,8 +26,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	add_definitions(-DGLOG_NO_ABBREVIATED_SEVERITIES)
 endif()
 
-set(LIB_ROOT_DIR ${ROOT_DIR}/modules/liblog)
-include_directories(${INCLUDE_DIR} ${LIB_ROOT_DIR} ${GLOG_ROOT_DIR})
+include_directories(${INCLUDE_DIR} ${GLOG_ROOT_DIR})
 file(GLOB_RECURSE main "*.cpp")
 
 add_library(

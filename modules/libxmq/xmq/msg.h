@@ -21,8 +21,6 @@ namespace module
 	{
 		namespace xmq
 		{
-			typedef void socket_t;
-
 			class NETWORK_XMQ_EXPORT Msg
 			{
 			public:
@@ -30,28 +28,66 @@ namespace module
 				~Msg(void);
 
 			public:
-				//添加
+				//设置地址
 				//@data [in] : 数据
-				//@Comment : 无需线程安全
-				void pushBack(const std::string data);
+				//@bytes [in] : 大小
+				//@Return : 错误码
+				//@Comment : 数据深拷贝
+				int address(const void* data = nullptr, const int bytes = 0);
 
-				//移除并获取数据
-				//@Return : 数据
-				//@Comment : 无需线程安全
-				const std::string popFront(void);
+				//获取地址
+				//@Return : 地址
+				inline const void* address_data(void) const
+				{
+					return addressData;
+				}
+
+				//获取地址大小
+				//@Return : 地址大小
+				inline const int address_bytes(void) const
+				{
+					return addressBytes;
+				}
+
+				//设置内容
+				//@data [in] : 数据
+				//@bytes [in] : 大小
+				//@Return : 错误码
+				//@Comment : 数据深拷贝
+				int content(const void* data = nullptr, const int bytes = 0);
+
+				//获取内容
+				//@Return : 内容
+				inline const void* content_data(void) const
+				{
+					return contentData;
+				}
+
+				//获取内容大小
+				//@Return : 内容大小
+				inline const int content_bytes(void) const
+				{
+					return contentBytes;
+				}
+
+				//清除
+				void clear(void);
 
 				//接收
-				//@s : 接收对象
+				//@s : socket
 				//@Return : 错误码
-				int recv(void* s = nullptr);
+				int recv(socket_t s = nullptr);
 
 				//发送
-				//@s : 发送对象
+				//@s : socket
 				//@Return : 错误码
-				int send(void* s = nullptr);
+				int send(socket_t s = nullptr);
 
 			private:
-				std::vector<std::string> msgs;
+				void* addressData;
+				int addressBytes;
+				void* contentData;
+				int contentBytes;
 			};//class Msg
 		}//namespace xmq
 	}//namespace network

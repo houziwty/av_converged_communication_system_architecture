@@ -1,4 +1,4 @@
-#include <cstring>
+#include "boost/checked_delete.hpp"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -7,36 +7,59 @@ extern "C" {
 }
 #endif
 #include "error_code.h"
+#include "utils/memory/xstr.h"
+using namespace framework::utils::memory;
 #include "msg.h"
 using namespace module::network::xmq;
 
-Msg::Msg()
+Msg::Msg() 
+	: addressData{nullptr}, addressBytes{0}, contentData{nullptr}, contentBytes{0}
 {}
 
 Msg::~Msg()
 {
-	msgs.clear();
+	clear();
 }
 
-void Msg::pushBack(const std::string data)
+int Msg::address(const void* data/* = nullptr*/, const int bytes/* = 0*/)
 {
-	msgs.push_back(data);
-}
+	int ret{data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
 
-const std::string Msg::popFront()
-{
-	std::string data;
-
-	if (0 < msgs.size())
+	if (Error_Code_Success == ret)
 	{
-		data = msgs.front();
-		msgs.erase(msgs.begin());
+		ret = XStr().copy(
+			reinterpret_cast<const char*>(data), 
+			bytes, 
+			reinterpret_cast<char*>(addressData), 
+			bytes);
 	}
-
-	return std::move(data);
+	
+	return ret;
 }
 
-int Msg::recv(void* s /* = nullptr */)
+int Msg::content(const void* data/* = nullptr*/, const int bytes/* = 0*/)
+{
+	int ret{data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
+
+	if (Error_Code_Success == ret)
+	{
+		ret = XStr().copy(
+			reinterpret_cast<const char*>(data), 
+			bytes, 
+			reinterpret_cast<char*>(contentData), 
+			bytes);
+	}
+	
+	return ret;
+}
+
+void Msg::clear()
+{
+	boost::checked_array_delete(addressData);
+	boost::checked_array_delete(contentData);
+}
+
+int Msg::recv(socket_t s /* = nullptr */)
 {
 	int ret{ s ? Error_Code_Success : Error_Code_Invalid_Param };
 

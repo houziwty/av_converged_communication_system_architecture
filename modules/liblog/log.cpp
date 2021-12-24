@@ -1,4 +1,5 @@
 #include <cstdarg>
+#include <string>
 #include "glog/logging.h"
 #include "error_code.h"
 #include "log.h"
@@ -10,23 +11,24 @@ FileLog::FileLog()
 FileLog::~FileLog()
 {}
 
-int FileLog::createNew(const std::string path)
+int FileLog::createNew(const char* path /* = nullptr*/)
 {
-	int ret{!path.empty() ? Error_Code_Success : Error_Code_Invalid_Param};
+	int ret{path ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
+		const std::string pathname{ path };
 #ifdef _WINDOWS
-		std::size_t pos{path.rfind('\\')};
-		const std::string dir{path.substr(0, pos) + "\\log"};
+		std::size_t pos{pathname.rfind('\\')};
+		const std::string dir{pathname.substr(0, pos) + "\\log"};
 #else
-		std::size_t pos{path.rfind('/')};
-		const std::string dir{path.substr(0, pos) + "/log"};
+		std::size_t pos{pathname.rfind('/')};
+		const std::string dir{pathname.substr(0, pos) + "/log"};
 #endif//_WINDOWS
 		
 		FLAGS_stderrthreshold = google::GLOG_INFO;
 		FLAGS_colorlogtostderr = 1;
-		google::InitGoogleLogging(path.c_str());
+		google::InitGoogleLogging(path);
 		google::SetLogDestination(google::GLOG_INFO, dir.c_str());
 	}
 	

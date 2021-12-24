@@ -14,18 +14,21 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		ZMQ_ROOT_DIR 
 		${3RDPART_DIR}/libzmq-master)
 	set(
-		BOOST_ROOT_DIR 
-		${3RDPART_DIR}/boost_1_78_0)
+		ZMQ_INCLUDE_DIR 
+		${ZMQ_ROOT_DIR}/include)
 	set(
 		ZMQ_LINK_DIR 
 		${ZMQ_ROOT_DIR}/win32/lib/${CMAKE_BUILD_TYPE})
+	set(
+		BOOST_ROOT_DIR 
+		${3RDPART_DIR}/boost_1_78_0)
 	set(
 		BOOST_LINK_DIR 
 		${BOOST_ROOT_DIR}/stage/lib)
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
 			LINK_LIBS 
-			${ZMQ_LINK_DIR}/libzmq-v142-mt-gd-4_3_5.lib
+			${ZMQ_LINK_DIR}/libzmq-v142-mt-sgd-4_3_5.lib
 			${BOOST_LINK_DIR}/libboost_serialization-vc142-mt-sgd-x64-1_78.lib 
 			ws2_32.lib 
 			Iphlpapi.lib)
@@ -40,7 +43,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 endif()
 
 set(LIB_ROOT_DIR ${ROOT_DIR}/modules/libxmq)
-include_directories(${INCLUDE_DIR} ${LIB_ROOT_DIR} ${ZMQ_ROOT_DIR}/include ${BOOST_ROOT_DIR})
+include_directories(${INCLUDE_DIR} ${LIB_ROOT_DIR} ${ZMQ_INCLUDE_DIR} ${BOOST_ROOT_DIR})
 add_definitions(-DZMQ_STATIC)
 file(GLOB_RECURSE main "*.cpp")
 file(GLOB_RECURSE utils "${SOURCE_DIR}/utils/hardware/*.cpp")
