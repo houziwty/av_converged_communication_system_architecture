@@ -32,7 +32,7 @@ file(GLOB_RECURSE main "*.cpp")
 
 add_library(
 	${PROJECT_NAME} 
-	SHARED 
+	STATIC 
 	${main})
 target_link_libraries(
 	${PROJECT_NAME} 

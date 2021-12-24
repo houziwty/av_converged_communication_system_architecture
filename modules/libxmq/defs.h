@@ -13,8 +13,10 @@
 #ifndef MODULE_NETWORK_XMQ_DEFS_H
 #define MODULE_NETWORK_XMQ_DEFS_H
 
+#include <vector>
 #include <string>
 #include "boost/function.hpp"
+#include "boost/serialization/singleton.hpp"
 
 #if defined(_WINDOWS)
 #ifdef USE_MODULE_NETWORK_XMQ

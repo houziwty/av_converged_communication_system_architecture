@@ -13,7 +13,7 @@
 #ifndef MODULE_NETWORK_XMQ_CTX_H
 #define MODULE_NETWORK_XMQ_CTX_H
 
-#include "boost/serialization/singleton.hpp"
+#include "defs.h"
 
 namespace module
 {
@@ -21,7 +21,7 @@ namespace module
 	{
 		namespace xmq
 		{
-			class Ctx 
+			class /*NETWORK_XMQ_EXPORT*/ Ctx 
 				: public boost::serialization::singleton<Ctx>
 			{
 			public:

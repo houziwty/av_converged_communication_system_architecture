@@ -273,7 +273,7 @@ void CdvshostdemoDlg::OnBnClickedXmqConnect()
 
 	int ret{ LibXmqHostClient::registerXmqHostClient(name, ip, port) };
 
-	if (!ret)
+	if (ret)
 	{
 		CString text;
 		text.Format(L"registerXmqHostClient invoke failed = %d", ret);
@@ -288,7 +288,7 @@ void CdvshostdemoDlg::OnBnClickedXmqDisconnect()
 
 	int ret{ LibXmqHostClient::unregisterXmqHostClient() };
 
-	if (!ret)
+	if (ret)
 	{
 		CString text;
 		text.Format(L"unregisterXmqHostClient invoke failed = %d", ret);

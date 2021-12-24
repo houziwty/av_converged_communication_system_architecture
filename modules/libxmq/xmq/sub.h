@@ -13,7 +13,7 @@
 #ifndef MODULE_NETWORK_XMQ_SUB_H
 #define MODULE_NETWORK_XMQ_SUB_H
 
-#include <string>
+#include "defs.h"
 
 namespace module
 {
@@ -21,7 +21,7 @@ namespace module
 	{
 		namespace xmq
 		{
-			class Sub
+			class NETWORK_XMQ_EXPORT Sub
 			{
 			public:
 				Sub(void);

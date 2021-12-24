@@ -13,13 +13,15 @@
 #ifndef MODULE_NETWORK_XMQ_ROUTER_H
 #define MODULE_NETWORK_XMQ_ROUTER_H
 
+#include "defs.h"
+
 namespace module
 {
     namespace network
     {
 		namespace xmq
 		{
-			class Router
+			class NETWORK_XMQ_EXPORT Router
 			{
 			public:
 				Router(void);

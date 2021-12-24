@@ -4,7 +4,7 @@ project(xmq VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(
-		ZMQ_LINK_LIBS 
+		LINK_LIBS 
 		libzmq.a 
 		gnutls 
 		sodium 
@@ -25,7 +25,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
 			LINK_LIBS 
-			${ZMQ_LINK_DIR}/libzmq-v142-mt-sgd-4_3_5.lib
+			${ZMQ_LINK_DIR}/libzmq-v142-mt-gd-4_3_5.lib
 			${BOOST_LINK_DIR}/libboost_serialization-vc142-mt-sgd-x64-1_78.lib 
 			ws2_32.lib 
 			Iphlpapi.lib)

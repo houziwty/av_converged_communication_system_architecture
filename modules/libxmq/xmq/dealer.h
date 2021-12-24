@@ -13,7 +13,7 @@
 #ifndef MODULE_NETWORK_XMQ_DEALER_H
 #define MODULE_NETWORK_XMQ_DEALER_H
 
-#include <string>
+#include "defs.h"
 
 namespace module
 {
@@ -21,7 +21,7 @@ namespace module
     {
 		namespace xmq
 		{
-			class Dealer
+			class NETWORK_XMQ_EXPORT Dealer
 			{
 			public:
 				Dealer(void);

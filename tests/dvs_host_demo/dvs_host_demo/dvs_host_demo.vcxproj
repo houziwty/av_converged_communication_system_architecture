@@ -116,6 +116,7 @@
       <PreprocessorDefinitions>_WINDOWS;_DEBUG;USE_XMQ_HOST_CLIENT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>D:\av_converged_communication_system_architecture\services\libxmq_host_client;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -13,8 +13,7 @@
 #ifndef MODULE_NETWORK_XMQ_MSG_H
 #define MODULE_NETWORK_XMQ_MSG_H
 
-#include <vector>
-#include <string>
+#include "defs.h"
 
 namespace module
 {
@@ -24,7 +23,7 @@ namespace module
 		{
 			typedef void socket_t;
 
-			class Msg
+			class NETWORK_XMQ_EXPORT Msg
 			{
 			public:
 				Msg(void);

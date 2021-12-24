@@ -13,7 +13,7 @@
 #ifndef MODULE_NETWORK_XMQ_PUB_H
 #define MODULE_NETWORK_XMQ_PUB_H
 
-#include <string>
+#include "defs.h"
 
 namespace module
 {
@@ -21,7 +21,7 @@ namespace module
 	{
 		namespace xmq
 		{
-			class Pub
+			class NETWORK_XMQ_EXPORT Pub
 			{
 			public:
 				Pub(void);

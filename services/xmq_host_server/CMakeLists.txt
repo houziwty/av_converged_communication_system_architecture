@@ -9,7 +9,10 @@ set(
 	LOG_ROOT_DIR 
 	${ROOT_DIR}/modules/liblog)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-	link_directories(${XMQ_ROOT_DIR} ${LOG_ROOT_DIR})
+	set(
+		LINK_DIR 
+		${ROOT_DIR}/build/modules)
+	link_directories(${LINK_DIR}/libxmq ${LINK_DIR}/liblog)
 	set(
 		LINK_LIBS 
 		xmq 

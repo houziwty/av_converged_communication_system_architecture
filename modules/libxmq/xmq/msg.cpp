@@ -14,7 +14,9 @@ Msg::Msg()
 {}
 
 Msg::~Msg()
-{}
+{
+	msgs.clear();
+}
 
 void Msg::pushBack(const std::string data)
 {
@@ -72,13 +74,13 @@ int Msg::send(void* s /* = nullptr */)
 	if (Error_Code_Success == ret)
 	{
 		const size_t number{ msgs.size() };
+		zmq_msg_t msg;
 
 		for (int i = 0; i != number; ++i)
 		{
 			const int sndflag{i < number - 1 ? ZMQ_DONTWAIT | ZMQ_SNDMORE : ZMQ_DONTWAIT};
-			const std::string data{ msgs[i] };
+			const std::string& data{ msgs[i] };
 			const size_t len{ data.length() };
-			zmq_msg_t msg;
 
 			if (zmq_msg_init_size(&msg, len))
 			{
@@ -97,6 +99,8 @@ int Msg::send(void* s /* = nullptr */)
 				break;
 			}
 		}
+
+		zmq_msg_close(&msg);
 	}
 
 	return ret;
