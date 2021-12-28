@@ -33,15 +33,15 @@ namespace module
 				//@port [in] : 端口号
 				//@c [in] : XMQ上下文实例
 				//@Return : socket实例
-				void* connect(
+				socket_t connect(
 					const std::string ip,
 					const unsigned short port = 0,
-					void* c = nullptr);
+					ctx_t c = nullptr);
 
 				//关闭
 				//@s [in] : socket实例
 				//@Return : 错误码
-				int shutdown(void* s = nullptr);
+				int shutdown(socket_t s = nullptr);
 			};//class Sub
 		}//namespace xmq
 	}//namespace network

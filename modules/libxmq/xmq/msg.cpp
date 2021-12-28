@@ -1,3 +1,4 @@
+#include <cstring>
 #include "boost/checked_delete.hpp"
 #ifdef __cplusplus
 extern "C" {
@@ -12,51 +13,53 @@ using namespace framework::utils::memory;
 #include "msg.h"
 using namespace module::network::xmq;
 
-Msg::Msg() 
-	: addressData{nullptr}, addressBytes{0}, contentData{nullptr}, contentBytes{0}
-{}
+Msg::Msg() : counter{0}
+{
+	memset(msgs, 0, Max * sizeof(int));
+}
 
 Msg::~Msg()
 {
 	clear();
 }
 
-int Msg::address(const void* data/* = nullptr*/, const int bytes/* = 0*/)
+int Msg::append(const void* data/* = nullptr*/, const int bytes/* = 0*/)
 {
-	int ret{data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
+	int ret{counter < (Max / 2) ? Error_Code_Success : Error_Code_Operate_Out_Of_Range};
 
 	if (Error_Code_Success == ret)
 	{
-		ret = XStr().copy(
-			reinterpret_cast<const char*>(data), 
-			bytes, 
-			reinterpret_cast<char*>(addressData), 
-			bytes);
-	}
-	
-	return ret;
-}
+		if (data && 0 < bytes)
+		{
+			const char* buf{
+				XStr().copyNew(reinterpret_cast<const char*>(data), bytes)};
 
-int Msg::content(const void* data/* = nullptr*/, const int bytes/* = 0*/)
-{
-	int ret{data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
-
-	if (Error_Code_Success == ret)
-	{
-		ret = XStr().copy(
-			reinterpret_cast<const char*>(data), 
-			bytes, 
-			reinterpret_cast<char*>(contentData), 
-			bytes);
+			if (buf)
+			{
+				msgs[counter] = bytes;
+				msgs[counter + 1] = (int)buf;
+				++counter;
+			}
+			else
+			{
+				ret = Error_Code_Bad_New_Memory;
+			}
+		}
+		else
+		{
+			ret = Error_Code_Invalid_Param;
+		}
 	}
-	
+
 	return ret;
 }
 
 void Msg::clear()
 {
-	boost::checked_array_delete(addressData);
-	boost::checked_array_delete(contentData);
+	for (int i = 0; i != counter; ++i)
+	{
+		boost::checked_array_delete((void*)msgs[i + 1]);
+	}
 }
 
 int Msg::recv(socket_t s /* = nullptr */)
@@ -76,8 +79,8 @@ int Msg::recv(socket_t s /* = nullptr */)
 
 			if (-1 < zmq_msg_recv(&msg, s, ZMQ_DONTWAIT))
 			{
-				msgs.push_back(std::string(reinterpret_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg)));
-				if (!zmq_msg_more(&msg))
+				ret = append(reinterpret_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg));
+				if (!zmq_msg_more(&msg) || Error_Code_Success != ret)
 				{
 					break;
 				}
@@ -96,27 +99,24 @@ int Msg::send(void* s /* = nullptr */)
 
 	if (Error_Code_Success == ret)
 	{
-		const size_t number{ msgs.size() };
 		zmq_msg_t msg;
 
-		for (int i = 0; i != number; ++i)
+		for (int i = 0; i != counter; ++i)
 		{
-			const int sndflag{i < number - 1 ? ZMQ_DONTWAIT | ZMQ_SNDMORE : ZMQ_DONTWAIT};
-			const std::string& data{ msgs[i] };
-			const size_t len{ data.length() };
+			const int sndflag{i < counter - 1 ? ZMQ_DONTWAIT | ZMQ_SNDMORE : ZMQ_DONTWAIT};
 
-			if (zmq_msg_init_size(&msg, len))
+			if (zmq_msg_init_size(&msg, msgs[i]))
 			{
 				return Error_Code_Bad_New_Object;
 			}
 
-#ifdef WINDOWS
-			memcpy_s(zmq_msg_data(&msg), len, data.c_str(), len);
-#else
-			memcpy(zmq_msg_data(&msg), data.c_str(), len);
-#endif//WINDOWS
-
-			if (len != zmq_msg_send(&msg, s, sndflag))
+			XStr().copy(
+				(const char*)msgs[i + 1], 
+				msgs[i], 
+				reinterpret_cast<char*>(zmq_msg_data(&msg)), 
+				msgs[i]);
+				
+			if (msgs[i] != zmq_msg_send(&msg, s, sndflag))
 			{
 				ret = Error_Code_Bad_Operate_Send;
 				break;

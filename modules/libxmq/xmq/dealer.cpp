@@ -16,13 +16,13 @@ Dealer::Dealer()
 Dealer::~Dealer()
 {}
 
-void* Dealer::connect(
+socket_t Dealer::connect(
 	const std::string uid,
 	const std::string ip, 
 	const unsigned short port /* = 0 */,
-	void* c /* = nullptr */)
+	ctx_t c /* = nullptr */)
 {
-	void* s{nullptr};
+	socket_t s{nullptr};
 
 	if (c && !uid.empty() && !ip.empty() && 0 < port)
 	{
@@ -46,7 +46,7 @@ void* Dealer::connect(
 	return s;
 }
 
-int Dealer::shutdown(void* s /* = nullptr */)
+int Dealer::shutdown(socket_t s /* = nullptr */)
 {
 	int ret{s ? Error_Code_Success : Error_Code_Invalid_Param};
 

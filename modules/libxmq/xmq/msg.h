@@ -28,46 +28,25 @@ namespace module
 				~Msg(void);
 
 			public:
-				//设置地址
+				//添加
 				//@data [in] : 数据
 				//@bytes [in] : 大小
 				//@Return : 错误码
 				//@Comment : 数据深拷贝
-				int address(const void* data = nullptr, const int bytes = 0);
+				int append(const void* data = nullptr, const int bytes = 0);
 
-				//获取地址
-				//@Return : 地址
-				inline const void* address_data(void) const
+				//获取消息段数据
+				//@Return : 消息段数据
+				inline const void* msg(const unsigned char index = 0) const
 				{
-					return addressData;
+					return index < counter ? (void*)msgs[2 * index + 1] : nullptr;
 				}
 
-				//获取地址大小
-				//@Return : 地址大小
-				inline const int address_bytes(void) const
+				//获取消息段大小
+				//@Return : 消息段大小
+				inline const unsigned char msg_bytes(const unsigned char index = 0) const
 				{
-					return addressBytes;
-				}
-
-				//设置内容
-				//@data [in] : 数据
-				//@bytes [in] : 大小
-				//@Return : 错误码
-				//@Comment : 数据深拷贝
-				int content(const void* data = nullptr, const int bytes = 0);
-
-				//获取内容
-				//@Return : 内容
-				inline const void* content_data(void) const
-				{
-					return contentData;
-				}
-
-				//获取内容大小
-				//@Return : 内容大小
-				inline const int content_bytes(void) const
-				{
-					return contentBytes;
+					return index < counter ? msgs[2 * index] : 0;
 				}
 
 				//清除
@@ -84,10 +63,12 @@ namespace module
 				int send(socket_t s = nullptr);
 
 			private:
-				void* addressData;
-				int addressBytes;
-				void* contentData;
-				int contentBytes;
+				enum
+				{
+					Max = 128
+				};
+				int msgs[Max];
+				unsigned char counter;
 			};//class Msg
 		}//namespace xmq
 	}//namespace network

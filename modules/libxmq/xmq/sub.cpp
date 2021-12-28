@@ -16,12 +16,12 @@ Sub::Sub()
 Sub::~Sub()
 {}
 
-void* Sub::connect(
+socket_t Sub::connect(
 	const std::string ip, 
 	const unsigned short port /* = 0 */,
-	void* c /* = nullptr */)
+	ctx_t c /* = nullptr */)
 {
-	void* s{nullptr};
+	socket_t s{nullptr};
 
 	if (c && !ip.empty() && 0 < port)
 	{
@@ -42,7 +42,7 @@ void* Sub::connect(
 	return s;
 }
 
-int Sub::shutdown(void* s /* = nullptr */)
+int Sub::shutdown(socket_t s /* = nullptr */)
 {
 	int ret{s ? Error_Code_Success : Error_Code_Invalid_Param};
 

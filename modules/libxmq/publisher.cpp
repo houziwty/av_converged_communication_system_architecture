@@ -12,7 +12,7 @@ Publisher::Publisher() : ctx{nullptr}, pub{nullptr}
 Publisher::~Publisher()
 {
 	Pub().shutdown(pub);
-	Ctx().get_mutable_instance().destroy(ctx);
+	Ctx().destroy(ctx);
 }
 
 int Publisher::bind(
@@ -28,7 +28,7 @@ int Publisher::bind(
 
 	if (Error_Code_Success == ret)
 	{
-		ctx = Ctx().get_mutable_instance().createNew();
+		ctx = Ctx().createNew();
 
 		if(ctx)
 		{
@@ -36,7 +36,7 @@ int Publisher::bind(
 
 			if(!pub)
 			{
-				Ctx().get_mutable_instance().destroy(ctx);
+				Ctx().destroy(ctx);
 				ctx = nullptr;
 			}
 		}
@@ -45,7 +45,7 @@ int Publisher::bind(
 	return ctx && pub ? Error_Code_Success : Error_Code_Bad_Operate_Bind;
 }
 
-int Publisher::send(const std::string data)
+int Publisher::send(const void* data/* = nullptr*/, const int bytes/* = 0*/)
 {
 	int ret{ctx && pub ? Error_Code_Success : Error_Code_Operate_Failure};
 

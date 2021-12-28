@@ -33,15 +33,15 @@ namespace module
 				//@port [in] : 端口号
 				//@hwm [in] : 缓存大小
 				//@Return : socket实例
-				void* bind(
-					void* c = nullptr, 
+				socket_t bind(
+					ctx_t c = nullptr, 
 					const unsigned short port = 0,
 					const int hwm = 10);
 
 				//关闭
 				//@s [in] : socket实例
 				//@Return : 错误码
-				int shutdown(void* s = nullptr);
+				int shutdown(socket_t s = nullptr);
 			};//class Pub
 		}//namespace xmq
 	}//namespace network

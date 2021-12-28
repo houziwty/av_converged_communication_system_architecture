@@ -16,12 +16,12 @@ Pub::Pub()
 Pub::~Pub()
 {}
 
-void* Pub::bind(
-	void* c /* = nullptr */, 
+socket_t Pub::bind(
+	ctx_t c /* = nullptr */, 
 	const unsigned short port /*= 0*/,
 	const int hwm /*= -1*/)
 {
-	void* s{nullptr};
+	socket_t s{nullptr};
 
 	if (c && 0 < port)
 	{
@@ -43,7 +43,7 @@ void* Pub::bind(
 	return s;
 }
 
-int Pub::shutdown(void* s /* = nullptr */)
+int Pub::shutdown(socket_t s /* = nullptr */)
 {
 	int ret{s ? Error_Code_Success : Error_Code_Invalid_Param};
 

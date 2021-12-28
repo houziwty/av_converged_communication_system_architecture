@@ -32,14 +32,14 @@ namespace module
 				//@c [in] : XMQ上下文实例
 				//@port [in] : 端口号
 				//@Return : socket实例
-				void* bind(
-					void* c = nullptr, 
+				socket_t bind(
+					ctx_t c = nullptr, 
 					const unsigned short port = 0);
 
 				//关闭
 				//@s [in] : socket实例
 				//@Return : 错误码
-				int shutdown(void* s = nullptr);
+				int shutdown(socket_t s = nullptr);
 			};//class Router
 		}//namespace xmq
     }//namespace network

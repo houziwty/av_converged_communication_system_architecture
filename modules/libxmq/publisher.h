@@ -38,12 +38,13 @@ namespace module
 
 				//发送
 				//@data [in] : 数据
+				//@bytes [in] : 大小
 				//@Return : 错误码
-				int send(const std::string data);
+				int send(const void* data = nullptr, const int bytes = 0);
 
 			private:
-				ctx_t* ctx;
-				socket_t* pub;
+				ctx_t ctx;
+				socket_t pub;
 			};//class Publisher
 		}//namespace xmq
 	}//namespace network
