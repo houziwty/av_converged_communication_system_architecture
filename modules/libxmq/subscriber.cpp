@@ -13,11 +13,11 @@ Subscriber::Subscriber(PolledDataWithoutIDCallback callback)
 Subscriber::~Subscriber()
 {
 	Sub().shutdown(sub);
-	Ctx().get_mutable_instance().destroy(ctx);
+	Ctx().destroy(ctx);
 }
 
 int Subscriber::connect(
-	const std::string ip, 
+	const char* ip/* = nullptr*/, 
 	const unsigned short port /* = 0 */,
 	const int hwm /* = 10 */)
 {
@@ -26,11 +26,11 @@ int Subscriber::connect(
 		return Error_Code_Object_Existed;
 	}
 
-	int ret{!ip.empty() && 0 < port ? Error_Code_Success : Error_Code_Invalid_Param};
+	int ret{ip && 0 < port ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
-		ctx = Ctx().get_mutable_instance().createNew();
+		ctx = Ctx().createNew();
 
 		if(ctx)
 		{
@@ -38,7 +38,7 @@ int Subscriber::connect(
 
 			if(!sub)
 			{
-				Ctx().get_mutable_instance().destroy(ctx);
+				Ctx().destroy(ctx);
 				ctx = nullptr;
 			}
 		}
@@ -64,7 +64,8 @@ int Subscriber::poll()
 			{
 				if (handler)
 				{
-					handler(msg.popFront());
+					//只读第一段数据
+					handler(msg.msg(), msg.msg_bytes());
 				}
 			}
 		}

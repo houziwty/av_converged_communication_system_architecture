@@ -16,13 +16,13 @@
 #include "log.h"
 using namespace module::file::log;
 #include "utils/map/unordered_map.h"
-#include "network/xmq/switcher_pub_model.h"
+#include "network/xmq/switcher_pub_mode.h"
 using namespace framework::network::xmq;
 #include "utils/url/url.h"
 using namespace framework::utils::url;
 
 class XmqHostServer final 
-	: public SwitcherPubModel
+	: public SwitcherPubMode
 {
 public:
 	XmqHostServer(const std::string name, FileLog& log);
@@ -36,10 +36,11 @@ public:
 	int stop(void) override;
 
 protected:
-	//交换模型数据接收回调函数
-	//@name [out] : 服务标识
-	//@data [out] : 数据
-	void afterSwitcherPolledDataHandler(const std::string name, const std::string data) override;
+	void afterSwitcherPolledDataHandler(
+		const void* uid = nullptr, 
+		const int uid_bytes = 0, 
+		const void* data = nullptr, 
+		const int data_bytes = 0) override;
 
 private:
 	//服务注册超时检测线程

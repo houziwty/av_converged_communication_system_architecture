@@ -13,7 +13,7 @@ Switcher::Switcher(PolledDataWithIDCallback callback)
 Switcher::~Switcher()
 {
 	Router().shutdown(router);
-	Ctx().get_mutable_instance().destroy(ctx);
+	Ctx().destroy(ctx);
 }
 
 int Switcher::bind(const unsigned short port /* = 0 */)
@@ -27,7 +27,7 @@ int Switcher::bind(const unsigned short port /* = 0 */)
 
 	if (Error_Code_Success == ret)
 	{
-		ctx = Ctx().get_mutable_instance().createNew();
+		ctx = Ctx().createNew();
 
 		if(ctx)
 		{
@@ -35,7 +35,7 @@ int Switcher::bind(const unsigned short port /* = 0 */)
 
 			if(!router)
 			{
-				Ctx().get_mutable_instance().destroy(ctx);
+				Ctx().destroy(ctx);
 				ctx = nullptr;
 			}
 		}
@@ -45,22 +45,23 @@ int Switcher::bind(const unsigned short port /* = 0 */)
 }
 
 int Switcher::send(
-	const std::string uid, 
-	const std::string data)
+	const void* uid/* = nullptr*/, 
+	const int uid_bytes/* = 0*/, 
+	const void* data/* = nullptr*/, 
+	const int data_bytes/* = 0*/)
 {
 	int ret{ctx && router ? Error_Code_Success : Error_Code_Operate_Failure};
 
 	if(Error_Code_Success == ret)
 	{
-		ret = (!uid.empty() && !data.empty() ? Error_Code_Success : Error_Code_Invalid_Param);
+		ret = (uid && 0 < uid_bytes && data && 0 < data_bytes ? Error_Code_Success : Error_Code_Invalid_Param);
 
 		if(Error_Code_Success == ret)
 		{
 			Msg msg;
-			msg.pushBack(uid);
-			msg.pushBack("");
-			msg.pushBack(data);
-
+			msg.append(uid, uid_bytes);
+			msg.append("", 0);
+			msg.append(data, data_bytes);
 			ret = msg.send(router);
 		}
 	}
@@ -83,13 +84,15 @@ int Switcher::poll()
 			ret = msg.recv(router);
 			if (Error_Code_Success == ret)
 			{
-				const std::string uid{msg.popFront()};
-				msg.popFront();
-				const std::string data{msg.popFront()};
+				//只读第一和第三段数据
+				const void* uid{msg.msg()};
+				const int uid_bytes{msg.msg_bytes()};
+				const void* data{msg.msg(2)};
+				const int data_bytes{msg.msg_bytes(2)};
 				
 				if (handler)
 				{
-					handler(uid, data);
+					handler(uid, uid_bytes, data, data_bytes);
 				}
 			}
 		}

@@ -35,7 +35,7 @@ namespace module
 				//@hwm [in] : 缓存大小
 				//@Return : 错误码
 				int connect(
-					const std::string ip, 
+					const char* ip = nullptr, 
 					const unsigned short port = 0,
 					const int hwm = 10);
 
@@ -44,8 +44,8 @@ namespace module
 				int poll(void);
 
 			private:
-				ctx_t* ctx;
-				socket_t* sub;
+				ctx_t ctx;
+				socket_t sub;
 				PolledDataWithoutIDCallback handler;
 			};//class Subscriber
 		}//namespace xmq

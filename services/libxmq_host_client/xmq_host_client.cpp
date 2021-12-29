@@ -9,18 +9,19 @@ using namespace framework::utils::time;
 #include "xmq_host_client.h"
 
 XmqHostClient::XmqHostClient(LibXmqHostClient& client) 
-    : WorkerModel(), libXmqHostClient{client}, registerResponseTimetamp{0}, thread{nullptr}
+    : WorkerMode(), libXmqHostClient{client}, registerResponseTimetamp{0}, thread{nullptr}
 {}
 
 XmqHostClient::~XmqHostClient()
 {}
 
 int XmqHostClient::start(
-    const std::string name, 
-    const std::string ip, 
-    const unsigned short port/* = 0*/)
+    const void* name/* = nullptr*/, 
+	const int bytes/* = 0*/,  
+	const char* ip/* = nullptr*/, 
+	const unsigned short port/* = 0*/)
 {
-    int ret{WorkerModel::start(name, ip, port)};
+    int ret{WorkerMode::start(name, bytes, ip, port)};
 
     if (Error_Code_Success == ret)
     {
@@ -33,7 +34,7 @@ int XmqHostClient::start(
 
 int XmqHostClient::stop()
 {
-    int ret{WorkerModel::stop()};
+    int ret{WorkerMode::stop()};
 
     if (Error_Code_Success == ret && stopped)
     {
@@ -44,24 +45,28 @@ int XmqHostClient::stop()
     return ret;
 }
 
-void XmqHostClient::afterWorkerPolledDataHandler(const std::string data)
+void XmqHostClient::afterWorkerPolledDataHandler(const void* data/* = nullptr*/, const int bytes/* = 0*/)
 {
-    Url url;
-
-    if (Error_Code_Success == url.parse(data))
+    if (data && 0 < bytes)
     {
-        const std::string protocol{url.getProtocol()};
-        if (!protocol.compare("register"))
+        const std::string msg{(const char*)data, bytes};
+        Url url;
+
+        if (Error_Code_Success == url.parse(msg))
         {
-            processRegisterResponseMessage(url);
-        }
-        else if (!protocol.compare("query"))
-        {
-            processQueryResponseMessage(url);
-        }
-        else
-        {
-            libXmqHostClient.fetchXmqHostClientReceivedDataNotification(data);
+            const std::string protocol{url.getProtocol()};
+            if (!protocol.compare("register"))
+            {
+                processRegisterResponseMessage(url);
+            }
+            else if (!protocol.compare("query"))
+            {
+                processQueryResponseMessage(url);
+            }
+            else
+            {
+                libXmqHostClient.fetchXmqHostClientReceivedDataNotification(data);
+            }
         }
     }
 }
@@ -121,7 +126,8 @@ void XmqHostClient::processTaskOnTimerThread()
 
         if (30000 < currentTickcount - lastTickcount && !xmqHostServiceName.empty())
         {
-            WorkerModel::send((boost::format("query://%s") % xmqHostServiceName).str());
+            const std::string msg{(boost::format("query://%s") % xmqHostServiceName).str()};
+            WorkerMode::send(msg.c_str(), msg.length());
             lastTickcount = currentTickcount;
         }
 

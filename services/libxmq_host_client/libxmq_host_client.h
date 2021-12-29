@@ -23,9 +23,6 @@
 #define XMQ_HOST_CLIENT_EXPORT
 #endif//_WINDOWS
 
-#include <string>
-#include <vector>
-
 class XMQ_HOST_CLIENT_EXPORT LibXmqHostClient
 {
 public:
@@ -35,13 +32,15 @@ public:
 public:
     //注册
     //@name [in] : 服务名称
+    //@bytes [in] : 大小
     //@ip [in] : IP地址
     //@port [in] : 端口号
     //@Return : 错误码
     //@Comment : 服务名称指调用者自定义的名称，建议使用UUID
     int registerXmqHostClient(
-        const std::string name, 
-        const std::string ip, 
+        const void* name = nullptr, 
+        const int bytes = 0,  
+        const char* ip = nullptr, 
         const unsigned short port = 0);
 
     //注销
@@ -50,8 +49,9 @@ public:
 
     //发送
     //@data [in] : 数据
+    //@bytes [in] : 大小
     //@Return : 错误码
-    int send(const std::string data);
+    int send(const void* data = nullptr, const int bytes = 0);
 
     //客户端在/离线状态通知
     //@online [out] : true表示在线，false表示离线
@@ -63,7 +63,8 @@ public:
 
     //数据接收通知
     //@data [out] : 数据
-    virtual void fetchXmqHostClientReceivedDataNotification(const std::string data) = 0;
+    //@bytes [out] : 大小
+    virtual void fetchXmqHostClientReceivedDataNotification(const void* data = nullptr, const int bytes = 0) = 0;
 };//class LibXmqHostClient
 
 #endif//SERVICE_LIB_XMQ_HOST_CLIENT_H

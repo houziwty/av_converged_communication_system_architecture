@@ -13,7 +13,7 @@
 #ifndef SERVICE_XMQ_HOST_CLIENT_H
 #define SERVICE_XMQ_HOST_CLIENT_H
 
-#include "network/xmq/worker_model.h"
+#include "network/xmq/worker_mode.h"
 using namespace framework::network::xmq;
 #include "utils/url/url.h"
 using namespace framework::utils::url;
@@ -21,7 +21,7 @@ using namespace framework::utils::url;
 class LibXmqHostClient;
 
 class XmqHostClient final 
-    : public WorkerModel
+    : public WorkerMode
 {
 public:
     XmqHostClient(LibXmqHostClient& client);
@@ -29,13 +29,14 @@ public:
 
 public:
     int start(
-        const std::string name, 
-        const std::string ip, 
+        const void* name = nullptr, 
+        const int bytes = 0,  
+        const char* ip = nullptr, 
         const unsigned short port = 0) override;
     int stop() override;
 
 protected:
-	void afterWorkerPolledDataHandler(const std::string data) override;
+	void afterWorkerPolledDataHandler(const void* data = nullptr, const int bytes = 0) override;
 
 private:
     //定时任务执行线程

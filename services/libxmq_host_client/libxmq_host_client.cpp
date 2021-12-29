@@ -15,8 +15,9 @@ LibXmqHostClient::~LibXmqHostClient()
 }
 
 int LibXmqHostClient::registerXmqHostClient(
-    const std::string name, 
-    const std::string ip, 
+    const void* name/* = nullptr*/, 
+    const int bytes/* = 0*/, 
+    const char* ip/* = nullptr*/, 
     const unsigned short port/* = 0*/)
 {
     if (xmqHostClientPtr)
@@ -24,13 +25,13 @@ int LibXmqHostClient::registerXmqHostClient(
         return Error_Code_Object_Existed;
     }
 
-    int ret{!name.empty() && !ip.empty() && 0 < port ? Error_Code_Success : Error_Code_Invalid_Param};
+    int ret{name && 0 < bytes && ip && 0 < port ? Error_Code_Success : Error_Code_Invalid_Param};
 
     if (Error_Code_Success == ret)
     {
         XmqHostClientPtr ptr{boost::make_shared<XmqHostClient>(*this)};
         
-        if (ptr && Error_Code_Success == ptr->start(name, ip, port))
+        if (ptr && Error_Code_Success == ptr->start(name, bytes, ip, port))
         {
             xmqHostClientPtr.swap(ptr);
         }
@@ -52,7 +53,9 @@ int LibXmqHostClient::unregisterXmqHostClient()
     return ret;
 }
 
-int LibXmqHostClient::send(const std::string data)
+int LibXmqHostClient::send(
+    const void* data/* = nullptr*/, 
+    const int bytes/* = 0*/)
 {
-    return xmqHostClientPtr ? xmqHostClientPtr->send(data) : Error_Code_Operate_Failure;
+    return xmqHostClientPtr ? xmqHostClientPtr->send(data, bytes) : Error_Code_Operate_Failure;
 }

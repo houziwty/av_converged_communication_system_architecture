@@ -34,7 +34,7 @@ namespace module
 				//@c [in] : XMQ上下文实例
 				//@Return : socket实例
 				socket_t connect(
-					const std::string ip,
+					const char* ip = nullptr,
 					const unsigned short port = 0,
 					ctx_t c = nullptr);
 

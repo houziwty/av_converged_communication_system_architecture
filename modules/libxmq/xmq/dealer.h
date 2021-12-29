@@ -30,13 +30,15 @@ namespace module
 			public:
 				//连接
 				//@uid [in] : 用户ID
+				//@uid_bytes [in] : 大小
 				//@ip [in] : 远程IP
 				//@port [in] : 端口号
 				//@c [in] : XMQ上下文实例
 				//@Return : socket实例
 				socket_t connect(
-					const std::string uid,
-					const std::string ip,
+					const void* uid = nullptr, 
+					const int uid_bytes = 0, 
+					const char* ip = nullptr,
 					const unsigned short port = 0,
 					ctx_t c = nullptr);
 

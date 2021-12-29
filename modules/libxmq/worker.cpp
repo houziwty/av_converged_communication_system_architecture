@@ -13,12 +13,13 @@ Worker::Worker(PolledDataWithoutIDCallback callback)
 Worker::~Worker()
 {
 	Dealer().shutdown(dealer);
-	Ctx().get_mutable_instance().destroy(ctx);
+	Ctx().destroy(ctx);
 }
 
 int Worker::connect(
-	const std::string uid,
-	const std::string ip, 
+	const void* uid/* = nullptr*/, 
+	const int uid_bytes/* = 0*/, 
+	const char* ip/* = nullptr*/, 
 	const unsigned short port /* = 0 */)
 {
 	if(ctx)
@@ -26,19 +27,19 @@ int Worker::connect(
 		return Error_Code_Object_Existed;
 	}
 
-	int ret{!uid.empty() && !ip.empty() && 0 < port ? Error_Code_Success : Error_Code_Invalid_Param};
+	int ret{uid && 0 < uid_bytes && ip && 0 < port ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
-		ctx = Ctx().get_mutable_instance().createNew();
+		ctx = Ctx().createNew();
 
 		if(ctx)
 		{
-			dealer = Dealer().connect(uid, ip, port, ctx);
+			dealer = Dealer().connect(uid, uid_bytes, ip, port, ctx);
 
 			if(!dealer)
 			{
-				Ctx().get_mutable_instance().destroy(ctx);
+				Ctx().destroy(ctx);
 				ctx = nullptr;
 			}
 		}
@@ -47,20 +48,19 @@ int Worker::connect(
 	return ctx && dealer ? Error_Code_Success : Error_Code_Bad_Operate_Bind;
 }
 
-int Worker::send(const std::string data)
+int Worker::send(const void* data/* = nullptr*/, const int bytes/* = 0*/)
 {
 	int ret{ctx && dealer ? Error_Code_Success : Error_Code_Operate_Failure};
 
 	if (Error_Code_Success == ret)
 	{
-		ret = (!data.empty() ? Error_Code_Success : Error_Code_Invalid_Param);
+		ret = (data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param);
 
 		if(Error_Code_Success == ret)
 		{
 			Msg msg;
-			msg.pushBack("");
-			msg.pushBack(data);
-
+			msg.append("", 0);
+			msg.append(data, bytes);
 			ret = msg.send(dealer);
 		}
 	}
@@ -83,12 +83,10 @@ int Worker::poll()
 			ret = msg.recv(dealer);
 			if (Error_Code_Success == ret)
 			{
-				msg.popFront();
-				const std::string data{msg.popFront()};
-				
+				//只使用第二个数据
 				if (handler)
 				{
-					handler(data);
+					handler(msg.msg(1), msg.msg_bytes(1));
 				}
 			}
 		}

@@ -36,19 +36,23 @@ namespace module
 
 				//发送
 				//@uid [in] : 用户ID标识
-				//@data [in] : 数据
+				//@uid_bytes [in] : 大小
+				//@data [in] : 数据 
+				//@data_bytes [in] : 大小 
 				//@Return : 错误码
 				int send(
-					const std::string uid, 
-					const std::string data);
+					const void* uid = nullptr, 
+					const int uid_bytes = 0,  
+					const void* data = nullptr, 
+					const int data_bytes = 0);
 
 				//拉取
 				//@Comment : 该模型必须由调用者负责主动拉取数据
 				int poll(void);
 
 			private:
-				ctx_t* ctx;
-				socket_t* router;
+				ctx_t ctx;
+				socket_t router;
 				PolledDataWithIDCallback handler;
 			};//class Switcher
 		}//namespace xmq

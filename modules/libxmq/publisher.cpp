@@ -51,13 +51,12 @@ int Publisher::send(const void* data/* = nullptr*/, const int bytes/* = 0*/)
 
 	if(Error_Code_Success == ret)
 	{
-		ret = (!data.empty() ? Error_Code_Success : Error_Code_Invalid_Param);
+		ret = (data ? Error_Code_Success : Error_Code_Invalid_Param);
 
 		if(Error_Code_Success == ret)
 		{
 			Msg msg;
-			msg.pushBack(data);
-
+			msg.append(data, bytes);
 			ret = msg.send(pub);
 		}
 	}

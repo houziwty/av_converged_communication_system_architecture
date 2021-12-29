@@ -32,10 +32,10 @@ int HikvisionDevice::login(
 		XMemory xmem;
 		NET_DVR_USER_LOGIN_INFO user{0};
 		user.bUseAsynLogin = 0;
-		xmem.copy(ip.c_str(), user.sDeviceAddress, ip.length());
+		xmem.copy(ip.c_str(), ip.length(), user.sDeviceAddress, NET_DVR_DEV_ADDRESS_MAX_LEN);
 		user.wPort = port;
-		xmem.copy(username.c_str(), user.sUserName, username.length());
-		xmem.copy(userpwd.c_str(), user.sPassword, userpwd.length());
+		xmem.copy(username.c_str(), username.length(), user.sUserName, NET_DVR_LOGIN_USERNAME_MAX_LEN);
+		xmem.copy(userpwd.c_str(), userpwd.length(), user.sPassword, NET_DVR_LOGIN_PASSWD_MAX_LEN);
 
 		ret = NET_DVR_Login_V40(&user, &deviceInfo);
 

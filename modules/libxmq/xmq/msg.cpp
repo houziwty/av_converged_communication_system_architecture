@@ -29,25 +29,20 @@ int Msg::append(const void* data/* = nullptr*/, const int bytes/* = 0*/)
 
 	if (Error_Code_Success == ret)
 	{
-		if (data && 0 < bytes)
-		{
-			const char* buf{
-				XStr().copyNew(reinterpret_cast<const char*>(data), bytes)};
+		//数据可以为空
+		//分隔符就是空
+		const char* buf{
+			XStr().copyNew(reinterpret_cast<const char*>(data), bytes)};
 
-			if (buf)
-			{
-				msgs[counter] = bytes;
-				msgs[counter + 1] = (int)buf;
-				++counter;
-			}
-			else
-			{
-				ret = Error_Code_Bad_New_Memory;
-			}
+		if (buf)
+		{
+			msgs[counter] = bytes;
+			msgs[counter + 1] = (uintptr_t)buf;
+			++counter;
 		}
 		else
 		{
-			ret = Error_Code_Invalid_Param;
+			ret = Error_Code_Bad_New_Memory;
 		}
 	}
 
@@ -60,6 +55,7 @@ void Msg::clear()
 	{
 		boost::checked_array_delete((void*)msgs[i + 1]);
 	}
+	memset(msgs, 0, Max * sizeof(int));
 }
 
 int Msg::recv(socket_t s /* = nullptr */)

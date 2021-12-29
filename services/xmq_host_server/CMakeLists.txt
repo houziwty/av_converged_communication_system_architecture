@@ -58,13 +58,14 @@ endif()
 set(SERVICE_ROOT_DIR ${ROOT_DIR}/service/xmq_host_service)
 include_directories(${INCLUDE_DIR} ${SERVICE_ROOT_DIR} ${BOOST_ROOT_DIR} ${XMQ_ROOT_DIR} ${LOG_ROOT_DIR})
 file(GLOB_RECURSE main "*.cpp")
-file(GLOB_RECURSE xmq "${SOURCE_DIR}/network/xmq/switcher_pub_model.cpp")
+file(GLOB_RECURSE xmq "${SOURCE_DIR}/network/xmq/switcher_pub_mode.cpp")
 file(GLOB_RECURSE 
 	utils 
 	"${SOURCE_DIR}/utils/url/*.cpp" 
 	"${SOURCE_DIR}/utils/thread/*.cpp" 
 	"${SOURCE_DIR}/utils/time/*.cpp" 
-	"${SOURCE_DIR}/utils/commandline/*.cpp")
+	"${SOURCE_DIR}/utils/commandline/*.cpp"
+	"${SOURCE_DIR}/utils/memory/*.cpp")
 
 add_executable(
 	${PROJECT_NAME} 

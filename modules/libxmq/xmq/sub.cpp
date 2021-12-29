@@ -17,13 +17,13 @@ Sub::~Sub()
 {}
 
 socket_t Sub::connect(
-	const std::string ip, 
+	const char* ip/* = nullptr*/, 
 	const unsigned short port /* = 0 */,
 	ctx_t c /* = nullptr */)
 {
 	socket_t s{nullptr};
 
-	if (c && !ip.empty() && 0 < port)
+	if (c && ip && 0 < port)
 	{
 		s = zmq_socket(c, ZMQ_SUB);
 
@@ -31,7 +31,7 @@ socket_t Sub::connect(
 		{
 			zmq_setsockopt(s, ZMQ_SUBSCRIBE, "", 0);
 
-			if (zmq_connect(s, (boost::format("tcp://%s:%d") % ip.c_str() % port).str().c_str()))
+			if (zmq_connect(s, (boost::format("tcp://%s:%d") % ip % port).str().c_str()))
 			{
 				zmq_close(s);
 				s = nullptr;

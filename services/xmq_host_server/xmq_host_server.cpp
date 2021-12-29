@@ -9,7 +9,7 @@ using namespace framework::utils::time;
 #include "xmq_host_server.h"
 
 XmqHostServer::XmqHostServer(const std::string name, FileLog& log) 
-    : SwitcherPubModel(), serviceName{name}, fileLog{log}, stopped{false}, thread{nullptr}
+    : SwitcherPubMode(), serviceName{name}, fileLog{log}, stopped{false}, thread{nullptr}
 {}
 
 XmqHostServer::~XmqHostServer()
@@ -20,7 +20,7 @@ int XmqHostServer::start(
 	const unsigned short publisherPort /* = 0 */, 
 	const int hwm /* = 10 */)
 {
-    int ret{SwitcherPubModel::start(switcherPort, publisherPort, hwm)};
+    int ret{SwitcherPubMode::start(switcherPort, publisherPort, hwm)};
 
     if (Error_Code_Success == ret)
     {
@@ -33,7 +33,7 @@ int XmqHostServer::start(
 
 int XmqHostServer::stop()
 {
-    int ret{SwitcherPubModel::stop()};
+    int ret{SwitcherPubMode::stop()};
 
     if (Error_Code_Success == ret && false == stopped)
     {
@@ -45,20 +45,26 @@ int XmqHostServer::stop()
     return ret;
 }
 
-void XmqHostServer::afterSwitcherPolledDataHandler(const std::string name, const std::string data)
+void XmqHostServer::afterSwitcherPolledDataHandler(
+    const void* uid/* = nullptr*/, 
+	const int uid_bytes/* = 0*/, 
+	const void* data/* = nullptr*/, 
+	const int data_bytes/* = 0*/)
 {
     //数据解析逻辑说明：
     // 1. 解析协议名称，如果是register则处理服务注册业务，否则到（2）；
     // 2. 解析主机名称，与服务名称对比是否一致，如果是则由服务执行业务处理， 否则到（3）；
     // 3. 在注册服务表中查找主机名称，如果存在，则执行转发消息，否则应答消息不可达错误。
     
+    const std::string name{(const char*)uid, uid_bytes};
+    const std::string msg{(const char*)data, data_bytes};
     fileLog.write(
         SeverityLevel::SEVERITY_LEVEL_INFO, 
         "Polled switcher message with serivce name = [ %s ] and data = [ %s ].",  
         name.c_str(), 
-        data.c_str());
+        msg.c_str());
     Url requestUrl;
-    int ret{requestUrl.parse(data)};
+    int ret{requestUrl.parse(msg)};
 
     if(Error_Code_Success == ret)
     {
@@ -77,7 +83,7 @@ void XmqHostServer::afterSwitcherPolledDataHandler(const std::string name, const
 
             if (0 < timestamp)
             {
-                forwardMessage(hostName, data);
+                forwardMessage(hostName, msg);
             }
             else
             {
@@ -142,7 +148,8 @@ void XmqHostServer::processRegisterMessage(const std::string name, Url& requestU
                 responseUrl.setProtocol(requestUrl.getProtocol());
                 responseUrl.setHost(serviceName);
                 responseUrl.addParameter(items[i].key, items[i].value);
-                ret = SwitcherPubModel::send(hostName, responseUrl.encode());
+                const std::string msg{responseUrl.encode()};
+                ret = SwitcherPubMode::switcherSend(hostName.c_str(), hostName.length(), msg.c_str(), msg.length());
                 break;
             }
         }
@@ -180,7 +187,8 @@ void XmqHostServer::processRequestMessage(const std::string name, Url& requestUr
             responseUrl.addParameter("name", services[i]);
         }
 
-        int ret{SwitcherPubModel::send(name, responseUrl.encode())};
+        const std::string msg{responseUrl.encode()};
+        int ret{SwitcherPubMode::switcherSend(name.c_str(), name.length(), msg.c_str(), msg.length())};
 
         if (Error_Code_Success == ret)
         {
@@ -202,7 +210,9 @@ void XmqHostServer::processRequestMessage(const std::string name, Url& requestUr
 
 void XmqHostServer::forwardMessage(const std::string name, const std::string data)
 {
-    int ret{SwitcherPubModel::send(name, data)};
+    int ret{
+        SwitcherPubMode::switcherSend(
+            name.c_str(), name.length(), data.c_str(), data.length())};
 
     if (Error_Code_Success == ret)
     {
