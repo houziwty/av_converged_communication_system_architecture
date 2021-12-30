@@ -14,7 +14,7 @@
 #define MODULE_FILE_LOG_FILELOG_H
 
 #if defined(_WINDOWS)
-#ifdef USE_MODULE_FILE_LOG
+#ifdef d
 #define FILE_LOG_EXPORT __declspec(dllimport)
 #else
 #define FILE_LOG_EXPORT __declspec(dllexport)

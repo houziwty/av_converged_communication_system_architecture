@@ -46,7 +46,10 @@ set(LIB_ROOT_DIR ${ROOT_DIR}/modules/libxmq)
 include_directories(${INCLUDE_DIR} ${LIB_ROOT_DIR} ${ZMQ_INCLUDE_DIR} ${BOOST_ROOT_DIR})
 add_definitions(-DZMQ_STATIC)
 file(GLOB_RECURSE main "*.cpp")
-file(GLOB_RECURSE utils "${SOURCE_DIR}/utils/hardware/*.cpp")
+file(GLOB_RECURSE 
+	utils 
+	"${SOURCE_DIR}/utils/hardware/*.cpp" 
+	"${SOURCE_DIR}/utils/memory/xstr.cpp")
 
 add_library(
 	${PROJECT_NAME} 

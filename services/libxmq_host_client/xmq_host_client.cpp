@@ -49,7 +49,9 @@ void XmqHostClient::afterWorkerPolledDataHandler(const void* data/* = nullptr*/,
 {
     if (data && 0 < bytes)
     {
-        const std::string msg{(const char*)data, bytes};
+        const std::string msg{
+            (const char*)data, 
+            static_cast<unsigned int>(bytes)};
         Url url;
 
         if (Error_Code_Success == url.parse(msg))
@@ -88,18 +90,25 @@ void XmqHostClient::processRegisterResponseMessage(Url& url)
 
 void XmqHostClient::processQueryResponseMessage(Url& url)
 {
-    std::vector<std::string> services;
+    ServiceInfo* infos{nullptr};
     const std::vector<ParamItem> items{url.getParameters()};
+    const std::size_t number{items.size()};
 
-    for(int i = 0; i != items.size(); ++i)
+    if (0 < number)
+    {
+        infos = new(std::nothrow) ServiceInfo[number];
+    }
+
+    for(int i = 0; i != number; ++i)
     {
         if(!items[i].key.compare("name"))
         {
-            services.push_back(items[i].value);
+            infos[i].name = items[i].value.c_str();
         }
     }
 
-    libXmqHostClient.fetchXmqHostServiceCapabilitiesNotification(services);
+    libXmqHostClient.fetchXmqHostServiceCapabilitiesNotification(infos, static_cast<int>(number));
+    boost::checked_array_delete(infos);
 }
 
 void XmqHostClient::processTaskOnTimerThread()

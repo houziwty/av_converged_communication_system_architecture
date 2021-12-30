@@ -16,20 +16,17 @@ XStr::~XStr()
 
 int XStr::copy(
     const char* src/* = nullptr*/, 
-    const int src_bytes/* = 0*/, 
-    char* dest/* = nullptr*/, 
-    const int dest_bytes/* = 0*/)
+    const int bytes/* = 0*/, 
+    char* dest/* = nullptr*/)
 {
-    int ret{src && 0 < src_bytes && dest && 0 < dest_bytes ? Error_Code_Success : Error_Code_Invalid_Param};
+    int ret{src && dest && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
 
     if(Error_Code_Success == ret)
     {
-        const int bytes{src_bytes > dest_bytes ? dest_bytes : src_bytes};
-
 #ifdef _WINDOWS
-	    strcpy_s(dest, bytes, src);
+	    strncpy_s(dest, bytes + 1, src, bytes);
 #else
-        strcpy(dest, src);
+        strncpy(dest, src, bytes);
 #endif//WINDOWS
     }
 
@@ -37,18 +34,18 @@ int XStr::copy(
 }
 
 const char* XStr::copyNew(
-    const char* src/* = nullptr*/, 
-    const int src_bytes/* = 0*/)
+    const char* data/* = nullptr*/, 
+    const int bytes/* = 0*/)
 {
     char* dest{nullptr};
 
-    if (src && 0 < src_bytes)
+    if (data && 0 < bytes)
     {
-        dest = new(std::nothrow) char[src_bytes];
+        dest = new(std::nothrow) char[bytes];
         
         if (dest)
         {
-            copy(src, src_bytes, dest, src_bytes);
+            copy(data, bytes, dest);
         }
     }
     

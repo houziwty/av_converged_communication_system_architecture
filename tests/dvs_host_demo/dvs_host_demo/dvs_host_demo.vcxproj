@@ -110,17 +110,17 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;_DEBUG;USE_XMQ_HOST_CLIENT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;_DEBUG;USE_XMQ_HOST_CLIENT;USE_MODULE_FILE_LOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>D:\av_converged_communication_system_architecture\services\libxmq_host_client;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\av_converged_communication_system_architecture\services\libxmq_host_client;D:\av_converged_communication_system_architecture\modules\liblog;D:\av_converged_communication_system_architecture\include;D:\av_converged_communication_system_architecture\3rd\boost_1_78_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>D:\av_converged_communication_system_architecture\win32\services\libxmq_host_client\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\av_converged_communication_system_architecture\build\win32\services\libxmq_host_client\Debug;D:\av_converged_communication_system_architecture\build\win32\modules\liblog\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>xmq_host_client.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
@@ -195,6 +195,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\utils\url\url.cpp" />
     <ClCompile Include="dvs_host_demo.cpp" />
     <ClCompile Include="dvs_host_demoDlg.cpp" />
     <ClCompile Include="pch.cpp">

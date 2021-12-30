@@ -53,12 +53,13 @@ include_directories(${INCLUDE_DIR} ${SERVICE_ROOT_DIR} ${BOOST_ROOT_DIR} ${XMQ_R
 file(GLOB_RECURSE main "*.cpp")
 file(GLOB_RECURSE 
 	xmq 
-	"${SOURCE_DIR}/network/xmq/worker_model.cpp")
+	"${SOURCE_DIR}/network/xmq/worker_mode.cpp")
 file(GLOB_RECURSE 
 	utils 
 	"${SOURCE_DIR}/utils/time/*.cpp"
 	"${SOURCE_DIR}/utils/thread/*.cpp"
-	"${SOURCE_DIR}/utils/url/*.cpp")
+	"${SOURCE_DIR}/utils/url/*.cpp"
+	"${SOURCE_DIR}/utils/memory/xstr.cpp")
 
 add_library(
 	${PROJECT_NAME} 

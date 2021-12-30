@@ -23,6 +23,11 @@
 #define XMQ_HOST_CLIENT_EXPORT
 #endif//_WINDOWS
 
+typedef struct tagServiceInfo_t
+{
+    const char* name;
+}ServiceInfo;
+
 class XMQ_HOST_CLIENT_EXPORT LibXmqHostClient
 {
 public:
@@ -58,13 +63,18 @@ public:
     virtual void fetchXmqHostClientOnlineStatusNotification(bool online) = 0;
 
     //服务在/离线通知
-    //@services [out] : 服务名称集合
-    virtual void fetchXmqHostServiceCapabilitiesNotification(const std::vector<std::string> services) = 0;
+    //@infos [out] : 服务名称集合 
+    //@number [out] : 大小
+    virtual void fetchXmqHostServiceCapabilitiesNotification(
+        const ServiceInfo* infos = nullptr, 
+        const int number = 0) = 0;
 
     //数据接收通知
     //@data [out] : 数据
     //@bytes [out] : 大小
-    virtual void fetchXmqHostClientReceivedDataNotification(const void* data = nullptr, const int bytes = 0) = 0;
+    virtual void fetchXmqHostClientReceivedDataNotification(
+        const void* data = nullptr, 
+        const int bytes = 0) = 0;
 };//class LibXmqHostClient
 
 #endif//SERVICE_LIB_XMQ_HOST_CLIENT_H

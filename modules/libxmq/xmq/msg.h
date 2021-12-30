@@ -67,7 +67,7 @@ namespace module
 				{
 					Max = 128
 				};
-				int msgs[Max];
+				uintptr_t msgs[Max];
 				unsigned char counter;
 			};//class Msg
 		}//namespace xmq

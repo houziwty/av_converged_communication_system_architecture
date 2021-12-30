@@ -43,11 +43,11 @@ int WorkerMode::start(
 	{
 		WorkerPtr ptr{
 			boost::make_shared<Worker>(
-				boost::bind(&WorkerMode::afterWorkerPolledDataHandler, this, _1))};
+				boost::bind(&WorkerMode::afterWorkerPolledDataHandler, this, _1, _2))};
 
-		if(ptr && Error_Code_Success == ptr->connect(name, ip, port))
+		if(ptr && Error_Code_Success == ptr->connect(name, bytes, ip, port))
 		{
-			XStr().copy(name, bytes, serviceName, Max);
+			XStr().copy(reinterpret_cast<const char*>(name), bytes, serviceName);
 			workerPtr.swap(ptr);
 			pollDataThread = ThreadPool().get_mutable_instance().createNew(
 				boost::bind(&WorkerMode::pollDataFromWorkerThread, this));

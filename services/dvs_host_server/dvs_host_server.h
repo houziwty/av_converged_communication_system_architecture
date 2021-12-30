@@ -55,8 +55,12 @@ public:
 
 protected:
     void fetchXmqHostClientOnlineStatusNotification(bool online) override;
-    void fetchXmqHostServiceCapabilitiesNotification(const std::vector<std::string> services) override;
-	void fetchXmqHostClientReceivedDataNotification(const std::string data) override;
+    void fetchXmqHostServiceCapabilitiesNotification(
+        const ServiceInfo* infos = nullptr, 
+        const int number = 0) override;
+	void fetchXmqHostClientReceivedDataNotification(
+        const void* data = nullptr, 
+        const int bytes = 0) override;
     void fetchAcceptedEventNotification(SessionPtr session, const int e = 0) override;
 
     //DVS设备业务处理

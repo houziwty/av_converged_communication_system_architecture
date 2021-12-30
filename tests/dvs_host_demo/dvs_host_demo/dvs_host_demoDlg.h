@@ -5,7 +5,8 @@
 #pragma once
 
 #include "libxmq_host_client.h"
-
+#include "log.h"
+using namespace module::file::log;
 
 // CdvshostdemoDlg dialog
 class CdvshostdemoDlg : public CDialogEx, protected LibXmqHostClient
@@ -36,9 +37,16 @@ protected:
 
 protected:
 	void fetchXmqHostClientOnlineStatusNotification(bool online) override;
-	void fetchXmqHostServiceCapabilitiesNotification(const std::vector<std::string> services) override;
-	void fetchXmqHostClientReceivedDataNotification(const std::string data) override;
+	void fetchXmqHostServiceCapabilitiesNotification(
+		const ServiceInfo* infos = nullptr,
+		const int number = 0) override;
+	void fetchXmqHostClientReceivedDataNotification(
+		const void* data = nullptr,
+		const int bytes = 0) override;
 public:
 	afx_msg void OnBnClickedXmqConnect();
 	afx_msg void OnBnClickedXmqDisconnect();
+
+private:
+//	FileLog fileLog;
 };

@@ -5,11 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "dvs_host_service",
+            "name": "dvs_host_server",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/services/dvs_host_service/dvs_host_service",
-            "args": ["--xmq_addr", "127.0.0.1", "--xmq_port", "50531", "--xms_port", "50820", "--app_name", "dvs_host_service"],
+            "program": "${workspaceFolder}/build/services/dvs_host_server/dvs_host_server",
+            "args": ["--xmq_addr", "127.0.0.1", "--xmq_port", "50531", "--xms_port", "50820", "--app_name", "dvs_host_server"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
@@ -26,11 +26,11 @@
             "miDebuggerPath": "/usr/bin/gdb"
         },
         {
-            "name": "xmq_host_service",
+            "name": "xmq_host_server",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/services/xmq_host_service/xmq_host_service",
-            "args": ["--local_port", "50531", "--pub_port", "50927", "--app_name", "xmq_host_service"],
+            "program": "${workspaceFolder}/build/services/xmq_host_server/xmq_host_server",
+            "args": ["--local_port", "50531", "--pub_port", "50927", "--app_name", "xmq_host_server"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

@@ -60,7 +60,7 @@ int Switcher::send(
 		{
 			Msg msg;
 			msg.append(uid, uid_bytes);
-			msg.append("", 0);
+//			msg.append("", 0);
 			msg.append(data, data_bytes);
 			ret = msg.send(router);
 		}
@@ -84,11 +84,11 @@ int Switcher::poll()
 			ret = msg.recv(router);
 			if (Error_Code_Success == ret)
 			{
-				//只读第一和第三段数据
+				//只读第一和第二段数据
 				const void* uid{msg.msg()};
 				const int uid_bytes{msg.msg_bytes()};
-				const void* data{msg.msg(2)};
-				const int data_bytes{msg.msg_bytes(2)};
+				const void* data{msg.msg(1)};
+				const int data_bytes{msg.msg_bytes(1)};
 				
 				if (handler)
 				{

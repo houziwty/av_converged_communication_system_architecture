@@ -20,7 +20,9 @@ int DvsHostServer::start(
     const std::string ip, 
     const unsigned short port/* = 0*/)
 {
-    int ret{LibXmqHostClient::registerXmqHostClient(name, ip, port)};
+    int ret{
+        LibXmqHostClient::registerXmqHostClient(
+            name.c_str(), name.length(), ip.c_str(), port)};
 
     if (Error_Code_Success == ret)
     {
@@ -78,26 +80,30 @@ void DvsHostServer::fetchXmqHostClientOnlineStatusNotification(bool online)
     fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch dvs host service online status = [ %d ].", online);
 }
 
-void DvsHostServer::fetchXmqHostServiceCapabilitiesNotification(const std::vector<std::string> services)
+void DvsHostServer::fetchXmqHostServiceCapabilitiesNotification(
+    const ServiceInfo* infos/* = nullptr*/, 
+    const int number/* = 0*/)
 {
-    const int number{static_cast<int>(services.size())};
     fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch xmq host service capabilities size = [ %d ].", number);
 
     for(int i = 0; i != number; ++i)
     {
-        fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, " ****** Service name = [ %s ].", services[i].c_str());
+        fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, " ****** Service name = [ %s ].", infos[i]);
     }
 }
 
-void DvsHostServer::fetchXmqHostClientReceivedDataNotification(const std::string data)
+void DvsHostServer::fetchXmqHostClientReceivedDataNotification(
+    const void* data/* = nullptr*/, 
+    const int bytes/* = 0*/)
 {
+    const std::string msg{reinterpret_cast<const char*>(data), bytes};
     fileLog.write(
         SeverityLevel::SEVERITY_LEVEL_INFO, 
         "Fetch forward data = [ %s ] from xmq host service.", 
-        data.c_str());
+        msg.c_str());
 
     Url requestUrl;
-    int ret{requestUrl.parse(data)};
+    int ret{requestUrl.parse(msg)};
 
     if(Error_Code_Success == ret)
     {
@@ -110,7 +116,7 @@ void DvsHostServer::fetchXmqHostClientReceivedDataNotification(const std::string
             fileLog.write(
                 SeverityLevel::SEVERITY_LEVEL_WARNING, 
                 "Parsed unknown data = [ %s ] from xmq host service.",  
-                data.c_str());
+                msg.c_str());
         }
     }
     else
@@ -118,7 +124,7 @@ void DvsHostServer::fetchXmqHostClientReceivedDataNotification(const std::string
         fileLog.write(
             SeverityLevel::SEVERITY_LEVEL_ERROR, 
             "Parsed forward data = [ %s ] from xmq host service failed, result = [ %d ].",  
-            data.c_str(), 
+            msg.c_str(), 
             ret);
     }
 }
@@ -200,7 +206,7 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
                 % infos[i].name.c_str()).str()};
             url.append(dvs);
         }
-        LibXmqHostClient::send(url);
+        LibXmqHostClient::send(url.c_str(), url.length());
     }
     else if (!command.compare("add"))
     {
@@ -226,7 +232,7 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
             const std::string url{
                 (boost::format("dvs://%s?from=%s&command=add&error=%d&dvs=%s_%s_%d_%s") 
                 % from % host % ret % uuid % ip % static_cast<int>(cameras.size()) % name).str()};
-            LibXmqHostClient::send(url);
+            LibXmqHostClient::send(url.c_str(), url.length());
         }
         else
         {
@@ -237,7 +243,7 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
 
             const std::string url{
                 (boost::format("dvs://%s?from=%s&command=add&error=%d") % from % host % ret).str()};
-            LibXmqHostClient::send(url);
+            LibXmqHostClient::send(url.c_str(), url.length());
         }
     }
     else if (!command.compare("remove"))
@@ -259,6 +265,6 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
 
         url.append(
             (boost::format("dvs://%s?from=%s&command=remove&error=%d&id=%s") % from % host % ret % id).str());
-        LibXmqHostClient::send(url);
+        LibXmqHostClient::send(url.c_str(), url.length());
     }
 }

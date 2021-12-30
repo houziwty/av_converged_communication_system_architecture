@@ -8,6 +8,7 @@
 //
 //		History:
 //					1. 2021-11-15 由王科威创建
+//                  2. 2021-12-30 由王科威修改  回调函数定义不能使用typedef void (CALLBACK *func)(...)的形式
 //
 
 #ifndef MODULE_NETWORK_XMQ_DEFS_H
@@ -25,6 +26,8 @@
 #define CALLBACK
 #endif//_WINDOWS
 
+#include <functional>
+
 typedef void* ctx_t;
 typedef void* socket_t;
 
@@ -33,11 +36,11 @@ typedef void* socket_t;
 //_2 [out] : 大小
 //_3 [out] : 数据
 //_4 [out] : 大小
-typedef void (CALLBACK *PolledDataWithIDCallback)(const void*, const int, const void*, const int);
+typedef std::function<void(const void*, const int, const void*, const int)> PolledDataWithIDCallback;
 
 //数据回调函数
 //_1 [out] : 标识
 //_2 [out] : 大小
-typedef void (CALLBACK *PolledDataWithoutIDCallback)(const void*, const int);
+typedef std::function<void(const void*, const int)> PolledDataWithoutIDCallback;
 
 #endif//MODULE_NETWORK_XMQ_DEFS_H

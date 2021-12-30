@@ -25,19 +25,22 @@ Msg::~Msg()
 
 int Msg::append(const void* data/* = nullptr*/, const int bytes/* = 0*/)
 {
+	if (!data || !bytes)
+	{
+		return Error_Code_Invalid_Param;
+	}
+	
 	int ret{counter < (Max / 2) ? Error_Code_Success : Error_Code_Operate_Out_Of_Range};
 
 	if (Error_Code_Success == ret)
 	{
-		//数据可以为空
-		//分隔符就是空
 		const char* buf{
 			XStr().copyNew(reinterpret_cast<const char*>(data), bytes)};
 
 		if (buf)
 		{
-			msgs[counter] = bytes;
-			msgs[counter + 1] = (uintptr_t)buf;
+			msgs[2 * counter] = bytes;
+			msgs[2 * counter + 1] = (uintptr_t)buf;
 			++counter;
 		}
 		else
@@ -53,7 +56,7 @@ void Msg::clear()
 {
 	for (int i = 0; i != counter; ++i)
 	{
-		boost::checked_array_delete((void*)msgs[i + 1]);
+		boost::checked_array_delete((char*)msgs[2 * i + 1]);
 	}
 	memset(msgs, 0, Max * sizeof(int));
 }
@@ -109,8 +112,7 @@ int Msg::send(void* s /* = nullptr */)
 			XStr().copy(
 				(const char*)msgs[i + 1], 
 				msgs[i], 
-				reinterpret_cast<char*>(zmq_msg_data(&msg)), 
-				msgs[i]);
+				reinterpret_cast<char*>(zmq_msg_data(&msg)));
 				
 			if (msgs[i] != zmq_msg_send(&msg, s, sndflag))
 			{

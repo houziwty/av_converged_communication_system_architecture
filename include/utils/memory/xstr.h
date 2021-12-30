@@ -28,26 +28,22 @@ namespace framework
             public:
                 //直接字符拷贝
 				//@src [in] : 源数据
-				//@src_bytes [in] : 大小
+				//@bytes [in] : 目标大小
                 //@dest [in] : 目标数据
-                //@dest_bytes [in] : 大小
 				//@Return : 错误码
 				//@Comment : 1.数据深拷贝
-                //           2.如果src_bytes > dest_bytes，只拷贝dest_bytes大小的数据
                 int copy(
                     const char* src = nullptr, 
-                    const int src_bytes = 0, 
-                    char* dest = nullptr, 
-                    const int dest_bytes = 0);
+                    const int bytes = 0, 
+                    char* dest = nullptr);
 
                 //新建目标拷贝
-				//@src [in] : 源数据
-				//@src_bytes [in] : 大小
+				//@data [in] : 源数据
+				//@bytes [in] : 大小
 				//@Return : 目标数据
-				//@Comment : 1.目标数据大小为src_bytes大小
                 const char* copyNew(
-                    const char* src = nullptr, 
-                    const int src_bytes = 0);
+                    const char* data = nullptr, 
+                    const int bytes = 0);
             };//class XStr
         }//namespace memory
     }//namespace utils
