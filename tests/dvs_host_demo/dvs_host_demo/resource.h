@@ -12,6 +12,12 @@
 #define IDC_XMQ_CONNECT                 1002
 #define IDC_XMQ_DISCONNECT              1003
 #define IDC_DEMO_NAME                   1004
+#define IDC_DVS_ADDRESS                 1005
+#define IDC_DVS_PORT                    1006
+#define IDC_DVS_LOGIN                   1007
+#define IDC_DVS_LOGOUT                  1008
+#define IDC_DVS_USER                    1009
+#define IDC_DVS_PASSWORD                1010
 
 // Next default values for new objects
 // 

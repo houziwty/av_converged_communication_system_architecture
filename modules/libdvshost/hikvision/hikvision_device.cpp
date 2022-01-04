@@ -1,6 +1,6 @@
 #include "boost/make_shared.hpp"
 #include "error_code.h"
-#include "utils/memory/xmemcpy.h"
+#include "utils/memory/xmem.h"
 using namespace framework::utils::memory;
 #include "hikvision_camera.h"
 #include "hikvision_device.h"
@@ -29,7 +29,7 @@ int HikvisionDevice::login(
 	if (Error_Code_Success == ret && 
 		Error_Code_Success == (ret = initialize()))
 	{
-		XMemory xmem;
+		XMem xmem;
 		NET_DVR_USER_LOGIN_INFO user{0};
 		user.bUseAsynLogin = 0;
 		xmem.copy(ip.c_str(), ip.length(), user.sDeviceAddress, NET_DVR_DEV_ADDRESS_MAX_LEN);

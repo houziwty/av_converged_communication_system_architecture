@@ -49,7 +49,7 @@ file(GLOB_RECURSE main "*.cpp")
 file(GLOB_RECURSE 
 	utils 
 	"${SOURCE_DIR}/utils/hardware/*.cpp" 
-	"${SOURCE_DIR}/utils/memory/xstr.cpp")
+	"${SOURCE_DIR}/utils/memory/*.cpp")
 
 add_library(
 	${PROJECT_NAME} 

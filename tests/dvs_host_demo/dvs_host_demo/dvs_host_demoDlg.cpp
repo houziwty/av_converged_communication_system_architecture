@@ -73,6 +73,8 @@ BEGIN_MESSAGE_MAP(CdvshostdemoDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_XMQ_CONNECT, &CdvshostdemoDlg::OnBnClickedXmqConnect)
 	ON_BN_CLICKED(IDC_XMQ_DISCONNECT, &CdvshostdemoDlg::OnBnClickedXmqDisconnect)
+	ON_BN_CLICKED(IDC_DVS_LOGIN, &CdvshostdemoDlg::OnBnClickedDvsLogin)
+	ON_BN_CLICKED(IDC_DVS_LOGOUT, &CdvshostdemoDlg::OnBnClickedDvsLogout)
 END_MESSAGE_MAP()
 
 
@@ -112,6 +114,11 @@ BOOL CdvshostdemoDlg::OnInitDialog()
 	SetDlgItemText(IDC_XMQ_ADDRESS, L"127.0.0.1");
 	SetDlgItemText(IDC_XMQ_PORT, L"50531");
 	SetDlgItemText(IDC_DEMO_NAME, L"test_demo_name");
+
+	SetDlgItemText(IDC_DVS_ADDRESS, L"192.168.2.225");
+	SetDlgItemText(IDC_DVS_PORT, L"8000");
+	SetDlgItemText(IDC_DVS_USER, L"admin");
+	SetDlgItemText(IDC_DVS_PASSWORD, L"Vrc123456");
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -194,7 +201,7 @@ void CdvshostdemoDlg::fetchXmqHostServiceCapabilitiesNotification(
 // 			infos[i]);
 
 		const std::string name{ infos[i].name };
-		if (!name.compare("dvs_host_service"))
+		if (!name.compare("dvs_host_server"))
 		{
 			const std::string url{
 				"dvs://dvs_host_service?from=test_dvs_host_client&command=query" };
@@ -257,24 +264,24 @@ void CdvshostdemoDlg::fetchXmqHostClientReceivedDataNotification(
 			}
 		}
 
-		if (!dvsnum)
-		{
-			const std::string url{
-				"dvs://dvs_host_service?from=test_dvs_host_client&command=add&ip=192.168.2.225&port=8000&user=admin&passwd=Vrc123456&name=test" };
-			int ret{ send(url.c_str(), url.length()) };
-
-			if (Error_Code_Success == ret)
-			{
-//				fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Send add device information to dvs host service successed.");
-			}
-			else
-			{
-// 				fileLog.write(
-// 					SeverityLevel::SEVERITY_LEVEL_ERROR,
-// 					"Send add device information to dvs host service failed, result = [ %d ].",
-// 					ret);
-			}
-		}
+// 		if (!dvsnum)
+// 		{
+// 			const std::string url{
+// 				"dvs://dvs_host_service?from=test_dvs_host_client&command=add&ip=192.168.2.225&port=8000&user=admin&passwd=Vrc123456&name=test" };
+// 			int ret{ send(url.c_str(), url.length()) };
+// 
+// 			if (Error_Code_Success == ret)
+// 			{
+// //				fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Send add device information to dvs host service successed.");
+// 			}
+// 			else
+// 			{
+// // 				fileLog.write(
+// // 					SeverityLevel::SEVERITY_LEVEL_ERROR,
+// // 					"Send add device information to dvs host service failed, result = [ %d ].",
+// // 					ret);
+// 			}
+// 		}
 	}
 }
 
@@ -314,4 +321,16 @@ void CdvshostdemoDlg::OnBnClickedXmqDisconnect()
 		text.Format(L"unregisterXmqHostClient invoke failed = %d", ret);
 		MessageBox(text, L"Disconnect", MB_ICONERROR | MB_OK);
 	}
+}
+
+
+void CdvshostdemoDlg::OnBnClickedDvsLogin()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+void CdvshostdemoDlg::OnBnClickedDvsLogout()
+{
+	// TODO: Add your control notification handler code here
 }

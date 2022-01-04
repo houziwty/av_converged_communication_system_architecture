@@ -65,7 +65,8 @@ int Subscriber::poll()
 				if (handler)
 				{
 					//只读第一段数据
-					handler(msg.msg(), msg.msg_bytes());
+					const Message* info{msg.msg()};
+					handler(info->data, info->bytes);
 				}
 			}
 		}

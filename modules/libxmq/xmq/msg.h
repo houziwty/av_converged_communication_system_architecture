@@ -13,6 +13,7 @@
 #ifndef MODULE_NETWORK_XMQ_MSG_H
 #define MODULE_NETWORK_XMQ_MSG_H
 
+#include <vector>
 #include "defs.h"
 
 namespace module
@@ -21,6 +22,12 @@ namespace module
 	{
 		namespace xmq
 		{
+			typedef struct tagMessage_t
+			{
+				void* data;
+				uint64_t bytes;
+			}Message;
+
 			class NETWORK_XMQ_EXPORT Msg
 			{
 			public:
@@ -32,21 +39,17 @@ namespace module
 				//@data [in] : 数据
 				//@bytes [in] : 大小
 				//@Return : 错误码
-				//@Comment : 数据深拷贝
-				int append(const void* data = nullptr, const int bytes = 0);
+				//@Comment : 1.数据深拷贝
+				//           2.可以添加空字节
+				int append(
+					const void* data = nullptr, 
+					const uint64_t bytes = 0);
 
-				//获取消息段数据
-				//@Return : 消息段数据
-				inline const void* msg(const unsigned char index = 0) const
+				//获取消息
+				//@Return : 消息
+				inline const Message* msg(const int32_t index = 0) const
 				{
-					return index < counter ? (void*)msgs[2 * index + 1] : nullptr;
-				}
-
-				//获取消息段大小
-				//@Return : 消息段大小
-				inline const unsigned char msg_bytes(const unsigned char index = 0) const
-				{
-					return index < counter ? msgs[2 * index] : 0;
+					return -1 < index && index < messages.size() ? &messages[index] : nullptr;
 				}
 
 				//清除
@@ -63,12 +66,7 @@ namespace module
 				int send(socket_t s = nullptr);
 
 			private:
-				enum
-				{
-					Max = 128
-				};
-				uintptr_t msgs[Max];
-				unsigned char counter;
+				std::vector<Message> messages;
 			};//class Msg
 		}//namespace xmq
 	}//namespace network

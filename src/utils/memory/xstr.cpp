@@ -4,7 +4,6 @@
 #include <cstring>
 #endif//WINDOWS
 #include <new>
-#include "error_code.h"
 #include "utils/memory/xstr.h"
 using namespace framework::utils::memory;
 
@@ -14,38 +13,26 @@ XStr::XStr()
 XStr::~XStr()
 {}
 
-int XStr::copy(
-    const char* src/* = nullptr*/, 
-    const int bytes/* = 0*/, 
-    char* dest/* = nullptr*/)
-{
-    int ret{src && dest && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
-
-    if(Error_Code_Success == ret)
-    {
-#ifdef _WINDOWS
-	    strncpy_s(dest, bytes + 1, src, bytes);
-#else
-        strncpy(dest, src, bytes);
-#endif//WINDOWS
-    }
-
-    return ret;
-}
-
-const char* XStr::copyNew(
-    const char* data/* = nullptr*/, 
-    const int bytes/* = 0*/)
+const void* XStr::copy(
+    const void* data/* = nullptr*/, 
+    const uint64_t bytes/* = 0*/)
 {
     char* dest{nullptr};
 
-    if (data && 0 < bytes)
+    //只需要判断源字节大小是否有效
+    //外部使用可以传递空字节数据 
+    if (/*data && */0 < bytes)
     {
-        dest = new(std::nothrow) char[bytes];
+        dest = new(std::nothrow) char[bytes + 1];
         
         if (dest)
         {
-            copy(data, bytes, dest);
+            dest[bytes] = 0;
+#ifdef _WINDOWS
+	        strncpy_s(dest, bytes + 1, (const char*)data, bytes);
+#else
+            strncpy(dest, (const char*)data, bytes);
+#endif//WINDOWS
         }
     }
     

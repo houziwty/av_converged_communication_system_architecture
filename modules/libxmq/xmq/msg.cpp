@@ -1,4 +1,3 @@
-#include <cstring>
 #include "boost/checked_delete.hpp"
 #ifdef __cplusplus
 extern "C" {
@@ -8,57 +7,37 @@ extern "C" {
 }
 #endif
 #include "error_code.h"
+#include "utils/memory/xmem.h"
 #include "utils/memory/xstr.h"
 using namespace framework::utils::memory;
 #include "msg.h"
 using namespace module::network::xmq;
 
-Msg::Msg() : counter{0}
-{
-	memset(msgs, 0, Max * sizeof(int));
-}
+Msg::Msg()
+{}
 
 Msg::~Msg()
 {
 	clear();
 }
 
-int Msg::append(const void* data/* = nullptr*/, const int bytes/* = 0*/)
+int Msg::append(
+	const void* data/* = nullptr*/, 
+	const uint64_t bytes/* = 0*/)
 {
-	if (!data || !bytes)
-	{
-		return Error_Code_Invalid_Param;
-	}
-	
-	int ret{counter < (Max / 2) ? Error_Code_Success : Error_Code_Operate_Out_Of_Range};
-
-	if (Error_Code_Success == ret)
-	{
-		const char* buf{
-			XStr().copyNew(reinterpret_cast<const char*>(data), bytes)};
-
-		if (buf)
-		{
-			msgs[2 * counter] = bytes;
-			msgs[2 * counter + 1] = (uintptr_t)buf;
-			++counter;
-		}
-		else
-		{
-			ret = Error_Code_Bad_New_Memory;
-		}
-	}
-
-	return ret;
+	//�ⲿʹ�ÿ��Դ��ݿ��ֽ�����
+	const void* buf{ XStr().copy(data, bytes) };
+	messages.push_back(Message{ const_cast<void*>(buf), bytes });
+	return Error_Code_Success;
 }
 
 void Msg::clear()
 {
-	for (int i = 0; i != counter; ++i)
+	for (int i = 0; i != messages.size(); ++i)
 	{
-		boost::checked_array_delete((char*)msgs[2 * i + 1]);
+		boost::checked_array_delete(
+			reinterpret_cast<const char*>(messages[i].data));
 	}
-	memset(msgs, 0, Max * sizeof(int));
 }
 
 int Msg::recv(socket_t s /* = nullptr */)
@@ -78,7 +57,7 @@ int Msg::recv(socket_t s /* = nullptr */)
 
 			if (-1 < zmq_msg_recv(&msg, s, ZMQ_DONTWAIT))
 			{
-				ret = append(reinterpret_cast<char*>(zmq_msg_data(&msg)), zmq_msg_size(&msg));
+				ret = append(zmq_msg_data(&msg), (const int)zmq_msg_size(&msg));
 				if (!zmq_msg_more(&msg) || Error_Code_Success != ret)
 				{
 					break;
@@ -92,29 +71,32 @@ int Msg::recv(socket_t s /* = nullptr */)
 	return ret;
 }
 
-int Msg::send(void* s /* = nullptr */)
+int Msg::send(socket_t s /* = nullptr */)
 {
 	int ret{ s ? Error_Code_Success : Error_Code_Invalid_Param };
 
 	if (Error_Code_Success == ret)
 	{
+		const std::size_t number{ messages.size() };
 		zmq_msg_t msg;
 
-		for (int i = 0; i != counter; ++i)
+		for (int i = 0; i != number; ++i)
 		{
-			const int sndflag{i < counter - 1 ? ZMQ_DONTWAIT | ZMQ_SNDMORE : ZMQ_DONTWAIT};
+			const int sndflag{i < number - 1 ? ZMQ_DONTWAIT | ZMQ_SNDMORE : ZMQ_DONTWAIT};
 
-			if (zmq_msg_init_size(&msg, msgs[i]))
+			if (zmq_msg_init_size(&msg, messages[i].bytes))
 			{
 				return Error_Code_Bad_New_Object;
 			}
 
-			XStr().copy(
-				(const char*)msgs[i + 1], 
-				msgs[i], 
-				reinterpret_cast<char*>(zmq_msg_data(&msg)));
+			//必须拷贝数据到消息内
+			XMem().copy(
+				messages[i].data, 
+				messages[i].bytes, 
+				zmq_msg_data(&msg), 
+				zmq_msg_size(&msg));
 				
-			if (msgs[i] != zmq_msg_send(&msg, s, sndflag))
+			if (messages[i].bytes != zmq_msg_send(&msg, s, sndflag))
 			{
 				ret = Error_Code_Bad_Operate_Send;
 				break;

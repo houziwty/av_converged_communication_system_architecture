@@ -59,7 +59,7 @@ int Worker::send(const void* data/* = nullptr*/, const int bytes/* = 0*/)
 		if(Error_Code_Success == ret)
 		{
 			Msg msg;
-//			msg.append("", 0);
+			msg.append("", 0);
 			msg.append(data, bytes);
 			ret = msg.send(dealer);
 		}
@@ -83,9 +83,11 @@ int Worker::poll()
 			ret = msg.recv(dealer);
 			if (Error_Code_Success == ret)
 			{
+				//只读第二段数据
+				const Message* body{ msg.msg(1) };
 				if (handler)
 				{
-					handler(msg.msg(), msg.msg_bytes());
+					handler(body->data, body->bytes);
 				}
 			}
 		}

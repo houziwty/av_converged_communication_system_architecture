@@ -17,9 +17,7 @@ using namespace framework::network::xmq;
 
 WorkerMode::WorkerMode() 
 	: pollDataThread{nullptr}, keepaliveThread{nullptr}, stopped{ false }
-{
-	memset(serviceName, 0, Max * sizeof(char));
-}
+{}
 
 WorkerMode::~WorkerMode()
 {
@@ -47,7 +45,9 @@ int WorkerMode::start(
 
 		if(ptr && Error_Code_Success == ptr->connect(name, bytes, ip, port))
 		{
-			XStr().copy(reinterpret_cast<const char*>(name), bytes, serviceName);
+			const std::string worker_name{ 
+				(const char*)XStr().copy(reinterpret_cast<const char*>(name), bytes), (const unsigned int)bytes };
+			workerName = worker_name;
 			workerPtr.swap(ptr);
 			pollDataThread = ThreadPool().get_mutable_instance().createNew(
 				boost::bind(&WorkerMode::pollDataFromWorkerThread, this));
@@ -111,7 +111,7 @@ void WorkerMode::keepAliveWorkerThread()
 			//Register and heartbeat
 			Url url;
 			url.setProtocol("register");
-			url.setHost(serviceName);
+			url.setHost(workerName);
 			url.addParameter("timestamp", (boost::format("%ld") % currentTickCount).str());
 			url.addParameter("sequence", (boost::format("%d") % sequence++).str());
 			const std::string data{url.encode()};

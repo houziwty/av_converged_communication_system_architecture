@@ -68,14 +68,10 @@ namespace framework
 
 			protected:
 				WorkerPtr workerPtr;
+				std::string workerName;
 				void* pollDataThread;
 				void* keepaliveThread;
 				bool stopped;
-				enum
-				{
-					Max = 256
-				};
-				char serviceName[Max];
 			};//class WorkerMode
 		}//namespace xmq
 	}//namespace network

@@ -49,4 +49,7 @@ public:
 
 private:
 //	FileLog fileLog;
+public:
+	afx_msg void OnBnClickedDvsLogin();
+	afx_msg void OnBnClickedDvsLogout();
 };

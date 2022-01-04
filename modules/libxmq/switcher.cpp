@@ -60,7 +60,7 @@ int Switcher::send(
 		{
 			Msg msg;
 			msg.append(uid, uid_bytes);
-//			msg.append("", 0);
+			msg.append("", 0);
 			msg.append(data, data_bytes);
 			ret = msg.send(router);
 		}
@@ -73,7 +73,7 @@ int Switcher::poll()
 {
 	int ret{router ? Error_Code_Success : Error_Code_Operate_Failure};
 
-	if(Error_Code_Success == ret)
+	if(Error_Code_Success == ret) 
 	{
 		zmq_pollitem_t pollitems[]{ { router, 0, ZMQ_POLLIN, 0} };
 		zmq_poll(pollitems, 1, 1);
@@ -84,15 +84,13 @@ int Switcher::poll()
 			ret = msg.recv(router);
 			if (Error_Code_Success == ret)
 			{
-				//只读第一和第二段数据
-				const void* uid{msg.msg()};
-				const int uid_bytes{msg.msg_bytes()};
-				const void* data{msg.msg(1)};
-				const int data_bytes{msg.msg_bytes(1)};
+				//只读第一和第三段数据
+ 				const Message* header{ msg.msg() };
+				const Message* body{ msg.msg(2) };
 				
 				if (handler)
 				{
-					handler(uid, uid_bytes, data, data_bytes);
+					handler(header->data, header->bytes, body->data, body->bytes);
 				}
 			}
 		}
