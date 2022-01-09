@@ -150,27 +150,6 @@
             ],
             "preLaunchTask": "Build",
             "miDebuggerPath": "/usr/bin/gdb"
-        },
-        {
-            "name": "MediaServer",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/samples/ZLMediaKit/release/linux/Debug/MediaServer",
-            "args": [],
-            "stopAtEntry": true,
-            "cwd": "${fileDirname}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "preLaunchTask": "Build",
-            "miDebuggerPath": "/usr/bin/gdb"
         }
     ]
 }
