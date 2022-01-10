@@ -1250,13 +1250,11 @@
 
    # 4. 通信协议
    ## 4.1 协议格式
-   >>> ``` 协议名称://目的地址 [ /路由地址/... [ ? 参数名=参数值 [ & ...] ] ]```
+   >>> ``` 信令名称://目的地址 [ /路由地址/... [ ? 参数名=参数值 [ & ...] ] ]```
 
    ## 4.2 xmq_host_service
    
    ### 4.2.1 服务查询请求
-   >>> 系统内个服务可以向XMQ服务查询系统内在线的服务信息。
-
    >>> ```query://xmq_host_service```
 
    ### 4.2.2 服务查询应答
@@ -1276,23 +1274,23 @@
    ### 4.3.4 服务查询应答
    >>> ```query://dvs_host_service[?name=*[&name=*[&sequence=1]]]```
    
-   ### 4.3.5 转发设备查询请求
-   >>> ```dvs://dvs_host_service?from=client_uuid&command=query```
+   ### 4.3.5 设备列表查询请求
+   >>> ```config://dvs_host_service?from=client_uuid&command=query```
    
-   ### 4.3.6 转发设备查询应答
-   >>> ```dvs://client_uuid?from=dvs_host_service&command=query[&dvs=1_192.168.0.100_4_test[&dvs=*]]```
+   ### 4.3.6 设备列表查询应答
+   >>> ```config://client_uuid?from=dvs_host_service&command=query[&dvs=1_192.168.0.100_4_test[&dvs=*]]```
    
-   ### 4.3.7 转发设备新增请求
-   >>> ```dvs://dvs_host_service?from=client_uuid&command=add&ip=192.168.0.100&port=8000&user=admin&passwd=Vrc123456&name=test```
+   ### 4.3.7 设备新增请求
+   >>> ```config://dvs_host_service?from=client_uuid&command=add&ip=192.168.0.100&port=8000&user=admin&passwd=Vrc123456&name=test```
    
-   ### 4.3.8 转发设备新增应答
-   >>> ```dvs://client_uuid?from=dvs_host_service&command=add&error=0[&dvs=1_192.168.0.100_4_test]```
+   ### 4.3.8 设备新增应答
+   >>> ```config://client_uuid?from=dvs_host_service&command=add&error=0[&dvs=1_192.168.0.100_4_test]```
    
-   ### 4.3.9 转发设备删除请求
-   >>> ```dvs://dvs_host_service?from=client_uuid&command=remove&id=1```
+   ### 4.3.9 设备删除请求
+   >>> ```config://dvs_host_service?from=client_uuid&command=remove&id=1```
    
-   ### 4.3.10 转发设备删除应答
-   >>> ```dvs://client_uuid?from=dvs_host_service&command=remove&error=0&id=1```
+   ### 4.3.10 设备删除应答
+   >>> ```config://client_uuid?from=dvs_host_service&command=remove&error=0&id=1```
 
    # 5. 开发计划
    # 6. 测试计划
