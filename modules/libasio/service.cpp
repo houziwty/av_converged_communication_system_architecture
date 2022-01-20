@@ -25,7 +25,7 @@ int Service::start()
 		if (ctxs[i])
 		{
 			works[i] = new(std::nothrow) boost::asio::io_context::work(*ctxs[i]);
-			boost::thread* thread{ new(std::nothrow) boost::thread([&]() {ctxs[i]->run(); }) };
+			boost::thread* thread{ new(std::nothrow) boost::thread([&, i]() {ctxs[i]->run(); }) };
 
 			if (thread)
 			{

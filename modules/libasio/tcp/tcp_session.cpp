@@ -10,7 +10,7 @@ TcpSession::~TcpSession()
 
 int TcpSession::createNew(SessionPtr ptr, const unsigned int bytes/* = 1048576*/)
 {
-    if (!sessionPtr)
+    if (sessionPtr)
     {
         return Error_Code_Operate_Failure;
     }

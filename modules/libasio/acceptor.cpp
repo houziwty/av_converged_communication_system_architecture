@@ -18,18 +18,24 @@ Acceptor::~Acceptor()
 
 int Acceptor::listen(boost::asio::io_context& ctx)
 {
-	SessionPtr ptr{boost::make_shared<Session>(ctx)};
-	auto self{
-		boost::enable_shared_from_this<Acceptor>::shared_from_this() };
-	acceptor.async_accept(
-		ptr->sock(),
-		[&, self](boost::system::error_code e)
-		{
-			if (acceptedRemoteConnectCBFunc)
-			{
-				acceptedRemoteConnectCBFunc(ptr, e.value());
-			}
-		});
+	int ret{Error_Code_Bad_New_Socket};
+	boost::asio::ip::tcp::socket* so{
+		new(std::nothrow) boost::asio::ip::tcp::socket{ctx}};
 
-	return Error_Code_Success;
+	if(so)
+	{
+		acceptor.async_accept(
+			*so, 
+			[&, so](boost::system::error_code e)
+			{
+				if (acceptedRemoteConnectCBFunc)
+				{
+					acceptedRemoteConnectCBFunc(so, e.value());
+				}
+			});
+
+		ret = Error_Code_Success;
+	}
+
+	return ret;
 }

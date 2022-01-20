@@ -30,6 +30,7 @@ set(SOURCE_DIR ${ROOT_DIR}/src)
 
 add_subdirectory(modules/liblog)
 add_subdirectory(modules/libasio)
+add_subdirectory(modules/libhttp)
 add_subdirectory(modules/libxmq)
 add_subdirectory(modules/libavstream)
 add_subdirectory(modules/libdvshost)

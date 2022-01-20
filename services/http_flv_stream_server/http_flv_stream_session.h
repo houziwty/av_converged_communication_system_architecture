@@ -13,24 +13,24 @@
 #ifndef SERVICE_HTTP_FLV_STREAM_SESSION_H
 #define SERVICE_HTTP_FLV_STREAM_SESSION_H
 
-#include "tcp/http/http_session.h"
-using namespace module::network::asio;
+// #include "tcp/http/http_session.h"
+// using namespace module::network::asio;
 
-class HttpFlvStreamSession final 
-    : public HttpSession
+class HttpFlvStreamSession// final 
+//    : public HttpSession
 {
 public:
     HttpFlvStreamSession(void);
     ~HttpFlvStreamSession(void);
 
-protected:
-    void fetchSentDataEventNotification(
-        const int e = 0, 
-        const int bytes = 0) override;
-    void fetchReceivedDataEventNotification(
-        const int e = 0, 
-        const void* data = nullptr, 
-        const int bytes = 0) override;
+// protected:
+//     void fetchSentDataEventNotification(
+//         const int e = 0, 
+//         const int bytes = 0) override;
+//     void fetchReceivedDataEventNotification(
+//         const int e = 0, 
+//         const void* data = nullptr, 
+//         const int bytes = 0) override;
 };//class HttpFlvStreamSession
 
 #endif//SERVICE_HTTP_FLV_STREAM_SESSION_H

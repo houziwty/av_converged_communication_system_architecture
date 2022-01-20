@@ -6,13 +6,16 @@ set(
 	ASIO_ROOT_DIR 
 	${ROOT_DIR}/modules/libasio)
 set(
+	HTTP_ROOT_DIR 
+	${ROOT_DIR}/modules/libhttp)
+set(
 	LOG_ROOT_DIR 
 	${ROOT_DIR}/modules/liblog)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	link_directories(${ASIO_ROOT_DIR} ${LOG_ROOT_DIR})
 	set(
 		LINK_LIBS 
-		asio 
+		http 
 		log 
 		libboost_program_options.a 
 		libboost_thread.a
@@ -36,13 +39,13 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		${BOOST_LINK_DIR}/libboost_chrono-vc142-mt-gd-x64-1_78.lib 
 		${BOOST_LINK_DIR}/libboost_program_options-vc142-mt-gd-x64-1_78.lib	
 		${BOOST_LINK_DIR}/libboost_serialization-vc142-mt-gd-x64-1_78.lib 		
-		${ASIO_LINK_DIR}/asio.lib 
+		${ASIO_LINK_DIR}/http.lib 
 		${LOG_LINK_DIR}/log.lib)
 	add_definitions(-DUSE_MODULE_FILE_LOG -DUSE_MODULE_NETWORK_ASIO)
 endif()
 
 set(SERVICE_ROOT_DIR ${ROOT_DIR}/service/http_flv_stream_server)
-include_directories(${INCLUDE_DIR} ${SERVICE_ROOT_DIR} ${BOOST_ROOT_DIR} ${ASIO_ROOT_DIR} ${LOG_ROOT_DIR})
+include_directories(${INCLUDE_DIR} ${SERVICE_ROOT_DIR} ${BOOST_ROOT_DIR} ${ASIO_ROOT_DIR} ${HTTP_ROOT_DIR} ${LOG_ROOT_DIR})
 file(GLOB_RECURSE main "*.cpp")
 
 add_executable(

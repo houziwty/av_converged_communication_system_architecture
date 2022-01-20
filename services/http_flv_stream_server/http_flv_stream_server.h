@@ -13,18 +13,18 @@
 #ifndef SERVICE_HTTP_FLV_STREAM_SERVER_H
 #define SERVICE_HTTP_FLV_STREAM_SERVER_H
 
-#include "tcp/http/http_server.h"
-using namespace module::network::asio;
+// #include "tcp/http/http_server.h"
+// using namespace module::network::asio;
 
 class HttpFlvStreamServer 
-	: public HttpServer
+//	: public HttpServer
 {
 public:
 	HttpFlvStreamServer(void);
 	virtual ~HttpFlvStreamServer(void);
 
-protected:
-	void fetchAcceptedEventNotification(SessionPtr session, const int e = 0) override;
+// protected:
+// 	void fetchAcceptedEventNotification(SessionPtr session, const int e = 0) override;
 };//class HttpFlvStreamServer
 
 #endif//SERVICE_HTTP_FLV_STREAM_SERVER_H

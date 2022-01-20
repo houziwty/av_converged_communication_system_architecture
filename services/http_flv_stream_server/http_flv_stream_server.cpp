@@ -1,19 +1,19 @@
 #include "boost/make_shared.hpp"
 #include "error_code.h"
-#include "session.h"
-using namespace module::network::asio;
+// #include "session.h"
+// using namespace module::network::asio;
 #include "http_flv_stream_session.h"
 #include "http_flv_stream_server.h"
 
 HttpFlvStreamServer::HttpFlvStreamServer() 
-    : HttpServer()
+//    : HttpServer()
 {}
 
 HttpFlvStreamServer::~HttpFlvStreamServer()
 {}
 
-void HttpFlvStreamServer::fetchAcceptedEventNotification(SessionPtr session, const int e/* = 0*/)
-{
+// void HttpFlvStreamServer::fetchAcceptedEventNotification(SessionPtr session, const int e/* = 0*/)
+// {
 //     if(session && !e)
 //     {
 //         const std::string remoteAddr{
@@ -32,4 +32,4 @@ void HttpFlvStreamServer::fetchAcceptedEventNotification(SessionPtr session, con
 //             testPtr.swap(ptr);
 //         }
 //     }
-}
+//}

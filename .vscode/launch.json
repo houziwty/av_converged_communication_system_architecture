@@ -71,7 +71,7 @@
             "name": "http_flv_stream_server",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/services/http_flv_service/http_flv_stream_server",
+            "program": "${workspaceFolder}/build/services/http_flv_stream_server/http_flv_stream_server",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${fileDirname}",

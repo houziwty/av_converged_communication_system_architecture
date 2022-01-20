@@ -1,10 +1,10 @@
 #include "boost/make_shared.hpp"
-#include "http_flv_stream_server.h"
+#include "http_server.h"
+using namespace module::network::http;
 
 int main(int argc, char* argv[])
 {
-    using TcpServerPtr = boost::shared_ptr<TcpServer>;
-    TcpServerPtr server{boost::make_shared<HttpFlvStreamServer>()};
+    boost::shared_ptr<TcpServer> server{boost::make_shared<HttpServer>()};
     server->start(50927);
     getchar();
     server->stop();
