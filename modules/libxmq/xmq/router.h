@@ -34,7 +34,7 @@ namespace module
 				//@Return : socket实例
 				socket_t bind(
 					ctx_t c = nullptr, 
-					const unsigned short port = 0);
+					const uint16_t port = 0);
 
 				//关闭
 				//@s [in] : socket实例

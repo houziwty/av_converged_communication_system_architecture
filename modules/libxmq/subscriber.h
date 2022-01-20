@@ -36,8 +36,8 @@ namespace module
 				//@Return : 错误码
 				int connect(
 					const char* ip = nullptr, 
-					const unsigned short port = 0,
-					const int hwm = 10);
+					const uint16_t port = 0,
+					const int32_t hwm = 10);
 
 				//拉取
 				//@Comment : 该模型必须由调用者负责主动拉取数据

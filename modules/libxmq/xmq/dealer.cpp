@@ -17,13 +17,13 @@ Dealer::~Dealer()
 {}
 
 socket_t Dealer::connect(
-	const void* uid/* = nullptr*/, 
-	const int uid_bytes/* = 0*/, 
+	const char* uid/* = nullptr*/, 
 	const char* ip/* = nullptr*/, 
-	const unsigned short port /* = 0 */,
+	const uint16_t port /* = 0 */,
 	ctx_t c /* = nullptr */)
 {
 	socket_t s{nullptr};
+	const std::string id{uid};
 
 	if (c && uid && ip && 0 < port)
 	{
@@ -34,7 +34,7 @@ socket_t Dealer::connect(
 			int keepalive{ 1 }, idle{30};
 			zmq_setsockopt(s, ZMQ_TCP_KEEPALIVE, &keepalive, sizeof(int));
 			zmq_setsockopt(s, ZMQ_TCP_KEEPALIVE_IDLE, &idle, sizeof(int));
-			zmq_setsockopt(s, ZMQ_IDENTITY, uid, uid_bytes);
+			zmq_setsockopt(s, ZMQ_IDENTITY, id.c_str(), id.length());
 
 			if (zmq_connect(s, (boost::format("tcp://%s:%d") % ip % port).str().c_str()))
 			{
