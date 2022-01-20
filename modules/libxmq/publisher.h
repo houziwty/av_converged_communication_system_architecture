@@ -33,14 +33,14 @@ namespace module
 				//@hwm [in] : 缓存大小
 				//@Return : 错误码
 				int bind(
-					const unsigned short port = 0,
-					const int hwm = 10);
+					const uint16_t port = 0,
+					const int32_t hwm = 10);
 
 				//发送
 				//@data [in] : 数据
 				//@bytes [in] : 大小
 				//@Return : 错误码
-				int send(const void* data = nullptr, const int bytes = 0);
+				int send(const void* data = nullptr, const uint64_t bytes = 0);
 
 			private:
 				ctx_t ctx;

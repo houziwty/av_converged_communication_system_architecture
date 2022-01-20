@@ -32,19 +32,17 @@ namespace module
 				//监听
 				//@port [in] : 端口号
 				//@Return : 错误码
-				int bind(const unsigned short port = 0);
+				int bind(const uint16_t port = 0);
 
 				//发送
 				//@uid [in] : 用户ID标识
-				//@uid_bytes [in] : 大小
 				//@data [in] : 数据 
-				//@data_bytes [in] : 大小 
+				//@bytes [in] : 大小 
 				//@Return : 错误码
 				int send(
-					const void* uid = nullptr, 
-					const int uid_bytes = 0,  
+					const char* uid = nullptr,  
 					const void* data = nullptr, 
-					const int data_bytes = 0);
+					const uint64_t bytes = 0);
 
 				//拉取
 				//@Comment : 该模型必须由调用者负责主动拉取数据
