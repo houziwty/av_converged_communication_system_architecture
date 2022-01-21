@@ -26,21 +26,34 @@
 #define CALLBACK
 #endif//_WINDOWS
 
-#include <functional>
-
 typedef void* ctx_t;
 typedef void* socket_t;
+typedef void* thread_t;
 
-//数据回调函数
-//_1 [out] : 标识
-//_2 [out] : 大小
-//_3 [out] : 数据
-//_4 [out] : 大小
-typedef std::function<void(const void*, const int, const void*, const int)> PolledDataWithIDCallback;
+//XMQ角色类型
+typedef enum tagXMQModeType_t
+{
+    XMQ_MODE_TYPE_NONE = 0,
+    XMQ_MODE_TYPE_ROUTER,
+    XMQ_MODE_TYPE_DEALER,
+    XMQ_MODE_TYPE_PUB,
+    XMQ_MODE_TYPE_SUB
+}XMQModeType;
 
-//数据回调函数
-//_1 [out] : 标识
-//_2 [out] : 大小
-typedef std::function<void(const void*, const int)> PolledDataWithoutIDCallback;
+//XMQ角色配置
+typedef struct tagXMQModeConf_t
+{
+    char name[128];
+    char ip[32];
+    uint16_t port;
+    uint32_t id;                    //角色ID标识，0 < id，由调用者定义
+    XMQModeType type;
+}XMQModeConf;
+
+//服务信息
+typedef struct tagServiceInfo_t
+{
+    char name[128];
+}ServiceInfo;
 
 #endif//MODULE_NETWORK_XMQ_DEFS_H
