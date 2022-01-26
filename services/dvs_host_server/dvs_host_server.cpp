@@ -17,20 +17,7 @@ DvsHostServer::~DvsHostServer()
 
 int DvsHostServer::run()
 {
-    int ret{XMQNode::run()};
-
-    if (Error_Code_Success == ret)
-    {
-        fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Start dvs host server successfully.");
-    }
-    else
-    {
-        fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_ERROR, 
-            "Start dvs host server failed, result = [ %d ].", ret);
-    }
-    
-    return ret;
+    return XMQNode::run();
 }
 
 int DvsHostServer::stop()
@@ -100,7 +87,7 @@ void DvsHostServer::afterPolledDataNotification(
     const std::string msg{reinterpret_cast<const char*>(data), bytes};
     fileLog.write(
         SeverityLevel::SEVERITY_LEVEL_INFO, 
-        "Fetch forward data = [ %s ] from xmq host service.", 
+        "Fetch forward data = [ %s ] from xmq host server.", 
         msg.c_str());
 
     Url requestUrl;
@@ -108,7 +95,7 @@ void DvsHostServer::afterPolledDataNotification(
 
     if(Error_Code_Success == ret)
     {
-        if (!requestUrl.getProtocol().compare("dvs"))
+        if (!requestUrl.getProtocol().compare("config"))
         {
             processDvsControlMessage(requestUrl);
         }
@@ -116,7 +103,7 @@ void DvsHostServer::afterPolledDataNotification(
         {
             fileLog.write(
                 SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                "Parsed unknown data = [ %s ] from xmq host service.",  
+                "Parsed unknown data = [ %s ] from xmq host server.",  
                 msg.c_str());
         }
     }
@@ -124,7 +111,7 @@ void DvsHostServer::afterPolledDataNotification(
     {
         fileLog.write(
             SeverityLevel::SEVERITY_LEVEL_ERROR, 
-            "Parsed forward data = [ %s ] from xmq host service failed, result = [ %d ].",  
+            "Parsed forward data = [ %s ] from xmq host server failed, result = [ %d ].",  
             msg.c_str(), 
             ret);
     }
@@ -197,7 +184,7 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
     if (!command.compare("query"))
     {
         std::string url{
-            (boost::format("dvs://%s?from=%s&command=query") % from % host).str()};
+            (boost::format("config://%s?command=query") % from).str()};
         const std::vector<DeviceInfo> infos{dvsHostMan.queryDeviceInfos()};
         for (int i = 0; i != infos.size(); ++i)
         {
@@ -209,7 +196,8 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
                 % infos[i].name.c_str()).str()};
             url.append(dvs);
         }
-//        XMQNode::send(url.c_str(), url.length());
+
+        XMQNode::send(0xB1, nullptr, url.c_str(), url.length());
     }
     else if (!command.compare("add"))
     {
@@ -226,16 +214,17 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
 
         if (Error_Code_Success == ret)
         {
-             fileLog.write(
+            fileLog.write(
                 SeverityLevel::SEVERITY_LEVEL_INFO, 
                 "Add new device successfully with uuid = [ %s ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ].", 
                 uuid.c_str(), name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str());
 
             const CameraPtrs cameras{dvsHostMan.queryCameraPtrs(uuid)};
             const std::string url{
-                (boost::format("dvs://%s?from=%s&command=add&error=%d&dvs=%s_%s_%d_%s") 
+                (boost::format("config://%s?from=%s&command=add&error=%d&dvs=%s_%s_%d_%s") 
                 % from % host % ret % uuid % ip % static_cast<int>(cameras.size()) % name).str()};
-//            LibXmqHostClient::send(url.c_str(), url.length());
+                
+            XMQNode::send(0xB1, nullptr, url.c_str(), url.length());
         }
         else
         {
@@ -245,8 +234,9 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
                 uuid.c_str(), name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str(), ret);
 
             const std::string url{
-                (boost::format("dvs://%s?from=%s&command=add&error=%d") % from % host % ret).str()};
-//            LibXmqHostClient::send(url.c_str(), url.length());
+                (boost::format("config://%s?from=%s&command=add&error=%d") % from % host % ret).str()};
+                
+            XMQNode::send(0xB1, nullptr, url.c_str(), url.length());
         }
     }
     else if (!command.compare("remove"))
@@ -267,7 +257,7 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
         }
 
         url.append(
-            (boost::format("dvs://%s?from=%s&command=remove&error=%d&id=%s") % from % host % ret % id).str());
-//        LibXmqHostClient::send(url.c_str(), url.length());
+            (boost::format("config://%s?from=%s&command=remove&error=%d&id=%s") % from % host % ret % id).str());
+        XMQNode::send(0xB1, nullptr, url.c_str(), url.length());
     }
 }

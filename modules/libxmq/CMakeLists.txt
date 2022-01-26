@@ -5,6 +5,7 @@ project(xmq VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(
 		LINK_LIBS 
+		libboost_thread.a		
 		libzmq.a 
 		gnutls 
 		sodium 
@@ -51,7 +52,8 @@ file(GLOB_RECURSE
 	"${SOURCE_DIR}/utils/hardware/cpu.cpp" 
 	"${SOURCE_DIR}/utils/url/url.cpp" 
 	"${SOURCE_DIR}/utils/time/xtime.cpp"
-	"${SOURCE_DIR}/utils/thread/*.cpp")
+	"${SOURCE_DIR}/utils/thread/*.cpp" 
+	"${SOURCE_DIR}/utils/memory/*.cpp")
 
 add_library(
 	${PROJECT_NAME} 

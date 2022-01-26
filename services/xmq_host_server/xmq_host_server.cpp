@@ -6,8 +6,6 @@ using namespace boost::placeholders;
 using namespace framework::utils::thread;
 #include "utils/time/xtime.h"
 using namespace framework::utils::time;
-#include "utils/memory/xmem.h"
-using namespace framework::utils::memory;
 #include "xmq_host_server.h"
 
 XmqHostServer::XmqHostServer(FileLog& log) 
@@ -19,24 +17,12 @@ XmqHostServer::~XmqHostServer()
 
 int XmqHostServer::run()
 {
-    const std::string name{"xmq_host_server"};
-    XMQModeConf conf{0};
-    conf.id = 0xA1;
-    conf.port = 60531;
-    conf.type = XMQModeType::XMQ_MODE_TYPE_ROUTER;
-    XMem().copy(name.c_str(), name.length(), conf.name, 128);
-
-    int ret{XMQNode::addConf(conf)};
+    int ret{XMQNode::run()};
 
     if (Error_Code_Success == ret)
     {
-        ret = XMQNode::run();
-
-        if (Error_Code_Success == ret)
-        {
-            expire = ThreadPool().get_mutable_instance().createNew(
-                boost::bind(&XmqHostServer::checkRegisterExpiredOfServiceThread, this));
-        }
+        expire = ThreadPool().get_mutable_instance().createNew(
+            boost::bind(&XmqHostServer::checkRegisterExpiredOfServiceThread, this));
     }
     
     return ret;
@@ -128,19 +114,21 @@ void XmqHostServer::checkRegisterExpiredOfServiceThread()
 	while (!stopped)
 	{
         XTime xt;
-        const unsigned long long startTickCount{xt.tickcount()};
+        const uint64_t startTickCount{xt.tickcount()};
         const std::vector<std::string> keies{registeredServices.keies()};
 
         for (int i = 0; i != keies.size(); ++i)
         {
-            const unsigned long long tick{registeredServices.at(keies[i])};
-            const unsigned long long diff{startTickCount - tick};
+            const uint64_t tick{registeredServices.at(keies[i])};
+            const uint32_t diff{startTickCount > tick ? startTickCount - tick : tick - startTickCount};
 
             if (diff > 90000)
             {
                 registeredServices.remove(keies[i]);
                 fileLog.write(
-                    SeverityLevel::SEVERITY_LEVEL_WARNING, "Remove service name = [ %s ] with expired = [ %ld ].",  keies[i].c_str(), diff);
+                    SeverityLevel::SEVERITY_LEVEL_WARNING, 
+                    "Remove service name = [ %s ] with expired = [ %ld ].", 
+                    keies[i].c_str(), diff);
             }
         }
         

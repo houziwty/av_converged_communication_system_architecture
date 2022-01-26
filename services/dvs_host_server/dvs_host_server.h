@@ -39,6 +39,15 @@ public:
 	int run(void) override;
 	int stop(void) override;
 
+    //启动XMS
+    //@port [in] : 端口号
+    //@Return : 错误码
+    int startXMS(const unsigned short port = 0);
+
+    //停止XMS
+    //@Return : 错误码
+    int stopXMS(void);
+
 protected:
 	void afterPolledDataNotification(
 		const uint32_t id = 0, 
@@ -56,15 +65,6 @@ protected:
 private:
     //移除超时未更新会话
     void removeExpiredSession(const std::string sid);
-
-    //启动XMS
-    //@port [in] : 端口号
-    //@Return : 错误码
-    int startXMS(const unsigned short port = 0);
-
-    //停止XMS
-    //@Return : 错误码
-    int stopXMS(void);
     
     //DVS设备业务处理
 	//@requestUrl [in] : 请求URL标识

@@ -1,7 +1,10 @@
 #include <iostream>
+#include "boost/make_shared.hpp"
 #include "error_code.h"
 #include "utils/commandline/commandline.h"
 using namespace framework::utils::parser;
+#include "utils/memory/xmem.h"
+using namespace framework::utils::memory;
 #include "xmq_host_server.h"
 
 int main(int argc, char* argv[])
@@ -10,26 +13,41 @@ int main(int argc, char* argv[])
     fileLog.createNew(argv[0]);
     CommandLineParser parser;
     parser.setOption("local_port", "");
-    parser.setOption("pub_port", "");
-    parser.setOption("app_name", "");
+    // parser.setOption("pub_port", "");
+    // parser.setOption("app_name", "");
 
     if (Error_Code_Success == parser.parse(argc, argv))
     {
         const std::string local_port{parser.getParameter("local_port")};
-        const std::string pub_port{parser.getParameter("pub_port")};
-        const std::string app_name{parser.getParameter("app_name")};
+        // const std::string pub_port{parser.getParameter("pub_port")};
+        // const std::string app_name{parser.getParameter("app_name")};
 
-        fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_INFO, 
-            "Parse command line parameters with local_port = [ %s ], pub_port = [ %s ], app_name = [ %s ].",
-            local_port.c_str(), pub_port.c_str(), app_name.c_str());
-
-        if (!local_port.empty() && !pub_port.empty() && !app_name.empty())
+        boost::shared_ptr<XMQNode> node{
+            boost::make_shared<XmqHostServer>(fileLog)};
+        if (node)
         {
-            XmqHostServer xhs{fileLog};
-            xhs.run();
-            getchar();
-            xhs.stop();
+            const std::string name{"xmq_host_server"};
+            XMQModeConf conf{0};
+            conf.id = 0xA1;
+            conf.port = atoi(local_port.c_str());
+            conf.type = XMQModeType::XMQ_MODE_TYPE_ROUTER;
+            XMem().copy(name.c_str(), name.length(), conf.name, 128);
+
+            fileLog.write(
+                SeverityLevel::SEVERITY_LEVEL_INFO, 
+                "Run xmq host server with name = [ %s ], local_port = [ %d ], id = [ %x ], type = [ %d ].",
+                conf.name, conf.port, conf.id, static_cast<int>(conf.type));
+            
+            if (Error_Code_Success == node->addConf(conf))
+            {
+                node->run();
+                getchar();
+                node->stop();
+            }
+        }
+        else
+        {
+            fileLog.write(SeverityLevel::SEVERITY_LEVEL_ERROR, "Create instance of node failed.");
         }
     }
     else
