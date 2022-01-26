@@ -26,8 +26,8 @@ int main(int argc, char* argv[])
 
         if (!local_port.empty() && !pub_port.empty() && !app_name.empty())
         {
-            XmqHostServer xhs{app_name, fileLog};
-            xhs.start(atoi(local_port.c_str()), atoi(pub_port.c_str()));
+            XmqHostServer xhs{fileLog};
+            xhs.run();
             getchar();
             xhs.stop();
         }

@@ -1,3 +1,6 @@
+#include "boost/bind/bind.hpp"
+using namespace boost::placeholders;
+#include "boost/make_shared.hpp"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -8,15 +11,15 @@ extern "C" {
 #include "utils/map/unordered_map.h"
 #include "error_code.h"
 #include "xmq/ctx.h"
-#include "xmq/dealer.h"
-#include "xmq/pub.h"
-#include "xmq/sub.h"
-#include "xmq/msg.h"
 #include "service_discover.h"
+#include "service_vendor.h"
+#include "data_pub.h"
+#include "data_sub.h"
 #include "xmq_node.h"
 using namespace module::network::xmq;
 
-static UnorderedMap<socket_t, const XMQModeConf> confs;
+using XMQRolePtr = boost::shared_ptr<XMQRole>;
+static UnorderedMap<const int, XMQRolePtr> roles;
 static ctx_t ctx{nullptr};
 
 XMQNode::XMQNode()
@@ -31,7 +34,7 @@ XMQNode::~XMQNode()
 
 int XMQNode::addConf(const XMQModeConf& conf)
 {
-	int ret{ctx && 0 < conf.id ? Error_Code_Success : Error_Code_Bad_Operate};
+	int ret{ctx && 0 < conf.id ? Error_Code_Success : Error_Code_Operate_Failure};
 
 	if (Error_Code_Success == ret)
 	{
@@ -42,21 +45,40 @@ int XMQNode::addConf(const XMQModeConf& conf)
 
 		if (Error_Code_Success == ret)
 		{
+			XMQRolePtr role;
+
 			if (XMQModeType::XMQ_MODE_TYPE_ROUTER == conf.type)
 			{
+				role = boost::make_shared<ServiceDiscover>(
+					conf, 
+					boost::bind(&XMQNode::afterPolledDataNotification, this, _1, _2, _3, _4));
 			}
 			else if (XMQModeType::XMQ_MODE_TYPE_DEALER == conf.type)
 			{
+				role = boost::make_shared<ServiceVendor>(
+					conf,
+					boost::bind(&XMQNode::afterPolledDataNotification, this, _1, _2, _3, _4), 
+					boost::bind(&XMQNode::afterFetchOnlineStatusNotification, this, _1), 
+					boost::bind(&XMQNode::afterFetchServiceCapabilitiesNotification, this, _1, _2));
 			}
 			else if (XMQModeType::XMQ_MODE_TYPE_PUB == conf.type)
 			{
+				role = boost::make_shared<DataPub>(conf);
 			}
 			else if (XMQModeType::XMQ_MODE_TYPE_SUB == conf.type)
 			{
+				role = boost::make_shared<DataSub>(
+					conf, 
+					boost::bind(&XMQNode::afterPolledDataNotification, this, _1, _2, _3, _4));
+			}
+
+			if (role)
+			{
+				roles.add(conf.id, role);
 			}
 			else
 			{
-				ret = Error_Code_Operate_Not_Support;
+				ret = Error_Code_Bad_New_Object;
 			}
 		}
 	}
@@ -64,36 +86,19 @@ int XMQNode::addConf(const XMQModeConf& conf)
 	return ret;
 }
 
-int XMQNode::remove(const uint32_t id/* = 0*/)
+int XMQNode::removeConf(const uint32_t id/* = 0*/)
 {
-	int ret{ctx && stopped && 0 < id ? Error_Code_Success : Error_Code_Operate_Failure};
+	int ret{ctx && 0 < id ? Error_Code_Success : Error_Code_Operate_Failure};
 
 	if (Error_Code_Success == ret)
 	{
-		const XMQNodeConf& conf{confs.at(id)};
+		XMQRolePtr role{roles.at(id)};
 
-		if (0 < conf.id && conf.so)
+		if (role)
 		{
-			if (XMQModeType::XMQ_MODE_TYPE_ROUTER == conf.type)
-			{
-				ret = Router().shutdow(conf.so);
-			}
-			else if (XMQModeType::XMQ_MODE_TYPE_DEALER == conf.type)
-			{
-				ret = Dealer().shutdow(conf.so);
-			}
-			else if (XMQModeType::XMQ_MODE_TYPE_PUB == conf.type)
-			{
-				ret = Pub().shutdow(conf.so);
-			}
-			else if (XMQModeType::XMQ_MODE_TYPE_SUB == conf.type)
-			{
-				ret = Sub().shutdow(conf.so);
-			}
-
-			confs.remove(id);
+			ret = role->stop();
+			roles.remove(id);
 		}
-		
 	}
 
 	return ret;
@@ -105,9 +110,36 @@ int XMQNode::run()
 
 	if (Error_Code_Success == ret)
 	{
-		/* code */
+		std::vector<XMQRolePtr> items{roles.values()};
+		for (int i = 0; i != items.size(); ++i)
+		{
+			if (items[i])
+			{
+				items[i]->run(ctx);
+			}
+		}
 	}
-	
+
+	return ret;
+}
+
+int XMQNode::stop()
+{
+	int ret{ctx ? Error_Code_Success : Error_Code_Operate_Failure};
+
+	if (Error_Code_Success == ret)
+	{
+		std::vector<XMQRolePtr> items{roles.values()};
+		for (int i = 0; i != items.size(); ++i)
+		{
+			if (items[i])
+			{
+				items[i]->stop();
+			}
+		}
+	}
+
+	return ret;
 }
 
 int XMQNode::send(
@@ -116,70 +148,17 @@ int XMQNode::send(
 	const void* data/* = nullptr*/, 
 	const uint64_t bytes/* = 0*/)
 {
-	int ret{ctx && !stopped ? Error_Code_Success : Error_Code_Operate_Failure};
+	int ret{ctx ? Error_Code_Success : Error_Code_Operate_Failure};
 
 	if(Error_Code_Success == ret)
 	{
-		ret = (0 < id && data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param);
+		XMQRolePtr role{roles.at(id)};
 
-		if(Error_Code_Success == ret)
+		if (role)
 		{
-			Msg msg;
-			const XMQNodeConf& conf{confs.at(id)};
-
-			if (XMQModeType::XMQ_MODE_TYPE_ROUTER == conf.type && name)
-			{
-				const std::string sid{name};
-				msg.append(sid.c_str(), sid.length());
-				msg.append("", 0);
-			}
-			else if (XMQModeType::XMQ_MODE_TYPE_DEALER == conf.type)
-			{
-				msg.append("", 0);
-			}
-			else if (XMQModeType::XMQ_MODE_TYPE_PUB == conf.type)
-			{
-			}
-			else
-			{
-				ret = Error_Code_Operate_Not_Support;
-			}
-
-			if (Error_Code_Success == ret)
-			{
-				msg.append(data, bytes);
-				ret = msg.send(router);
-			}
+			ret = role->send(name, data, bytes);
 		}
 	}
 
 	return ret;
-}
-
-void XMQNode::pollDataThread()
-{
-	while(ctx && !stopped) 
-	{
-		const std::vector<const XMQNodeConf> nodeconfs{confs.value()};
-
-		zmq_pollitem_t pollitems[]{ { router, 0, ZMQ_POLLIN, 0} };
-		zmq_poll(pollitems, 1, 1);
-
-		if (pollitems[0].revents & ZMQ_POLLIN)
-		{
-			Msg msg;
-			ret = msg.recv(router);
-			if (Error_Code_Success == ret)
-			{
-				//只读第一和第三段数据
- 				const Message* header{ msg.msg() };
-				const Message* body{ msg.msg(2) };
-				
-				if (handler)
-				{
-					handler(header->data, header->bytes, body->data, body->bytes);
-				}
-			}
-		}
-	}
 }

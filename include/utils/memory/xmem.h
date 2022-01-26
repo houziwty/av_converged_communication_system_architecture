@@ -26,7 +26,7 @@ namespace framework
                 ~XMem(void);
 
             public:
-                //直接目标拷贝
+                //内存拷贝
 				//@src [in] : 源数据
 				//@src_bytes [in] : 大小
                 //@dest [in] : 目标数据
@@ -36,18 +36,18 @@ namespace framework
                 //           2.如果src_bytes > dest_bytes，只拷贝dest_bytes大小的数据
                 int copy(
                     const void* src = nullptr, 
-                    const int src_bytes = 0, 
+                    const uint64_t src_bytes = 0, 
                     void* dest = nullptr, 
-                    const int dest_bytes = 0);
+                    const uint64_t dest_bytes = 0);
 
-                //新建目标拷贝
+                //创建内存并拷贝
 				//@src [in] : 源数据
-				//@src_bytes [in] : 大小
-				//@Return : 目标数据
-				//@Comment : 1.目标数据大小为src_bytes大小
+				//@bytes [in] : 源大小
+				//@Return : 创建内存
+				//@Comment : 创建内存由调用者销毁
                 void* copyNew(
                     const void* src = nullptr, 
-                    const int src_bytes = 0);
+                    const uint64_t bytes = 0);
             };//class XMem
         }//namespace memory
     }//namespace utils

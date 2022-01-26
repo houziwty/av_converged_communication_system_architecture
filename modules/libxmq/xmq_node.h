@@ -48,25 +48,27 @@ namespace module
 				//@Return : 错误码
 				virtual int stop(void);
 
-				//发送角色数据
-				//@id [in] : 角色ID
-				//@name [in] : 服务名称
+				//发送数据
+				//@id [in] : 数据发送角色ID
+				//@name [in] : 数据接收服务名称
 				//@data [in] : 数据
 				//@bytes [in] : 大小 
 				//@Return : 错误码
-				int send(
+				virtual int send(
 					const uint32_t id = 0, 
 					const char* name = nullptr, 
 					const void* data = nullptr, 
 					const uint64_t bytes = 0);
 			
 			protected:
-				//接收角色数据通知
+				//接收数据通知
 				//@id [out] : 角色ID
+				//@name [out] : 服务名称
 				//@data [out] : 数据 
 				//@bytes [out] : 大小
 				virtual void afterPolledDataNotification(
 					const uint32_t id = 0, 
+					const char* name = nullptr, 
 					const void* data = nullptr, 
 					const uint64_t bytes = 0) = 0;
 
@@ -77,9 +79,9 @@ namespace module
 				//服务信息通知
 				//@infos [out] : 服务信息集合 
 				//@number [out] : 服务个数
-				virtual void fetchXmqHostServiceCapabilitiesNotification(
+				virtual void afterFetchServiceCapabilitiesNotification(
 					const ServiceInfo* infos = nullptr, 
-					const int number = 0) = 0;
+					const uint32_t number = 0) = 0;
 			};//class XMQNode
 		}//namespace xmq
 	}//namespace network

@@ -35,7 +35,7 @@ int DvsHostSession::createNew(
                      //不用处理错误码
                     if(!totalRecvBytes)
                     {
-                        dvsHostServer.removeExpiredSession(sessionId);
+//                        dvsHostServer.removeExpiredSession(sessionId);
                     }
                 });
         }

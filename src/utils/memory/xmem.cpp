@@ -3,6 +3,7 @@
 #else
 #include <cstring>
 #endif//WINDOWS
+#include <stdint.h>
 #include <new>
 #include "error_code.h"
 #include "utils/memory/xmem.h"
@@ -16,15 +17,15 @@ XMem::~XMem()
 
 int XMem::copy(
     const void* src/* = nullptr*/, 
-    const int src_bytes/* = 0*/, 
+    const uint64_t src_bytes/* = 0*/, 
     void* dest/* = nullptr*/, 
-    const int dest_bytes/* = 0*/)
+    const uint64_t dest_bytes/* = 0*/)
 {
     int ret{src && 0 < src_bytes && dest && 0 < dest_bytes ? Error_Code_Success : Error_Code_Invalid_Param};
 
     if(Error_Code_Success == ret)
     {
-        const int bytes{src_bytes > dest_bytes ? dest_bytes : src_bytes};
+        const uint64_t bytes{src_bytes > dest_bytes ? dest_bytes : src_bytes};
 
 #ifdef _WINDOWS
 	    memcpy_s(dest, bytes, src, bytes);
@@ -38,17 +39,17 @@ int XMem::copy(
 
 void* XMem::copyNew(
     const void* src/* = nullptr*/, 
-    const int src_bytes/* = 0*/)
+    const uint64_t bytes/* = 0*/)
 {
     void* dest{nullptr};
 
-    if (src && 0 < src_bytes)
+    if (src && 0 < bytes)
     {
-        dest = new(std::nothrow) char[src_bytes];
+        dest = new(std::nothrow) char[bytes];
         
         if (dest)
         {
-            copy(src, src_bytes, dest, src_bytes);
+            copy(src, bytes, dest, bytes);
         }
     }
     

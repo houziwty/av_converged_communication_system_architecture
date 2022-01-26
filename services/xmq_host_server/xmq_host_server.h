@@ -15,32 +15,33 @@
 
 #include "log.h"
 using namespace module::file::log;
+#include "xmq_node.h"
+using namespace module::network::xmq;
 #include "utils/map/unordered_map.h"
-#include "network/xmq/switcher_pub_mode.h"
-using namespace framework::network::xmq;
 #include "utils/url/url.h"
 using namespace framework::utils::url;
 
 class XmqHostServer final 
-	: public SwitcherPubMode
+	: public XMQNode
 {
 public:
-	XmqHostServer(const std::string name, FileLog& log);
+	XmqHostServer(FileLog& log);
 	~XmqHostServer(void);
 
 public:
-	int start(
-		const unsigned short switcherPort = 0, 
-		const unsigned short publisherPort = 0, 
-		const int hwm = 10) override;
+	int run(void) override;
 	int stop(void) override;
 
 protected:
-	void afterSwitcherPolledDataHandler(
-		const void* uid = nullptr, 
-		const int uid_bytes = 0, 
+	void afterPolledDataNotification(
+		const uint32_t id = 0, 
+		const char* name = nullptr, 
 		const void* data = nullptr, 
-		const int data_bytes = 0) override;
+		const uint64_t bytes = 0) override;
+	void afterFetchOnlineStatusNotification(const bool online = false) override;
+	void afterFetchServiceCapabilitiesNotification(
+		const ServiceInfo* infos = nullptr, 
+		const uint32_t number = 0) override;
 
 private:
 	//服务注册超时检测线程
@@ -63,11 +64,10 @@ private:
 	void forwardMessage(const std::string name, const std::string data);
 
 private:
-	const std::string serviceName;
 	FileLog& fileLog;
-	UnorderedMap<std::string, unsigned long long> registeredServices;
+	UnorderedMap<std::string, uint64_t> registeredServices;
 	bool stopped;
-	void* thread;
+	_thread_t expire;
 };//class XmqHostServer
 
 #endif//SERVICE_XMQ_HOST_SERVER_H

@@ -14,17 +14,13 @@ set(
 set(
 	DVS_HOST_ROOT_DIR 
 	${ROOT_DIR}/modules/libdvshost)
-set(
-	XMQ_CLIENT_ROOT_DIR 
-	${ROOT_DIR}/services/libxmq_host_client)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-	link_directories(${XMQ_ROOT_DIR} ${ASIO_ROOT_DIR} ${LOG_ROOT_DIR} ${DVS_HOST_ROOT_DIR} ${XMQ_CLIENT_ROOT_DIR})
+	link_directories(${XMQ_ROOT_DIR} ${ASIO_ROOT_DIR} ${LOG_ROOT_DIR} ${DVS_HOST_ROOT_DIR})
 	set(
 		LINK_LIBS 
 		libboost_program_options.a 
 		libboost_thread.a
 		pthread 
-		xmq_host_client 
 		dvshost 
 		asio 
 		xmq 
@@ -43,9 +39,6 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		LOG_LINK_DIR 
 		${ROOT_DIR}/win32/modules/liblog/${CMAKE_BUILD_TYPE})
 	set(
-		XMQ_CLIENT_LINK_DIR 
-		${ROOT_DIR}/win32/services/libxmq_host_client/${CMAKE_BUILD_TYPE})
-	set(
 		ASIO_LINK_DIR 
 		${ROOT_DIR}/win32/modules/libasio/${CMAKE_BUILD_TYPE})
 	set(
@@ -61,7 +54,6 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${XMQ_LINK_DIR}/xmq.lib 
 			${LOG_LINK_DIR}/log.lib 
 			${ASIO_LINK_DIR}/asio.lib 
-			${XMQ_CLIENT_LINK_DIR}/xmq_host_client.lib 
 			${DVS_HOST_LINK_DIR}/dvshost.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(
@@ -73,14 +65,20 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${XMQ_LINK_DIR}/xmq.lib 
 			${LOG_LINK_DIR}/log.lib 
 			${ASIO_LINK_DIR}/asio.lib 
-			${XMQ_CLIENT_LINK_DIR}/xmq_host_client.lib 
 			${DVS_HOST_LINK_DIR}/dvshost.lib)
 	endif()
-	add_definitions(-DUSE_MODULE_FILE_LOG -DUSE_MODULE_NETWORK_XMQ -DUSE_MODULE_NETWORK_ASIO -DUSE_XMQ_HOST_CLIENT -DUSE_MODULE_DVS_HOST)
+	add_definitions(-DUSE_MODULE_FILE_LOG -DUSE_MODULE_NETWORK_XMQ -DUSE_MODULE_NETWORK_ASIO -DUSE_MODULE_DVS_HOST)
 endif()
 
 set(SERVICE_ROOT_DIR ${ROOT_DIR}/service/dvs_host_service)
-include_directories(${INCLUDE_DIR} ${SERVICE_ROOT_DIR} ${BOOST_ROOT_DIR} ${XMQ_ROOT_DIR} ${LOG_ROOT_DIR} ${ASIO_ROOT_DIR} ${XMQ_CLIENT_ROOT_DIR} ${DVS_HOST_ROOT_DIR})
+include_directories(
+	${INCLUDE_DIR} 
+	${SERVICE_ROOT_DIR} 
+	${BOOST_ROOT_DIR} 
+	${XMQ_ROOT_DIR} 
+	${LOG_ROOT_DIR} 
+	${ASIO_ROOT_DIR} 
+	${DVS_HOST_ROOT_DIR})
 file(GLOB_RECURSE main "*.cpp")
 file(GLOB_RECURSE 
 	utils 

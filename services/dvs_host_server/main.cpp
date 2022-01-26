@@ -1,6 +1,9 @@
+#include "boost/make_shared.hpp"
 #include "error_code.h"
 #include "utils/commandline/commandline.h"
 using namespace framework::utils::parser;
+#include "utils/memory/xmem.h"
+using namespace framework::utils::memory;
 #include "dvs_host_server.h"
 
 int main(int argc, char* argv[])
@@ -27,12 +30,23 @@ int main(int argc, char* argv[])
 
         if (!xmq_addr.empty() && !xmq_port.empty() && !xms_port.empty() && !app_name.empty())
         {
-            DvsHostServer dhs{ flog };
-            dhs.start(app_name, xmq_addr, atoi(xmq_port.c_str()));
-            dhs.startXMS(static_cast<unsigned short>(atoi(xms_port.c_str())));
+            const std::string name{"dvs_host_server"};
+            boost::shared_ptr<XMQNode> node{
+                boost::make_shared<DvsHostServer>(flog)};
+            XMQModeConf conf{0};
+            conf.id = 0xB1;
+            conf.port = 60531;
+            conf.type = XMQModeType::XMQ_MODE_TYPE_DEALER;
+            XMem().copy(name.c_str(), name.length(), conf.name, 128);
+            XMem().copy(xmq_addr.c_str(), xmq_addr.length(), conf.ip, 32);
+
+            node->addConf(conf);
+            node->run();
+            //dhs.startXMS(static_cast<unsigned short>(atoi(xms_port.c_str())));
             getchar();
-            dhs.stopXMS();
-            dhs.stop();
+            //dhs.stopXMS(); 
+            node->stop();
+            node->removeConf(conf.id);
         }
     }
     else

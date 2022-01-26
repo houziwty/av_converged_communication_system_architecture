@@ -1,36 +1,107 @@
+#include <cstring>
+#include "boost/make_shared.hpp"
 #include "utils/time/xtime.h"
 using namespace framework::utils::time;
+#include "utils/memory/xmem.h"
+using namespace framework::utils::memory;
 #include "error_code.h"
-#include "network/xmq/pub.h"
-using namespace framework::network::xmq;
+#include "xmq_node.h"
+using namespace module::network::xmq;
+#include "log.h"
+using namespace module::file::log;
+
+FileLog fileLog;
+
+class TestXMQPub : public XMQNode
+{
+public:
+  TestXMQPub() : XMQNode(){}
+  ~TestXMQPub(){}
+
+public:
+	int run(void)
+  {
+    return XMQNode::run();
+  }
+
+	int stop(void) override
+  {
+    return XMQNode::stop();
+  }
+
+protected:
+	void afterPolledDataNotification(
+		const uint32_t id = 0, 
+		const char* name = nullptr, 
+		const void* data = nullptr, 
+		const uint64_t bytes = 0)
+  {
+    const std::string msg{reinterpret_cast<const char*>(data), bytes};
+    fileLog.write(
+        SeverityLevel::SEVERITY_LEVEL_INFO, 
+        "Fetch forward data = [ %s ] from xmq pub service.", 
+        msg.c_str());
+  }
+
+	void afterFetchOnlineStatusNotification(const bool online = false)
+  {
+    fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch test pub service online status = [ %d ].", online);
+  }
+
+	void afterFetchServiceCapabilitiesNotification(
+		const ServiceInfo* infos = nullptr, 
+		const uint32_t number = 0)
+  {
+    fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch xmq pub service capabilities size = [ %d ].", number);
+
+    for(int i = 0; i != number; ++i)
+    {
+        fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, " ****** Service name = [ %s ].", infos[i].name);
+    }
+  }
+};
 
 int main(int argc, char* argv[])
 {
+  fileLog.createNew(argv[0]);
   const std::string path{argv[0]};
   const int pos{path.rfind('/')};
   const std::string dir{path.substr(0, pos)};
-  char* buffer = new char[2 * 1024 * 1024];
-  FILE* fd{fopen((dir + "/img102.jpg").c_str(), "rb+")};
-  const int jpgbytes{(int)fread(buffer + 12, 1, 2 * 1024 * 1024, fd)};
+  char* buffer = new char[4 * 1024 * 1024];
+  FILE* fd{fopen((dir + "/img102").c_str(), "rb+")};
+  const int jpgbytes{(int)fread(buffer, 1, 4 * 1024 * 1024, fd)};
   fclose(fd);
 
-  Pub pub;
-  int ret{pub.start(50927)};
-  int sequence{0};
+  const std::string xmq_addr{"127.0.0.1"};
+  const std::string name{"test_xmq_pub"};
+  boost::shared_ptr<XMQNode> node{
+      boost::make_shared<TestXMQPub>()};
+  XMQModeConf conf{0};
+  conf.id = 0xC1;
+  conf.port = 60927;
+  conf.type = XMQModeType::XMQ_MODE_TYPE_PUB;
+  XMem().copy(name.c_str(), name.length(), conf.name, 128);
+  node->addConf(conf);
+  conf.id = 0xD1;
+  conf.port = 60531;
+  conf.type = XMQModeType::XMQ_MODE_TYPE_DEALER;
+  XMem().copy(name.c_str(), name.length(), conf.name, 128);
+  XMem().copy(xmq_addr.c_str(), xmq_addr.length(), conf.ip, 32);
+  node->addConf(conf);
+  int ret{node->run()}, sequence{0};
 
   while (Error_Code_Success == ret)
   {
-    const unsigned long long tick{XTime().tickcount()};
-    memcpy(buffer, &tick, 8);
-    memcpy(buffer + 8, &sequence, 4);
-    std::string data{buffer, jpgbytes + 12};
-    pub.send(data);
+    // const unsigned long long tick{XTime().tickcount()};
+    // memcpy(buffer, &tick, 8);
+    // memcpy(buffer + 8, &sequence, 4);
+    ret = node->send(0xC1, nullptr, buffer, jpgbytes);
 
     XTime().sleep(10);
-    printf("Pub timestamp = [ %llu ], sequence = [ %d ].\r\n", tick, sequence);
-    ++sequence;
+//    printf("Pub timestamp = [ %llu ], sequence = [ %d ], result = [%d].\r\n", tick, sequence, ret);
+//    ++sequence;
   }
 
-  pub.stop();
+  node->stop();
   return 0;
 }

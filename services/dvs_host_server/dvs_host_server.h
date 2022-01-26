@@ -20,7 +20,8 @@ using namespace framework::utils::url;
 #include "tcp/tcp_server.h"
 #include "tcp/tcp_session.h"
 using namespace module::network::asio;
-#include "libxmq_host_client.h"
+#include "xmq_node.h"
+using namespace module::network::xmq;
 #include "dvs/dvs_host_man.h"
 using namespace framework::dvs;
 
@@ -28,19 +29,31 @@ using TcpSessionPtr = boost::shared_ptr<TcpSession>;
 using DvsHostSessions = UnorderedMap<const std::string, TcpSessionPtr>;
 
 class DvsHostServer final 
-    : protected LibXmqHostClient, protected TcpServer
+    : public XMQNode, protected TcpServer
 {
 public:
     DvsHostServer(FileLog& log);
     ~DvsHostServer(void);
 
 public:
-    int start(
-        const std::string name, 
-        const std::string ip, 
-        const unsigned short port = 0);
-    int stop(void);
+	int run(void) override;
+	int stop(void) override;
 
+protected:
+	void afterPolledDataNotification(
+		const uint32_t id = 0, 
+		const char* name = nullptr, 
+		const void* data = nullptr, 
+		const uint64_t bytes = 0) override;
+	void afterFetchOnlineStatusNotification(const bool online = false) override;
+	void afterFetchServiceCapabilitiesNotification(
+		const ServiceInfo* infos = nullptr, 
+		const uint32_t number = 0) override;
+    void fetchAcceptedEventNotification(
+        boost::asio::ip::tcp::socket* so/* = nullptr*/, 
+        const int e/* = 0*/) override;
+
+private:
     //移除超时未更新会话
     void removeExpiredSession(const std::string sid);
 
@@ -52,17 +65,7 @@ public:
     //停止XMS
     //@Return : 错误码
     int stopXMS(void);
-
-protected:
-    void fetchXmqHostClientOnlineStatusNotification(bool online) override;
-    void fetchXmqHostServiceCapabilitiesNotification(
-        const ServiceInfo* infos = nullptr, 
-        const int number = 0) override;
-	void fetchXmqHostClientReceivedDataNotification(
-        const void* data = nullptr, 
-        const int bytes = 0) override;
-    void fetchAcceptedEventNotification(SessionPtr session, const int e = 0) override;
-
+    
     //DVS设备业务处理
 	//@requestUrl [in] : 请求URL标识
 	void processDvsControlMessage(Url& requestUrl);

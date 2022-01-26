@@ -19,8 +19,8 @@ const void* XStr::copy(
 {
     char* dest{nullptr};
 
-    //只需要判断源字节大小是否有效
-    //外部使用可以传递空字节数据 
+    //只锟斤拷要锟叫讹拷源锟街节达拷小锟角凤拷锟斤拷效
+    //锟解部使锟矫匡拷锟皆达拷锟捷匡拷锟街斤拷锟斤拷锟斤拷 
     if (/*data && */0 < bytes)
     {
         dest = new(std::nothrow) char[bytes + 1];

@@ -6,26 +6,37 @@ using namespace boost::placeholders;
 using namespace framework::utils::thread;
 #include "utils/time/xtime.h"
 using namespace framework::utils::time;
+#include "utils/memory/xmem.h"
+using namespace framework::utils::memory;
 #include "xmq_host_server.h"
 
-XmqHostServer::XmqHostServer(const std::string name, FileLog& log) 
-    : SwitcherPubMode(), serviceName{name}, fileLog{log}, stopped{false}, thread{nullptr}
+XmqHostServer::XmqHostServer(FileLog& log) 
+    : XMQNode(), fileLog{log}, stopped{false}, expire{nullptr}
 {}
 
 XmqHostServer::~XmqHostServer()
 {}
 
-int XmqHostServer::start(
-	const unsigned short switcherPort /* = 0 */, 
-	const unsigned short publisherPort /* = 0 */, 
-	const int hwm /* = 10 */)
+int XmqHostServer::run()
 {
-    int ret{SwitcherPubMode::start(switcherPort, publisherPort, hwm)};
+    const std::string name{"xmq_host_server"};
+    XMQModeConf conf{0};
+    conf.id = 0xA1;
+    conf.port = 60531;
+    conf.type = XMQModeType::XMQ_MODE_TYPE_ROUTER;
+    XMem().copy(name.c_str(), name.length(), conf.name, 128);
+
+    int ret{XMQNode::addConf(conf)};
 
     if (Error_Code_Success == ret)
     {
-        thread = ThreadPool().get_mutable_instance().createNew(
-            boost::bind(&XmqHostServer::checkRegisterExpiredOfServiceThread, this));
+        ret = XMQNode::run();
+
+        if (Error_Code_Success == ret)
+        {
+            expire = ThreadPool().get_mutable_instance().createNew(
+                boost::bind(&XmqHostServer::checkRegisterExpiredOfServiceThread, this));
+        }
     }
     
     return ret;
@@ -33,35 +44,35 @@ int XmqHostServer::start(
 
 int XmqHostServer::stop()
 {
-    int ret{SwitcherPubMode::stop()};
+    int ret{XMQNode::stop()};
 
     if (Error_Code_Success == ret && false == stopped)
     {
         stopped = true;
-        Thread().join(thread);
-        ThreadPool().get_mutable_instance().destroy(thread);
+        Thread().join(expire);
+        ThreadPool().get_mutable_instance().destroy(expire);
+        XMQNode::removeConf(0xA1);
     }
     
     return ret;
 }
 
-void XmqHostServer::afterSwitcherPolledDataHandler(
-    const void* uid/* = nullptr*/, 
-	const int uid_bytes/* = 0*/, 
+void XmqHostServer::afterPolledDataNotification(
+    const uint32_t uid/* = nullptr*/, 
+	const char* name/* = 0*/, 
 	const void* data/* = nullptr*/, 
-	const int data_bytes/* = 0*/)
+	const uint64_t bytes/* = 0*/)
 {
     //数据解析逻辑说明：
     // 1. 解析协议名称，如果是register则处理服务注册业务，否则到（2）；
     // 2. 解析主机名称，与服务名称对比是否一致，如果是则由服务执行业务处理， 否则到（3）；
     // 3. 在注册服务表中查找主机名称，如果存在，则执行转发消息，否则应答消息不可达错误。
     
-    const std::string name{(const char*)uid, uid_bytes};
-    const std::string msg{(const char*)data, data_bytes};
+    const std::string msg{(const char*)data, bytes};
     fileLog.write(
         SeverityLevel::SEVERITY_LEVEL_INFO, 
-        "Polled switcher message with serivce name = [ %s ] and data = [ %s ].",  
-        name.c_str(), 
+        "Polled message with serivce name = [ %s ] and data = [ %s ].",  
+        name, 
         msg.c_str());
     Url requestUrl;
     int ret{requestUrl.parse(msg)};
@@ -72,7 +83,7 @@ void XmqHostServer::afterSwitcherPolledDataHandler(
         {
             processRegisterMessage(name, requestUrl);
         }
-        else if (!requestUrl.getHost().compare(serviceName))
+        else if (!requestUrl.getHost().compare("xmq_host_server"))
         {
             processRequestMessage(name, requestUrl);
         }
@@ -90,7 +101,7 @@ void XmqHostServer::afterSwitcherPolledDataHandler(
                 fileLog.write(
                     SeverityLevel::SEVERITY_LEVEL_WARNING, 
                     "Parsed unknown data from service name = [ %s ].",  
-                    name.c_str());
+                    name);
             }
         }
     }
@@ -99,10 +110,18 @@ void XmqHostServer::afterSwitcherPolledDataHandler(
         fileLog.write(
             SeverityLevel::SEVERITY_LEVEL_ERROR, 
             "Parsed data from service name = [ %s ] failed, result = [ %d ].",  
-            name.c_str(), 
+            name, 
             ret);
     }
 }
+
+void XmqHostServer::afterFetchOnlineStatusNotification(const bool online/* = false*/)
+{}
+
+void XmqHostServer::afterFetchServiceCapabilitiesNotification(
+    const ServiceInfo* infos/* = nullptr*/, 
+    const uint32_t number/* = 0*/)
+{}
 
 void XmqHostServer::checkRegisterExpiredOfServiceThread()
 {
@@ -146,10 +165,10 @@ void XmqHostServer::processRegisterMessage(const std::string name, Url& requestU
 
                 Url responseUrl;
                 responseUrl.setProtocol(requestUrl.getProtocol());
-                responseUrl.setHost(serviceName);
+                responseUrl.setHost("xmq_host_server");
                 responseUrl.addParameter(items[i].key, items[i].value);
                 const std::string msg{responseUrl.encode()};
-                ret = SwitcherPubMode::switcherSend(hostName.c_str(), hostName.length(), msg.c_str(), msg.length());
+                ret = XMQNode::send(0xA1, hostName.c_str(), msg.c_str(), msg.length());
                 break;
             }
         }
@@ -188,7 +207,7 @@ void XmqHostServer::processRequestMessage(const std::string name, Url& requestUr
         }
 
         const std::string msg{responseUrl.encode()};
-        int ret{SwitcherPubMode::switcherSend(name.c_str(), name.length(), msg.c_str(), msg.length())};
+        int ret{XMQNode::send(0xA1, name.c_str(), msg.c_str(), msg.length())};
 
         if (Error_Code_Success == ret)
         {
@@ -211,8 +230,7 @@ void XmqHostServer::processRequestMessage(const std::string name, Url& requestUr
 void XmqHostServer::forwardMessage(const std::string name, const std::string data)
 {
     int ret{
-        SwitcherPubMode::switcherSend(
-            name.c_str(), name.length(), data.c_str(), data.length())};
+        XMQNode::send(0xA1, name.c_str(), data.c_str(), data.length())};
 
     if (Error_Code_Success == ret)
     {

@@ -28,7 +28,7 @@
 
 typedef void* ctx_t;
 typedef void* socket_t;
-typedef void* thread_t;
+typedef void* _thread_t;
 
 //XMQ角色类型
 typedef enum tagXMQModeType_t

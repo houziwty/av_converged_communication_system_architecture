@@ -8,7 +8,6 @@ extern "C" {
 #endif
 #include "error_code.h"
 #include "utils/memory/xmem.h"
-#include "utils/memory/xstr.h"
 using namespace framework::utils::memory;
 #include "msg.h"
 using namespace module::network::xmq;
@@ -25,8 +24,7 @@ int Msg::append(
 	const void* data/* = nullptr*/, 
 	const uint64_t bytes/* = 0*/)
 {
-	//�ⲿʹ�ÿ��Դ��ݿ��ֽ�����
-	const void* buf{ XStr().copy(data, bytes) };
+	void* buf{ XMem().copyNew(data, bytes) };
 	messages.push_back(Message{ const_cast<void*>(buf), bytes });
 	return Error_Code_Success;
 }
@@ -46,10 +44,12 @@ int Msg::recv(socket_t s /* = nullptr */)
 
 	if (Error_Code_Success == ret)
 	{
-		zmq_msg_t msg;
+		bool more{true};
 
-		while (1)
+		while (more)
 		{
+			zmq_msg_t msg;
+			
 			if (zmq_msg_init(&msg))
 			{
 				return Error_Code_Bad_New_Object;
@@ -58,9 +58,9 @@ int Msg::recv(socket_t s /* = nullptr */)
 			if (-1 < zmq_msg_recv(&msg, s, ZMQ_DONTWAIT))
 			{
 				ret = append(zmq_msg_data(&msg), (const int)zmq_msg_size(&msg));
-				if (!zmq_msg_more(&msg) || Error_Code_Success != ret)
+				if (!zmq_msg_more(&msg))
 				{
-					break;
+					more = false;
 				}
 			}
 
@@ -95,7 +95,7 @@ int Msg::send(socket_t s /* = nullptr */)
 				messages[i].bytes, 
 				zmq_msg_data(&msg), 
 				zmq_msg_size(&msg));
-				
+
 			if (messages[i].bytes != zmq_msg_send(&msg, s, sndflag))
 			{
 				ret = Error_Code_Bad_Operate_Send;

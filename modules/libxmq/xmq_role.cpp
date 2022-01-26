@@ -7,7 +7,11 @@ using namespace framework::utils::thread;
 #include "xmq_role.h"
 using namespace module::network::xmq;
 
-XMQRole::XMQRole() : so{nullptr}, poller{nullptr}, stopped{true}
+XMQRole::XMQRole(
+	const XMQModeConf& conf, 
+	PolledDataCallback pollcb) 
+	: modeconf{conf}, so{nullptr}, poller{nullptr}, 
+	stopped{true}, polledDataCallback{pollcb}
 {}
 
 XMQRole::~XMQRole()
@@ -17,14 +21,16 @@ XMQRole::~XMQRole()
 
 int XMQRole::run(ctx_t c/* = nullptr*/)
 {
-	int ret{c && stopped ? Error_Code_Success ? Error_Code_Invalid_Param};
+	int ret{c && stopped ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
 		stopped = false;
 		poller = ThreadPool().get_mutable_instance().createNew(
 			boost::bind(&XMQRole::pollDataThread, this));
-		ret = poller ? Error_Code_Success : Error_Code_Bad_New_Thread;
+		check = ThreadPool().get_mutable_instance().createNew(
+			boost::bind(&XMQRole::checkServiceOnlineStatusThread, this));
+		ret = poller && check ? Error_Code_Success : Error_Code_Bad_New_Thread;
 	}
 	
 	return ret;
@@ -39,6 +45,8 @@ int XMQRole::stop()
 		stopped = true;
 		Thread().join(poller);
 		ThreadPool().get_mutable_instance().destroy(poller);
+		Thread().join(check);
+		ThreadPool().get_mutable_instance().destroy(check);
 	}
 
 	return ret;

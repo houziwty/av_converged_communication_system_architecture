@@ -9,31 +9,25 @@ using namespace framework::utils::url;
 #include "dvs_host_server.h"
 
 DvsHostServer::DvsHostServer(FileLog& log)
-    : LibXmqHostClient(), TcpServer(), fileLog{log}
+    : XMQNode(), TcpServer(), fileLog{log}
 {}
 
 DvsHostServer::~DvsHostServer()
 {}
 
-int DvsHostServer::start(
-    const std::string name, 
-    const std::string ip, 
-    const unsigned short port/* = 0*/)
+int DvsHostServer::run()
 {
-    int ret{
-        LibXmqHostClient::registerXmqHostClient(
-            name.c_str(), name.length(), ip.c_str(), port)};
+    int ret{XMQNode::run()};
 
     if (Error_Code_Success == ret)
     {
-        fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Start xmq host client successfully.");
+        fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Start dvs host server successfully.");
     }
     else
     {
         fileLog.write(
             SeverityLevel::SEVERITY_LEVEL_ERROR, 
-            "Start xmq host client failed with name = [ %s ] ip = [ %s ] port = [ %d ], result = [ %d ].", 
-            name.c_str(), ip.c_str(), port, ret);
+            "Start dvs host server failed, result = [ %d ].", ret);
     }
     
     return ret;
@@ -41,9 +35,14 @@ int DvsHostServer::start(
 
 int DvsHostServer::stop()
 {
-    unregisterXmqHostClient();
-    sessions.clear();    
-    return Error_Code_Success;
+    int ret{XMQNode::stop()};
+
+    if (Error_Code_Success == ret)
+    {
+        sessions.clear(); 
+    }
+
+    return ret;
 }
 
 int DvsHostServer::startXMS(const unsigned short port/* = 0*/)
@@ -75,26 +74,28 @@ void DvsHostServer::removeExpiredSession(const std::string sid)
     sessions.remove(sid);
 }
 
-void DvsHostServer::fetchXmqHostClientOnlineStatusNotification(bool online)
+void DvsHostServer::afterFetchOnlineStatusNotification(const bool online)
 {
     fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch dvs host service online status = [ %d ].", online);
 }
 
-void DvsHostServer::fetchXmqHostServiceCapabilitiesNotification(
+void DvsHostServer::afterFetchServiceCapabilitiesNotification(
     const ServiceInfo* infos/* = nullptr*/, 
-    const int number/* = 0*/)
+    const uint32_t number/* = 0*/)
 {
     fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch xmq host service capabilities size = [ %d ].", number);
 
     for(int i = 0; i != number; ++i)
     {
-        fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, " ****** Service name = [ %s ].", infos[i]);
+        fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, " ****** Service name = [ %s ].", infos[i].name);
     }
 }
 
-void DvsHostServer::fetchXmqHostClientReceivedDataNotification(
+void DvsHostServer::afterPolledDataNotification(
+    const uint32_t id/* = 0*/, 
+    const char* name/* = nullptr*/, 
     const void* data/* = nullptr*/, 
-    const int bytes/* = 0*/)
+    const uint64_t bytes/* = 0*/)
 {
     const std::string msg{reinterpret_cast<const char*>(data), bytes};
     fileLog.write(
@@ -129,22 +130,24 @@ void DvsHostServer::fetchXmqHostClientReceivedDataNotification(
     }
 }
 
-void DvsHostServer::fetchAcceptedEventNotification(SessionPtr session, const int e/* = 0*/)
+void DvsHostServer::fetchAcceptedEventNotification(
+    boost::asio::ip::tcp::socket* so/* = nullptr*/, 
+    const int e/* = 0*/)
 {
-    if (session && !e)
+    if (so && !e)
     {
         const std::string sid{Uuid().createNew()};
 
         if(!sid.empty())
         {
-            TcpSessionPtr ptr{boost::make_shared<DvsHostSession>(*this, sid)};
+            // TcpSessionPtr ptr{boost::make_shared<DvsHostSession>(*this, sid)};
 
-            if(ptr && 
-                Error_Code_Success == ptr->createNew(session) &&
-                Error_Code_Success == ptr->receive())
-            {
-                sessions.add(sid, ptr);
-            }
+            // if(ptr && 
+            //     Error_Code_Success == ptr->createNew(session) &&
+            //     Error_Code_Success == ptr->receive())
+            // {
+            //     sessions.add(sid, ptr);
+            // }
         }
     }
 }
@@ -206,7 +209,7 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
                 % infos[i].name.c_str()).str()};
             url.append(dvs);
         }
-        LibXmqHostClient::send(url.c_str(), url.length());
+//        XMQNode::send(url.c_str(), url.length());
     }
     else if (!command.compare("add"))
     {
@@ -232,7 +235,7 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
             const std::string url{
                 (boost::format("dvs://%s?from=%s&command=add&error=%d&dvs=%s_%s_%d_%s") 
                 % from % host % ret % uuid % ip % static_cast<int>(cameras.size()) % name).str()};
-            LibXmqHostClient::send(url.c_str(), url.length());
+//            LibXmqHostClient::send(url.c_str(), url.length());
         }
         else
         {
@@ -243,7 +246,7 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
 
             const std::string url{
                 (boost::format("dvs://%s?from=%s&command=add&error=%d") % from % host % ret).str()};
-            LibXmqHostClient::send(url.c_str(), url.length());
+//            LibXmqHostClient::send(url.c_str(), url.length());
         }
     }
     else if (!command.compare("remove"))
@@ -265,6 +268,6 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
 
         url.append(
             (boost::format("dvs://%s?from=%s&command=remove&error=%d&id=%s") % from % host % ret % id).str());
-        LibXmqHostClient::send(url.c_str(), url.length());
+//        LibXmqHostClient::send(url.c_str(), url.length());
     }
 }
