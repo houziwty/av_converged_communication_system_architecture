@@ -50,10 +50,11 @@ int ASIONode::addConf(const ASIOModeConf& conf)
 						*ios.ctx(),
 						[&](boost::asio::ip::tcp::socket* so, const int e)
 						{
-							afterFetchAcceptedEventNotification(
-								so->remote_endpoint().address().to_string().c_str(), 
-								so->remote_endpoint().port(), 
-								e);
+							int32_t sid{
+								afterFetchAcceptedEventNotification(
+									so->remote_endpoint().address().to_string().c_str(), 
+									so->remote_endpoint().port(), 
+									e)};
 
 							if (!e)
 							{

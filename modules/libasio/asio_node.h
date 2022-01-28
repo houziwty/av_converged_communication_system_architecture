@@ -64,7 +64,9 @@ namespace module
 				//@ip [out] : 远程IP
 				//@port [out] : 远程端口号
 				//@e [out] : 错误码
-				virtual void afterFetchAcceptedEventNotification(
+				//@Return : 用户分配的会话ID
+				//@Comment : 只有0 == e时，用户返回的会话ID才能生效
+				virtual int32_t afterFetchAcceptedEventNotification(
 					const char* ip = nullptr, 
 					const uint16_t port = 0, 
 					const int32_t e = 0) = 0;
@@ -73,19 +75,21 @@ namespace module
 				//@id [out] : 角色ID
 				//@data [out] : 数据 
 				//@bytes [out] : 大小
+				//@e [out] : 错误码
 				virtual void afterPolledReadDataNotification(
 					const uint32_t id = 0, 
 					const void* data = nullptr, 
-					const uint64_t bytes = 0) = 0;
+					const uint64_t bytes = 0, 
+					const int32_t e = 0) = 0;
 
 				//发送数据通知
 				//@id [out] : 角色ID
 				//@bytes [out] : 大小
 				//@e [out] : 错误码
-				virtual void afterPolledReadDataNotification(
+				virtual void afterPolledSendDataNotification(
 					const uint32_t id = 0, 
-					const void* data = nullptr, 
-					const uint64_t bytes = 0) = 0;
+					const uint32_t bytes = 0, 
+					const int32_t e = 0) = 0;
 			};//class ASIONode
 		}//namespace asio
 	}//namespace network
