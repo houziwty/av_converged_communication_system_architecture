@@ -139,6 +139,16 @@ void DvsHostServer::fetchAcceptedEventNotification(
     }
 }
 
+void DvsHostServer::afterPolledRealDataNotification(
+    const uint32_t dvs/* = 0*/, 
+    const int32_t stream/* = -1*/, 
+    const uint32_t type/* = 0*/, 
+    const uint8_t* data/* = nullptr*/, 
+    const uint32_t bytes/* = 0*/)
+{
+
+}
+
 void DvsHostServer::processDvsControlMessage(Url& requestUrl)
 {
     const std::vector<ParamItem> parameters{requestUrl.getParameters()};

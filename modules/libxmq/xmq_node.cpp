@@ -29,7 +29,9 @@ XMQNode::XMQNode()
 
 XMQNode::~XMQNode()
 {
+	stop();
 	Ctx().destroy(ctx);
+	roles.clear();
 }
 
 int XMQNode::addConf(const XMQModeConf& conf)

@@ -13,6 +13,8 @@
 #ifndef MODULE_NETWORK_ASIO_DEFS_H
 #define MODULE_NETWORK_ASIO_DEFS_H
 
+#include <cstdint>
+
 #if defined(_WINDOWS)
 #ifdef USE_MODULE_NETWORK_ASIO
 #define NETWORK_ASIO_EXPORT __declspec(dllimport)
@@ -23,9 +25,30 @@
 #define NETWORK_ASIO_EXPORT
 #endif//_WINDOWS
 
-#include "boost/asio.hpp"
-#include "boost/enable_shared_from_this.hpp"
-#include "boost/function.hpp"
-#include "boost/thread.hpp"
+//ASIO角色类型
+typedef enum class tagASIOModeType_t : int
+{
+    ASIO_MODE_TYPE_NONE = 0,
+    ASIO_MODE_TYPE_LISTEN,
+    ASIO_MODE_TYPE_CONNECT
+}ASIOModeType;
+
+//ASIO协议类型
+typedef enum class tagASIOProtoType_t : int
+{
+    ASIO_PROTO_TYPE_NONE = 0,
+    ASIO_PROTO_TYPE_TCP,
+    ASIO_PROTO_TYPE_UDP
+}ASIOProtoType;
+
+//ASIO角色配置
+typedef struct tagASIOModeConf_t
+{
+    char ip[32];
+    uint16_t port;
+    uint32_t id;                    //角色ID标识，0 < id，由调用者定义
+    ASIOModeType mode;              //仅ASIO_PROTO_TYPE_TCP == proto时有效
+    ASIOProtoType proto;
+}ASIOModeConf;
 
 #endif//MODULE_NETWORK_ASIO_DEFS_H

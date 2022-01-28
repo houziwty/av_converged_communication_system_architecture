@@ -22,14 +22,14 @@ using namespace framework::utils::url;
 using namespace module::network::asio;
 #include "xmq_node.h"
 using namespace module::network::xmq;
-#include "dvs/dvs_host_man.h"
-using namespace framework::dvs;
+#include "dvs_node.h"
+using namespace module::device::dvs;
 
 using TcpSessionPtr = boost::shared_ptr<TcpSession>;
 using DvsHostSessions = UnorderedMap<const std::string, TcpSessionPtr>;
 
 class DvsHostServer final 
-    : public XMQNode, protected TcpServer
+    : public XMQNode, protected TcpServer, protected DVSNode
 {
 public:
     DvsHostServer(FileLog& log);
@@ -61,6 +61,12 @@ protected:
     void fetchAcceptedEventNotification(
         boost::asio::ip::tcp::socket* so/* = nullptr*/, 
         const int e/* = 0*/) override;
+    void afterPolledRealDataNotification(
+        const uint32_t dvs = 0, 
+        const int32_t stream = -1, 
+        const uint32_t type = 0, 
+        const uint8_t* data = nullptr, 
+        const uint32_t bytes = 0) override;
 
 private:
     //移除超时未更新会话
@@ -73,8 +79,6 @@ private:
 private:
     FileLog& fileLog;
     DvsHostSessions sessions;
-    DvsHostCreator dvsHostCreator;
-    DvsHostMan dvsHostMan;
 };//class DvsHostServer
 
 #endif//SERVICE_DVS_HOST_SERVICE_H

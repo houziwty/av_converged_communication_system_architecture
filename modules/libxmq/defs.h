@@ -14,6 +14,8 @@
 #ifndef MODULE_NETWORK_XMQ_DEFS_H
 #define MODULE_NETWORK_XMQ_DEFS_H
 
+#include <cstdint>
+
 #if defined(_WINDOWS)
 #define CALLBACK __stdcall
 #ifdef USE_MODULE_NETWORK_XMQ
@@ -31,7 +33,7 @@ typedef void* socket_t;
 typedef void* _thread_t;
 
 //XMQ角色类型
-typedef enum tagXMQModeType_t
+typedef enum class tagXMQModeType_t : int
 {
     XMQ_MODE_TYPE_NONE = 0,
     XMQ_MODE_TYPE_ROUTER,
