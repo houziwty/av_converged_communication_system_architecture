@@ -45,12 +45,12 @@ namespace module
 				int addConf(const ASIOModeConf& conf);
 
 				//删除角色
-				//@id [in] : 角色ID
+				//@id [in] : 会话ID
 				//@Return : 错误码
 				int removeConf(const uint32_t id = 0);
 
 				//发送数据
-				//@id [in] : 数据发送角色ID
+				//@id [in] : 会话ID
 				//@data [in] : 数据
 				//@bytes [in] : 大小 
 				//@Return : 错误码
@@ -64,15 +64,14 @@ namespace module
 				//@ip [out] : 远程IP
 				//@port [out] : 远程端口号
 				//@e [out] : 错误码
-				//@Return : 用户分配的会话ID
-				//@Comment : 只有0 == e时，用户返回的会话ID才能生效
+				//@Return : 会话ID
 				virtual int32_t afterFetchAcceptedEventNotification(
 					const char* ip = nullptr, 
 					const uint16_t port = 0, 
 					const int32_t e = 0) = 0;
 
 				//接收数据通知
-				//@id [out] : 角色ID
+				//@id [out] : 会话ID
 				//@data [out] : 数据 
 				//@bytes [out] : 大小
 				//@e [out] : 错误码
@@ -83,7 +82,7 @@ namespace module
 					const int32_t e = 0) = 0;
 
 				//发送数据通知
-				//@id [out] : 角色ID
+				//@id [out] : 会话ID
 				//@bytes [out] : 大小
 				//@e [out] : 错误码
 				virtual void afterPolledSendDataNotification(

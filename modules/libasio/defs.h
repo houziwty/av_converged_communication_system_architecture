@@ -46,7 +46,7 @@ typedef struct tagASIOModeConf_t
 {
     char ip[32];
     uint16_t port;
-    uint32_t id;                    //角色ID标识，0 < id，由调用者定义
+    uint32_t id;                    //会话ID标识，0 < id，仅ASIO_MODE_TYPE_CONNECT == mode时有效，由调用者定义
     ASIOModeType mode;              //仅ASIO_PROTO_TYPE_TCP == proto时有效
     ASIOProtoType proto;
 }ASIOModeConf;
