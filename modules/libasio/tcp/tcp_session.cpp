@@ -1,71 +1,91 @@
+#include "boost/asio.hpp"
+#include "boost/checked_delete.hpp"
 #include "error_code.h"
 #include "tcp_session.h"
 using namespace module::network::asio;
 
-TcpSession::TcpSession()
+TcpSession::TcpSession(
+    void* s/* = nullptr*/, 
+	const uint32_t id/* = 0*/) 
+    : Session(s, id)
 {}
 
 TcpSession::~TcpSession()
 {}
 
-int TcpSession::createNew(SessionPtr ptr, const unsigned int bytes/* = 1048576*/)
+int TcpSession::destroy()
 {
-    if (sessionPtr)
-    {
-        return Error_Code_Operate_Failure;
-    }
-    
-    int ret{0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
+    int ret{so ? Error_Code_Success : Error_Code_Operate_Failure};
 
     if (Error_Code_Success == ret)
     {
-        sessionPtr.swap(ptr);
-        ret = sessionPtr->createNew(
-            [&](const int e, const int bytes)
-            {
-                fetchSentDataEventNotification(e, bytes);
-            },
-            [&](const int e, const void* data, const int bytes)
-            {
-                fetchReceivedDataEventNotification(e, data, bytes);
-
-                //持续接收
-                if (!e)
-                {
-                    receive();
-                }
-            },
-            bytes);
+        boost::asio::ip::tcp::socket* s{
+            reinterpret_cast<boost::asio::ip::tcp::socket*>(so)};
+        s->close();
+        boost::checked_delete(s);
     }
     
-    return ret;
-}
-
-int TcpSession::destroy()
-{
-    return sessionPtr ? sessionPtr->destroy() : Error_Code_Operate_Failure;
+    return Error_Code_Success == ret ? Session::destroy() : ret;
 }
 
 int TcpSession::send(
-    const void* data/* = nullptr*/, 
-    const int bytes/* = 0*/)
+	const void* data /* = nullptr */, 
+	const uint64_t bytes /* = 0 */, 
+    const char* /* ip = nullptr*/, 
+    const uint16_t/* port = 0*/)
 {
-    if (!sessionPtr)
-    {
-        return Error_Code_Operate_Failure;
-    }
+	int ret{ so && data && 0 < bytes ? Error_Code_Success : Error_Code_Operate_Failure };
 
-    int ret{data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
+	if (Error_Code_Success == ret)
+	{
+		int pos{ 0 }, transferred{ 0 };
+        boost::asio::ip::tcp::socket* s{
+            reinterpret_cast<boost::asio::ip::tcp::socket*>(so)};
 
-    if (Error_Code_Success == ret)
-    {
-        ret = sessionPtr->send(data, bytes);
-    }
-    
-    return ret;
+		while (pos < bytes)
+		{
+			transferred = bytes - pos;
+			transferred = (transferred > 1048576 ? 1048576 : transferred);
+			s->async_write_some(
+				boost::asio::buffer((const char*)data + pos, transferred),
+				[&](boost::system::error_code e, std::size_t bytes_transferred)
+				{
+					if (sentDataEventCallback)
+					{
+						sentDataEventCallback(sid, bytes_transferred, e.value());
+					}
+				});
+			pos += transferred;
+		}
+	}
+
+	return ret;
 }
 
 int TcpSession::receive()
 {
-    return sessionPtr ? sessionPtr->receive() : Error_Code_Operate_Failure;
+	int ret{ so && buffer && 0 < bufBytes ? Error_Code_Success : Error_Code_Operate_Failure };
+
+	if (Error_Code_Success == ret)
+	{
+        boost::asio::ip::tcp::socket* s{
+            reinterpret_cast<boost::asio::ip::tcp::socket*>(so)};
+        
+		s->async_read_some(
+			boost::asio::buffer(buffer, bufBytes),
+			[&](boost::system::error_code e, std::size_t bytes_transferred)
+			{
+				if (receivedDataEventCallback)
+				{
+					receivedDataEventCallback(sid, buffer, bytes_transferred, e.value());
+				}
+
+                if (!e)
+                {
+                    receive();
+                }
+			});
+	}
+
+	return ret;
 }

@@ -5,7 +5,8 @@ project(log VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(
 		LINK_LIBS 
-		libglog.a)
+		libglog.a 
+		pthread)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(
 		GLOG_ROOT_DIR 

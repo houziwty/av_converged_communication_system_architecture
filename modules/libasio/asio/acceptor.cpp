@@ -1,13 +1,16 @@
+#include "boost/bind/bind.hpp"
+using namespace boost::placeholders;
 #include "error_code.h"
+#include "service.h"
 #include "acceptor.h"
 using namespace module::network::asio;
 
 Acceptor::Acceptor(
-	boost::asio::io_context& ioc, 
+	Service& ios, 
 	AcceptedRemoteConnectEventCallback callback,
 	const uint16_t port /* = 0 */)
-	: acceptor{ioc, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)}, 
-	acceptedRemoteConnectEventCallback{callback}
+	: service{ios}, acceptedRemoteConnectEventCallback{callback}, 
+	acceptor{*service.ctx(), boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)}
 {
 	acceptor.listen();
 }
@@ -15,26 +18,39 @@ Acceptor::Acceptor(
 Acceptor::~Acceptor()
 {}
 
-int Acceptor::listen(boost::asio::io_context& ioc)
+int Acceptor::listen()
 {
 	int ret{Error_Code_Bad_New_Socket};
 	boost::asio::ip::tcp::socket* so{
-		new(std::nothrow) boost::asio::ip::tcp::socket{ctx}};
+		new(std::nothrow) boost::asio::ip::tcp::socket{*service.ctx()}};
 
 	if(so)
 	{
 		acceptor.async_accept(
 			*so, 
-			[&, so](boost::system::error_code e)
-			{
-				if (acceptedRemoteConnectCBFunc)
-				{
-					acceptedRemoteConnectCBFunc(so, e.value());
-				}
-			});
-
+			boost::bind(
+				&Acceptor::afterAcceptedRemoteCallback, 
+				boost::enable_shared_from_this<Acceptor>::shared_from_this(), 
+				boost::asio::placeholders::error, 
+				so));
 		ret = Error_Code_Success;
 	}
 
 	return ret;
+}
+
+void Acceptor::afterAcceptedRemoteCallback(
+	boost::system::error_code e, 
+	boost::asio::ip::tcp::socket* s/* = nullptr*/)
+{
+	if (acceptedRemoteConnectEventCallback)
+	{
+		acceptedRemoteConnectEventCallback(s, e.value());
+	}
+	
+	if (e.value())
+	{
+		s->close();
+		boost::checked_delete(s);
+	}
 }

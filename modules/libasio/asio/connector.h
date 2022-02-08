@@ -13,7 +13,9 @@
 #ifndef MODULE_NETWORK_ASIO_CONNECTOR_H
 #define MODULE_NETWORK_ASIO_CONNECTOR_H
 
-#include "session.h"
+#include "boost/asio.hpp"
+#include "boost/enable_shared_from_this.hpp"
+#include "boost/function.hpp"
 
 namespace module
 {
@@ -21,34 +23,44 @@ namespace module
 	{
 		namespace asio
 		{
-			using SessionPtr = boost::shared_ptr<Session>;
+			class Service;
 
 			//连接事件回调
-			//@_1 : 会话
+			//@_1 : socket
 			//@_2 : 错误码
-			typedef boost::function<void(SessionPtr, const int)> ConnectedRemoteEventCallback;
+			typedef boost::function<void(boost::asio::ip::tcp::socket*, const int32_t)> ConnectedRemoteEventCallback;
 
-			class NETWORK_ASIO_EXPORT Connector 
+			class Connector 
 				: public boost::enable_shared_from_this<Connector>
 			{
 			public:
+				//@ios [in] : IO服务
+				//@callback [in] : 连接回调
 				Connector(
+					Service& ios, 
 					ConnectedRemoteEventCallback callback);
 				~Connector(void);
 
 			public:
 				//连接
-				//@ctx [in] : 上下文 
 				//@ip : 远程IP
 				//@port : 远程端口号
 				//@Return : 错误码
 				int connect(
-					boost::asio::io_context& ctx, 
 					const char* ip = nullptr,
-					const unsigned short port = 0);
+					const uint16_t port = 0);
 
 			private:
-				ConnectedRemoteEventCallback connectedRemoteCBFunc;
+				//连接回调
+				//@e : 错误码
+				//@s : socket
+				void afterConntectedRemoteCallback(
+					boost::system::error_code e, 
+					boost::asio::ip::tcp::socket* s = nullptr);
+
+			private:
+				Service& service;
+				ConnectedRemoteEventCallback connectedRemoteEventCallback;
 			};//class Connector
 		}//namespace asio
 	}//namespace network

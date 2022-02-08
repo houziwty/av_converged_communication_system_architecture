@@ -4,7 +4,7 @@
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
 //		Date : 2021-11-23
-//		Description : 异步会话模型
+//		Description : 会话
 //
 //		History:
 //					1. 2021-11-23 由王科威创建
@@ -13,7 +13,6 @@
 #ifndef MODULE_NETWORK_ASIO_SESSION_H
 #define MODULE_NETWORK_ASIO_SESSION_H
 
-#include "boost/asio.hpp"
 #include "boost/function.hpp"
 
 namespace module
@@ -23,15 +22,17 @@ namespace module
 		namespace asio
 		{
 			//数据发送回调
-			//@_1 : 错误码
-			//@_2 : 发送字节数
-			typedef boost::function<void(const int, const int)> SentDataEventCallback;
+			//@_1 : 会话ID
+			//@_2 : 错误码
+			//@_3 : 发送字节数
+			typedef boost::function<void(const uint32_t, const uint32_t, const int32_t)> SentDataEventCallback;
 
 			//数据接收回调
-			//@_1 : 错误码
-			//@_2 : 数据
-			//@_3 : 接收字节数
-			typedef boost::function<void(const int, const void*, const int)> ReceivedDataEventCallback;
+			//@_1 : 会话ID
+			//@_2 : 错误码
+			//@_3 : 数据
+			//@_4 : 接收字节数
+			typedef boost::function<void(const uint32_t, const void*, const uint64_t, const int32_t)> ReceivedDataEventCallback;
 
 			class Session
 			{
@@ -39,7 +40,7 @@ namespace module
 				//@s : socket
 				//@id : 会话ID
 				Session(
-					boost::asio::ip::tcp::socket* s = nullptr, 
+					void* s = nullptr, 
 					const uint32_t id = 0);
 				virtual ~Session(void);
 
@@ -52,7 +53,7 @@ namespace module
 				virtual int createNew(
 					SentDataEventCallback sent, 
 					ReceivedDataEventCallback recved, 
-					const unsigned int bytes = 1048576);
+					const uint64_t bytes = 1048576);
 
 				//销毁
 				//@Return : 错误码
@@ -61,28 +62,26 @@ namespace module
 				//发送
 				//@data : 数据
 				//@bytes : 大小
+				//@ip [in] : 远程IP
+				//@port [in] : 远程端口号
 				//@Return : 错误码
-				int send(
+				virtual int send(
 					const void* data = nullptr,
-					const int bytes = 0);
+					const uint64_t bytes = 0, 
+					const char* ip = nullptr, 
+					const uint16_t port = 0) = 0;
 
 				//接收
 				//@Return : 错误码
-				int receive(void);
+				virtual int receive(void) = 0;
 
-				//获取socket实例
-				inline boost::asio::ip::tcp::socket& sock(void)
-				{
-					return so;
-				}
-
-			private:
-				boost::asio::ip::tcp::socket* so;
+			protected:
+				void* so;
 				const uint32_t sid;
 				void* buffer;
-				unsigned int bufBytes;
-				SentDataEventCallback sentDataEventCBFunc;
-				ReceivedDataEventCallback receivedDataEventCBFunc;
+				uint64_t bufBytes;
+				SentDataEventCallback sentDataEventCallback;
+				ReceivedDataEventCallback receivedDataEventCallback;
 			};//class Session
 		}//namespace asio
 	}//namespace network

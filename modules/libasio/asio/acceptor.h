@@ -14,6 +14,7 @@
 #define MODULE_NETWORK_ASIO_ACCEPTOR_H
 
 #include "boost/asio.hpp"
+#include "boost/enable_shared_from_this.hpp"
 #include "boost/function.hpp"
 
 namespace module
@@ -22,30 +23,41 @@ namespace module
 	{
 		namespace asio
 		{
+			class Service;
+
 			//监听事件回调
 			//@_1 : socket
 			//@_2 : 错误码
-			typedef boost::function<void(boost::asio::ip::tcp::socket* s, const int32_t)> AcceptedRemoteConnectEventCallback;
+			typedef boost::function<void(boost::asio::ip::tcp::socket*, const int32_t)> AcceptedRemoteConnectEventCallback;
 
-			class Acceptor
+			class Acceptor 
+				: public boost::enable_shared_from_this<Acceptor>
 			{
 			public:
-				//@ioc [in] : io实例
+				//@ios [in] : IO服务
 				//@callback [in] : 监听回调
 				//@port [in] : 监听端口号
 				Acceptor(
-					boost::asio::io_context& ioc, 
+					Service& ios, 
 					AcceptedRemoteConnectEventCallback callback,
 					const uint16_t port = 0);
 				~Acceptor(void);
 
 			public:
 				//监听
-				//@ioc [in] : io实例
 				//@Return : 错误码
-				int listen(boost::asio::io_context& ioc);
+				int listen(void);
 
 			private:
+				//监听回调
+				//@e : 错误码
+				//@s : socket
+				void afterAcceptedRemoteCallback(
+					boost::system::error_code e, 
+					boost::asio::ip::tcp::socket* s = nullptr);
+
+			private:
+				Service& service;
 				boost::asio::ip::tcp::acceptor acceptor;
 				AcceptedRemoteConnectEventCallback acceptedRemoteConnectEventCallback;
 			};//class Acceptor

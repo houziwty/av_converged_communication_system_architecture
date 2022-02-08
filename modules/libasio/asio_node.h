@@ -52,23 +52,33 @@ namespace module
 				//发送数据
 				//@id [in] : 会话ID
 				//@data [in] : 数据
-				//@bytes [in] : 大小 
+				//@bytes [in] : 大小
+				//@ip [in] : 远程IP
+				//@port [in] : 远程端口号
 				//@Return : 错误码
+				//@Comment : ip和port参数仅当UDP会话时有效
 				virtual int send(
 					const uint32_t id = 0, 
 					const void* data = nullptr, 
-					const uint64_t bytes = 0);
+					const uint64_t bytes = 0, 
+					const char* ip = nullptr, 
+					const uint16_t port = 0);
 			
 			protected:
 				//监听事件通知
 				//@ip [out] : 远程IP
 				//@port [out] : 远程端口号
 				//@e [out] : 错误码
-				//@Return : 会话ID
-				virtual int32_t afterFetchAcceptedEventNotification(
+				//@Return : 会话ID，>0有效
+				virtual uint32_t afterFetchAcceptedEventNotification(
 					const char* ip = nullptr, 
 					const uint16_t port = 0, 
 					const int32_t e = 0) = 0;
+
+				//连接事件通知
+				//@e [out] : 错误码
+				//@Return : 会话ID，>0有效
+				virtual uint32_t afterFetchConnectedEventNotification(const int32_t e = 0) = 0;
 
 				//接收数据通知
 				//@id [out] : 会话ID

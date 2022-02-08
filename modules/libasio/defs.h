@@ -44,11 +44,20 @@ typedef enum class tagASIOProtoType_t : int
 //ASIO角色配置
 typedef struct tagASIOModeConf_t
 {
-    char ip[32];
-    uint16_t port;
-    uint32_t id;                    //会话ID标识，0 < id，仅ASIO_MODE_TYPE_CONNECT == mode时有效，由调用者定义
-    ASIOModeType mode;              //仅ASIO_PROTO_TYPE_TCP == proto时有效
     ASIOProtoType proto;
+    uint16_t port;
+    union 
+    {
+        struct
+        {
+            ASIOModeType mode;
+            char* ip;                       //仅ASIO_MODE_TYPE_CONNECT == mode时有效
+        }tcp;
+        struct
+        {
+            uint32_t sid;                   //>0，由调用者分配
+        }udp;
+    };
 }ASIOModeConf;
 
 #endif//MODULE_NETWORK_ASIO_DEFS_H

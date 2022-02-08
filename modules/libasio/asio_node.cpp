@@ -1,20 +1,21 @@
 #include "boost/bind/bind.hpp"
 using namespace boost::placeholders;
-#include "boost/make_shared.hpp"
+#include "boost/checked_delete.hpp"
 #include "error_code.h"
 #include "utils/map/unordered_map.h"
 #include "asio/service.h"
 #include "asio/acceptor.h"
-#include "session/session.h"
+#include "asio/connector.h"
+#include "tcp/tcp_session.h"
+#include "udp/udp_session.h"
 #include "asio_node.h"
 using namespace module::network::asio;
 
 using AcceptorPtr = boost::shared_ptr<Acceptor>;
-using AcceptorPtrs = UnorderedMap<const int32_t, AcceptorPtr>;
+using ConnectorPtr = boost::shared_ptr<Connector>;
 using SessionPtr = boost::shared_ptr<Session>;
-using SessionPtrs = UnorderedMap<const int32_t, SessionPtr>;
+using SessionPtrs = UnorderedMap<const uint32_t, SessionPtr>;
 
-static AcceptorPtrs acceptors;
 static SessionPtrs sessions;
 static Service ios;
 
@@ -37,20 +38,20 @@ int ASIONode::stop()
 
 int ASIONode::addConf(const ASIOModeConf& conf)
 {
-	int ret{0 < ios.size() && 0 < conf.id ? Error_Code_Success : Error_Code_Operate_Failure};
+	int ret{0 < ios.size() ? Error_Code_Success : Error_Code_Operate_Failure};
 
 	if (Error_Code_Success == ret)
 	{
 		if (ASIOProtoType::ASIO_PROTO_TYPE_TCP == conf.proto)
 		{
-			if (ASIOModeType::ASIO_MODE_TYPE_LISTEN == conf.mode)
+			if (ASIOModeType::ASIO_MODE_TYPE_LISTEN == conf.tcp.mode)
 			{
 				boost::shared_ptr<Acceptor> acceptor{
 					boost::make_shared<Acceptor>(
-						*ios.ctx(),
-						[&](boost::asio::ip::tcp::socket* so, const int e)
+						ios,
+						[&](boost::asio::ip::tcp::socket* so, const int32_t e)
 						{
-							int32_t sid{
+							uint32_t sid{
 								afterFetchAcceptedEventNotification(
 									so->remote_endpoint().address().to_string().c_str(), 
 									so->remote_endpoint().port(), 
@@ -58,14 +59,30 @@ int ASIONode::addConf(const ASIOModeConf& conf)
 
 							if (!e)
 							{
-								acceptor->listen(*service.ctx());
+								acceptor->listen();
 							}
 
-							SessionPtr sess{boost::make_shared<Session>(so, conf.id)};
-							if (sess && session->createNew())
+							if (0 < sid)
 							{
-								sess->receive();
-								sessions.add(conf.id, sess);
+								int status{Error_Code_Success};
+								SessionPtr sp{boost::make_shared<TcpSession>(so, sid)};
+								if (sp)
+								{
+									status = sp->createNew(
+										boost::bind(&ASIONode::afterPolledSendDataNotification, this, _1, _2, _3),
+										boost::bind(&ASIONode::afterPolledReadDataNotification, this, _1, _2, _3, _4));
+								}
+
+								if (!sp)
+								{
+									so->close();
+									boost::checked_delete(so);
+								}
+								else if (Error_Code_Success == status)
+								{
+									sp->receive();
+									sessions.add(sid, sp);
+								}
 							}
 						},
 						conf.port)};
@@ -74,15 +91,47 @@ int ASIONode::addConf(const ASIOModeConf& conf)
 				{
 					for (int i = 0; i != ios.size(); ++i)
 					{
-						acceptor->listen(*ios.ctx());
+						acceptor->listen();
 					}
-
-					acceptors.add(conf.id, acceptor);
 				}
 			}
-			else if (ASIOModeType::ASIO_MODE_TYPE_CONNECT == conf.mode)
+			else if (ASIOModeType::ASIO_MODE_TYPE_CONNECT == conf.tcp.mode)
 			{
-				/* code */
+				ConnectorPtr connector{
+					boost::make_shared<Connector>(
+						ios, 
+						[&](boost::asio::ip::tcp::socket* so, const int32_t e)
+						{
+							const uint32_t sid{afterFetchConnectedEventNotification(e)};
+
+							if (0 < sid)
+							{
+								int status{Error_Code_Success};
+								SessionPtr sp{boost::make_shared<TcpSession>(so, sid)};
+								if (sp)
+								{
+									status = sp->createNew(
+										boost::bind(&ASIONode::afterPolledSendDataNotification, this, _1, _2, _3),
+										boost::bind(&ASIONode::afterPolledReadDataNotification, this, _1, _2, _3, _4));
+								}
+
+								if (!sp)
+								{
+									so->close();
+									boost::checked_delete(so);
+								}
+								else if (Error_Code_Success == status)
+								{
+									sp->receive();
+									sessions.add(sid, sp);
+								}
+							}
+						})};
+
+				if (connector)
+				{
+					connector->connect(conf.tcp.ip, conf.port);
+				}
 			}
 			else
 			{
@@ -91,6 +140,37 @@ int ASIONode::addConf(const ASIOModeConf& conf)
 		}
 		else if (ASIOProtoType::ASIO_PROTO_TYPE_UDP == conf.proto)
 		{
+			boost::asio::ip::udp::socket* so{
+				new(std::nothrow) boost::asio::ip::udp::socket{
+					*ios.ctx(), 
+					boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), conf.port)}};
+
+			if (so)
+			{
+				int status{Error_Code_Success};
+				SessionPtr sp{boost::make_shared<UdpSession>(so, conf.udp.sid)};
+				if (sp)
+				{
+					status = sp->createNew(
+						boost::bind(&ASIONode::afterPolledSendDataNotification, this, _1, _2, _3),
+						boost::bind(&ASIONode::afterPolledReadDataNotification, this, _1, _2, _3, _4));
+				}
+
+				if (!sp)
+				{
+					so->close();
+					boost::checked_delete(so);
+				}
+				else if (Error_Code_Success == status)
+				{
+					sp->receive();
+					sessions.add(conf.udp.sid, sp);
+				}
+			}
+			else
+			{
+				ret = Error_Code_Bad_New_Socket;
+			}
 		}
 		else
 		{
@@ -103,37 +183,46 @@ int ASIONode::addConf(const ASIOModeConf& conf)
 
 int ASIONode::removeConf(const uint32_t id/* = 0*/)
 {
-	int ret{ctx && 0 < id ? Error_Code_Success : Error_Code_Operate_Failure};
+	int ret{0 < id ? Error_Code_Success : Error_Code_Operate_Failure};
 
 	if (Error_Code_Success == ret)
 	{
-		XMQRolePtr role{roles.at(id)};
+		SessionPtr sp{sessions.at(id)};
 
-		if (role)
+		if (sp)
 		{
-			ret = role->stop();
-			roles.remove(id);
+			ret = sp->destroy();
+			sessions.remove(id);
+		}
+		else
+		{
+			ret = Error_Code_Object_Not_Exist;
 		}
 	}
 
 	return ret;
 }
 
-int XMQNode::send(
+int ASIONode::send(
 	const uint32_t id/* = 0*/, 
-	const char* name/* = nullptr*/, 
 	const void* data/* = nullptr*/, 
-	const uint64_t bytes/* = 0*/)
+	const uint64_t bytes/* = 0*/, 
+	const char* ip/* = nullptr*/, 
+	const uint16_t port/* = 0*/)
 {
-	int ret{ctx ? Error_Code_Success : Error_Code_Operate_Failure};
+	int ret{0 < id && data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if(Error_Code_Success == ret)
 	{
-		XMQRolePtr role{roles.at(id)};
+		SessionPtr sp{sessions.at(id)};
 
-		if (role)
+		if (sp)
 		{
-			ret = role->send(name, data, bytes);
+			ret = sp->send(data, bytes, ip, port);
+		}
+		else
+		{
+			ret = Error_Code_Object_Not_Exist;
 		}
 	}
 
