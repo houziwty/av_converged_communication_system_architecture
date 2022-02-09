@@ -19,8 +19,6 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(
 		LINK_LIBS 
 		libboost_program_options.a 
-		libboost_thread.a
-		pthread 
 		dvs 
 		asio 
 		xmq 
@@ -83,8 +81,7 @@ file(GLOB_RECURSE main "*.cpp")
 file(GLOB_RECURSE 
 	utils 
 	"${SOURCE_DIR}/utils/commandline/*.cpp" 
-	"${SOURCE_DIR}/utils/time/*.cpp"
-	"${SOURCE_DIR}/utils/uuid/*.cpp" 
+	"${SOURCE_DIR}/utils/time/*.cpp" 
 	"${SOURCE_DIR}/utils/url/*.cpp")
 
 add_executable(

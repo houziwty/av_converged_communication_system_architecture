@@ -112,7 +112,7 @@ BOOL CdvshostdemoDlg::OnInitDialog()
 	// TODO: Add extra initialization here
 
 	SetDlgItemText(IDC_XMQ_ADDRESS, L"127.0.0.1");
-	SetDlgItemText(IDC_XMQ_PORT, L"50531");
+	SetDlgItemText(IDC_XMQ_PORT, L"60531");
 	SetDlgItemText(IDC_DEMO_NAME, L"test_demo_name");
 
 	SetDlgItemText(IDC_DVS_ADDRESS, L"192.168.2.225");
@@ -172,7 +172,7 @@ HCURSOR CdvshostdemoDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-void CdvshostdemoDlg::fetchXmqHostClientOnlineStatusNotification(bool online)
+void CdvshostdemoDlg::afterFetchOnlineStatusNotification(const bool online /* = false */)
 {
 	if (online)
 	{
@@ -184,9 +184,9 @@ void CdvshostdemoDlg::fetchXmqHostClientOnlineStatusNotification(bool online)
 	}
 }
 
-void CdvshostdemoDlg::fetchXmqHostServiceCapabilitiesNotification(
+void CdvshostdemoDlg::afterFetchServiceCapabilitiesNotification(
 	const ServiceInfo* infos /* = nullptr */, 
-	const int number /* = 0 */)
+	const uint32_t number /* = 0 */)
 {
 // 	fileLog.write(
 // 		SeverityLevel::SEVERITY_LEVEL_INFO, 
@@ -203,9 +203,10 @@ void CdvshostdemoDlg::fetchXmqHostServiceCapabilitiesNotification(
 		const std::string name{ infos[i].name };
 		if (!name.compare("dvs_host_server"))
 		{
-			const std::string url{
-				"dvs://dvs_host_service?from=test_dvs_host_client&command=query" };
-			int ret{ send(url.c_str(), url.length()) };
+			char tick[256]{ 0 };
+			sprintf_s(tick, 128, "config://dvs_host_server?command=query&timestamp=%d", GetTickCount());
+			const std::string url{tick};
+			int ret{ XMQNode::send(0xFFFF, "dvs_host_server", url.c_str(), url.length())};
 
 			if (Error_Code_Success == ret)
 			{
@@ -222,9 +223,11 @@ void CdvshostdemoDlg::fetchXmqHostServiceCapabilitiesNotification(
 	}
 }
 
-void CdvshostdemoDlg::fetchXmqHostClientReceivedDataNotification(
+void CdvshostdemoDlg::afterPolledDataNotification(
+	const uint32_t id /* = 0 */, 
+	const char* name /* = nullptr */, 
 	const void* data /* = nullptr */, 
-	const int bytes /* = 0 */)
+	const uint64_t bytes /* = 0 */)
 {
 // 	fileLog.write(
 // 		SeverityLevel::SEVERITY_LEVEL_INFO, 
@@ -248,19 +251,19 @@ void CdvshostdemoDlg::fetchXmqHostClientReceivedDataNotification(
 				const std::string dvsid{ params[i].value.substr(0, params[i].value.find_first_of('_')) };
 				const std::string url{
 					(boost::format("dvs://dvs_host_service?from=test_dvs_host_client&command=remove&id=%s") % dvsid).str() };
-				int ret{ send(url.c_str(), url.length()) };
-
-				if (Error_Code_Success == ret)
-				{
-//					fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Send remove device [ %s ] successed.", dvsid.c_str());
-				}
-				else
-				{
-// 					fileLog.write(
-// 						SeverityLevel::SEVERITY_LEVEL_ERROR,
-// 						"Send remove device [ %s ] failed, result = [ %d ].",
-// 						dvsid.c_str(), ret);
-				}
+// 				int ret{ send(url.c_str(), url.length()) };
+// 
+// 				if (Error_Code_Success == ret)
+// 				{
+// //					fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Send remove device [ %s ] successed.", dvsid.c_str());
+// 				}
+// 				else
+// 				{
+// // 					fileLog.write(
+// // 						SeverityLevel::SEVERITY_LEVEL_ERROR,
+// // 						"Send remove device [ %s ] failed, result = [ %d ].",
+// // 						dvsid.c_str(), ret);
+// 				}
 			}
 		}
 
@@ -297,14 +300,21 @@ void CdvshostdemoDlg::OnBnClickedXmqConnect()
 	HWND hwnd{ this->GetSafeHwnd() };
 	GetDlgItemTextA(hwnd, IDC_DEMO_NAME, name, 256);
 	GetDlgItemTextA(hwnd, IDC_XMQ_ADDRESS, ip, 256);
+	XMQModeConf conf{ 0 };
+	conf.id = 0xFFFF;
+	memcpy_s(conf.name, 128, name, strlen(name));
+	memcpy_s(conf.ip, 32, ip, strlen(ip));
+	conf.port = port;
+	conf.type = XMQModeType::XMQ_MODE_TYPE_DEALER;
 
-	int ret{ LibXmqHostClient::registerXmqHostClient(name, strlen(name), ip, port) };
+	int ret{XMQNode::addConf(conf)};
 
-	if (ret)
+	if (Error_Code_Success == ret)
 	{
-		CString text;
-		text.Format(L"registerXmqHostClient invoke failed = %d", ret);
-		MessageBox(text, L"Connect", MB_ICONERROR | MB_OK);
+		ret = XMQNode::run();
+// 		CString text;
+// 		text.Format(L"registerXmqHostClient invoke failed = %d", ret);
+// 		MessageBox(text, L"Connect", MB_ICONERROR | MB_OK);
 	}
 }
 
@@ -313,7 +323,7 @@ void CdvshostdemoDlg::OnBnClickedXmqDisconnect()
 {
 	// TODO: Add your control notification handler code here
 
-	int ret{ LibXmqHostClient::unregisterXmqHostClient() };
+	int ret{ XMQNode::stop() };
 
 	if (ret)
 	{
@@ -327,6 +337,32 @@ void CdvshostdemoDlg::OnBnClickedXmqDisconnect()
 void CdvshostdemoDlg::OnBnClickedDvsLogin()
 {
 	// TODO: Add your control notification handler code here
+
+	char user[256]{ 0 }, passwd[256]{0}, ip[256]{ 0 };
+	unsigned short port{
+		static_cast<unsigned short>(GetDlgItemInt(IDC_DVS_PORT)) };
+
+	HWND hwnd{ this->GetSafeHwnd() };
+	GetDlgItemTextA(hwnd, IDC_DVS_ADDRESS, ip, 256);
+	GetDlgItemTextA(hwnd, IDC_DVS_USER, user, 256);
+	GetDlgItemTextA(hwnd, IDC_DVS_PASSWORD, passwd, 256);
+
+	char url[1024]{ 0 };
+	sprintf_s(url, 1024, "config://dvs_host_server?command=add&ip=%s&port=%d&user=%s&passwd=%s&name=test_dvs", ip, port, user, passwd);
+	const std::string urlstr{ url };
+	int ret{ XMQNode::send(0xFFFF, "dvs_host_server", urlstr.c_str(), urlstr.length()) };
+
+	if (Error_Code_Success == ret)
+	{
+		//				fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Send query device information to dvs host service successed.");
+	}
+	else
+	{
+		// 				fileLog.write(
+		// 					SeverityLevel::SEVERITY_LEVEL_ERROR,
+		// 					"Send query device information to dvs host service failed, result = [ %d ].",
+		// 					ret);
+	}
 }
 
 

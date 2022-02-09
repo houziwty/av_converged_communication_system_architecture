@@ -23,15 +23,15 @@ namespace module
 		{
 			//数据发送回调
 			//@_1 : 会话ID
-			//@_2 : 错误码
-			//@_3 : 发送字节数
-			typedef boost::function<void(const uint32_t, const uint32_t, const int32_t)> SentDataEventCallback;
+			//@_2 : 发送字节数
+			//@_3 : 错误码
+			typedef boost::function<void(const uint32_t, const uint64_t, const int32_t)> SentDataEventCallback;
 
 			//数据接收回调
 			//@_1 : 会话ID
-			//@_2 : 错误码
-			//@_3 : 数据
-			//@_4 : 接收字节数
+			//@_2 : 数据
+			//@_3 : 接收字节数
+			//@_4 : 错误码
 			typedef boost::function<void(const uint32_t, const void*, const uint64_t, const int32_t)> ReceivedDataEventCallback;
 
 			class Session

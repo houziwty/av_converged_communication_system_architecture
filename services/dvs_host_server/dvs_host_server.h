@@ -17,19 +17,15 @@
 using namespace module::file::log;
 #include "utils/url/url.h"
 using namespace framework::utils::url;
-#include "tcp/tcp_server.h"
-#include "tcp/tcp_session.h"
+#include "asio_node.h"
 using namespace module::network::asio;
 #include "xmq_node.h"
 using namespace module::network::xmq;
 #include "dvs_node.h"
 using namespace module::device::dvs;
 
-using TcpSessionPtr = boost::shared_ptr<TcpSession>;
-using DvsHostSessions = UnorderedMap<const std::string, TcpSessionPtr>;
-
 class DvsHostServer final 
-    : public XMQNode, protected TcpServer, protected DVSNode
+    : public XMQNode, protected ASIONode, protected DVSNode
 {
 public:
     DvsHostServer(FileLog& log);
@@ -38,15 +34,6 @@ public:
 public:
 	int run(void) override;
 	int stop(void) override;
-
-    //启动XMS
-    //@port [in] : 端口号
-    //@Return : 错误码
-    int startXMS(const unsigned short port = 0);
-
-    //停止XMS
-    //@Return : 错误码
-    int stopXMS(void);
 
 protected:
 	void afterPolledDataNotification(
@@ -58,12 +45,23 @@ protected:
 	void afterFetchServiceCapabilitiesNotification(
 		const ServiceInfo* infos = nullptr, 
 		const uint32_t number = 0) override;
-    void fetchAcceptedEventNotification(
-        boost::asio::ip::tcp::socket* so/* = nullptr*/, 
-        const int e/* = 0*/) override;
-    void afterPolledRealDataNotification(
-        const uint32_t dvs = 0, 
-        const int32_t stream = -1, 
+    uint32_t afterFetchAcceptedEventNotification(
+        const char* ip = nullptr, 
+        const uint16_t port = 0, 
+        const int32_t e = 0) override;
+    uint32_t afterFetchConnectedEventNotification(const int32_t e = 0) override;
+    void afterPolledReadDataNotification(
+        const uint32_t id = 0, 
+        const void* data = nullptr, 
+        const uint64_t bytes = 0, 
+        const int32_t e = 0) override;
+    void afterPolledSendDataNotification(
+        const uint32_t id = 0, 
+        const uint64_t bytes = 0, 
+        const int32_t e = 0) override;
+    void afterPolledRealplayDataNotification(
+        const uint32_t id = 0, 
+        const int32_t channel = 0, 
         const uint32_t type = 0, 
         const uint8_t* data = nullptr, 
         const uint32_t bytes = 0) override;
@@ -78,7 +76,7 @@ private:
 
 private:
     FileLog& fileLog;
-    DvsHostSessions sessions;
+    uint32_t deviceNumber;
 };//class DvsHostServer
 
 #endif//SERVICE_DVS_HOST_SERVICE_H

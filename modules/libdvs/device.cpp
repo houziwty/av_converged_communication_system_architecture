@@ -1,11 +1,9 @@
 #include "device.h"
 using namespace module::device::dvs;
 
-Device::Device(const DVSModeConf& conf, PolledDataCallback callback) 
-    : modeconf{conf}, polledDataCallback{callback}
+Device::Device(const DVSModeConf& conf, PolledRealplayDataCallback callback) 
+    : modeconf{conf}, polledRealplayDataCallback{callback}
 {}
 
 Device::~Device()
-{
-    stop();
-}
+{}

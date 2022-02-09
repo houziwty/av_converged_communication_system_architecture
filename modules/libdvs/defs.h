@@ -44,11 +44,12 @@ typedef enum class tagDVSModelType_t : int
 //DVS设备配置
 typedef struct tagDVSModeConf_t
 {
-    char name[64];
+    char name[128];
 	char passwd[64];
     char ip[128];
     uint16_t port;
     uint32_t id;                    //物理设备ID标识，0 < id，由调用者定义
+	uint32_t channels;				//设备通道个数，仅设备查询有效
     DVSFactoryType factory;
 	DVSModelType model;
 }DVSModeConf;

@@ -43,9 +43,9 @@ int main(int argc, char* argv[])
             if (Error_Code_Success == node->addConf(conf))
             {
                 node->run();
-                boost::dynamic_pointer_cast<DvsHostServer>(node)->startXMS(atoi(xms_port.c_str()));
+//                boost::dynamic_pointer_cast<DvsHostServer>(node)->startXMS(atoi(xms_port.c_str()));
                 getchar();
-                boost::dynamic_pointer_cast<DvsHostServer>(node)->stopXMS(); 
+//               boost::dynamic_pointer_cast<DvsHostServer>(node)->stopXMS(); 
                 node->stop();
                 node->removeConf(conf.id);
             }

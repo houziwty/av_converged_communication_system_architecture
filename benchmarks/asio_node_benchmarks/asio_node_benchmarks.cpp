@@ -52,7 +52,7 @@ protected:
 
   void afterPolledSendDataNotification(
     const uint32_t id = 0, 
-    const uint32_t bytes = 0, 
+    const uint64_t bytes = 0, 
     const int32_t e = 0) override
   {
     fileLog.write(

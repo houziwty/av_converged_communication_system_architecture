@@ -8,14 +8,13 @@ using namespace boost::placeholders;
 using namespace module::device::dvs;
 
 using DevicePtr = boost::shared_ptr<Device>;
-static UnorderedMap<const int, DevicePtr> devices;
+static UnorderedMap<const uint32_t, DevicePtr> devices;
 
 DVSNode::DVSNode()
 {}
 
 DVSNode::~DVSNode()
 {
-	stop();
 	devices.clear();
 }
 
@@ -33,7 +32,7 @@ int DVSNode::addConf(const DVSModeConf& conf)
 			{
 				device = boost::make_shared<HikvisionDevice>(
 					conf, 
-					boost::bind(&DVSNode::afterPolledRealDataNotification, this, _1, _2, _3, _4, _5));
+					boost::bind(&DVSNode::afterPolledRealplayDataNotification, this, _1, _2, _3, _4, _5));
 			}
 			else
 			{
@@ -64,6 +63,7 @@ int DVSNode::removeConf(const uint32_t id/* = 0*/)
 
 		if (device)
 		{
+			device->stop();
 			devices.remove(id);
 		}
 		else
@@ -75,32 +75,54 @@ int DVSNode::removeConf(const uint32_t id/* = 0*/)
 	return ret;
 }
 
-int DVSNode::run()
+int DVSNode::queryConf(std::vector<DVSModeConf>& confs)
 {
-	std::vector<DevicePtr> items{devices.values()};
+	confs.clear();
+	const std::vector<DevicePtr> dvss{devices.values()};
 
-	for (int i = 0; i != items.size(); ++i)
+	for (int i = 0; i != dvss.size(); ++i)
 	{
-		if (items[i])
-		{
-			items[i]->run();
-		}
+		confs.push_back(dvss[i]->getConf());
 	}
 
 	return Error_Code_Success;
 }
 
-int DVSNode::stop()
+const DVSModeConf& DVSNode::queryConf(const uint32_t id/* = 0*/)
 {
-	std::vector<DevicePtr> items{devices.values()};
+	DVSModeConf conf{0};
+	DevicePtr device{devices.at(id)};
 
-	for (int i = 0; i != items.size(); ++i)
+	if (device)
 	{
-		if (items[i])
-		{
-			items[i]->stop();
-		}
+		conf = device->getConf();
+	}
+	
+	return std::move(conf);
+}
+
+int DVSNode::run(const uint32_t id/* = 0*/)
+{
+	int ret{0 < id ? Error_Code_Success : Error_Code_Invalid_Param};
+
+	if (Error_Code_Success == ret)
+	{
+		DevicePtr device{devices.at(id)};
+		ret = (device ? device->run() : Error_Code_Object_Not_Exist);
 	}
 
-	return Error_Code_Success;
+	return ret;
+}
+
+int DVSNode::stop(const uint32_t id/* = 0*/)
+{
+	int ret{0 < id ? Error_Code_Success : Error_Code_Invalid_Param};
+
+	if (Error_Code_Success == ret)
+	{
+		DevicePtr device{devices.at(id)};
+		ret = (device ? device->stop() : Error_Code_Object_Not_Exist);
+	}
+
+	return ret;
 }

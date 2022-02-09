@@ -4,12 +4,13 @@
 
 #pragma once
 
-#include "libxmq_host_client.h"
+#include "xmq_node.h"
+using namespace module::network::xmq;
 #include "log.h"
 using namespace module::file::log;
 
 // CdvshostdemoDlg dialog
-class CdvshostdemoDlg : public CDialogEx, protected LibXmqHostClient
+class CdvshostdemoDlg : public CDialogEx, protected XMQNode
 {
 // Construction
 public:
@@ -36,13 +37,15 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 protected:
-	void fetchXmqHostClientOnlineStatusNotification(bool online) override;
-	void fetchXmqHostServiceCapabilitiesNotification(
-		const ServiceInfo* infos = nullptr,
-		const int number = 0) override;
-	void fetchXmqHostClientReceivedDataNotification(
+	void afterPolledDataNotification(
+		const uint32_t id = 0,
+		const char* name = nullptr,
 		const void* data = nullptr,
-		const int bytes = 0) override;
+		const uint64_t bytes = 0) override;
+	void afterFetchOnlineStatusNotification(const bool online = false) override;
+	void afterFetchServiceCapabilitiesNotification(
+		const ServiceInfo* infos = nullptr,
+		const uint32_t number = 0) override;
 public:
 	afx_msg void OnBnClickedXmqConnect();
 	afx_msg void OnBnClickedXmqDisconnect();

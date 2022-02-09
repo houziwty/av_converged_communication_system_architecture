@@ -1,15 +1,14 @@
 #include "boost/format.hpp"
 #include "boost/make_shared.hpp"
 #include "error_code.h"
-#include "utils/uuid/uuid.h"
-using namespace framework::utils::uuid;
+#include "utils/memory/xmem.h"
+using namespace framework::utils::memory;
 #include "utils/url/url.h"
 using namespace framework::utils::url;
-#include "dvs_host_session.h"
 #include "dvs_host_server.h"
 
 DvsHostServer::DvsHostServer(FileLog& log)
-    : XMQNode(), TcpServer(), fileLog{log}
+    : XMQNode(), ASIONode(), DVSNode(), fileLog{log}, deviceNumber{0}
 {}
 
 DvsHostServer::~DvsHostServer()
@@ -17,7 +16,24 @@ DvsHostServer::~DvsHostServer()
 
 int DvsHostServer::run()
 {
-    return XMQNode::run();
+    int ret{XMQNode::run()};
+
+    if (Error_Code_Success == ret)
+    {
+        ret = ASIONode::run();
+
+        if (Error_Code_Success == ret)
+        {
+            ASIOModeConf conf;
+            conf.proto = ASIOProtoType::ASIO_PROTO_TYPE_TCP;
+            conf.port = 60820;
+            conf.tcp.mode = ASIOModeType::ASIO_MODE_TYPE_LISTEN;
+
+            ret = ASIONode::addConf(conf);
+        }
+    }
+    
+    return ret;
 }
 
 int DvsHostServer::stop()
@@ -26,39 +42,15 @@ int DvsHostServer::stop()
 
     if (Error_Code_Success == ret)
     {
-        sessions.clear(); 
+        ret = ASIONode::stop();
     }
 
     return ret;
-}
-
-int DvsHostServer::startXMS(const unsigned short port/* = 0*/)
-{
-    int ret{TcpServer::start(port)};
-
-    if (Error_Code_Success == ret)
-    {
-        fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Start XMS service successed.");
-    }
-    else
-    {
-        fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_ERROR, 
-            "Start XMS service failed, result = [ %d ] port = [ %d ].", 
-            ret, port);
-    }
-
-    return ret;
-}
-
-int DvsHostServer::stopXMS()
-{
-    return TcpServer::stop();
 }
 
 void DvsHostServer::removeExpiredSession(const std::string sid)
 {
-    sessions.remove(sid);
+//    sessions.remove(sid);
 }
 
 void DvsHostServer::afterFetchOnlineStatusNotification(const bool online)
@@ -117,37 +109,50 @@ void DvsHostServer::afterPolledDataNotification(
     }
 }
 
-void DvsHostServer::fetchAcceptedEventNotification(
-    boost::asio::ip::tcp::socket* so/* = nullptr*/, 
-    const int e/* = 0*/)
+uint32_t DvsHostServer::afterFetchAcceptedEventNotification(
+    const char* ip/* = nullptr*/, 
+    const uint16_t port/* = 0*/,  
+    const int32_t e/* = 0*/)
 {
-    if (so && !e)
-    {
-        const std::string sid{Uuid().createNew()};
+    // if (so && !e)
+    // {
+    //     const std::string sid{Uuid().createNew()};
 
-        if(!sid.empty())
-        {
-            // TcpSessionPtr ptr{boost::make_shared<DvsHostSession>(*this, sid)};
+    //     if(!sid.empty())
+    //     {
+    //         // TcpSessionPtr ptr{boost::make_shared<DvsHostSession>(*this, sid)};
 
-            // if(ptr && 
-            //     Error_Code_Success == ptr->createNew(session) &&
-            //     Error_Code_Success == ptr->receive())
-            // {
-            //     sessions.add(sid, ptr);
-            // }
-        }
-    }
+    //         // if(ptr && 
+    //         //     Error_Code_Success == ptr->createNew(session) &&
+    //         //     Error_Code_Success == ptr->receive())
+    //         // {
+    //         //     sessions.add(sid, ptr);
+    //         // }
+    //     }
+    // }
+
+    return 0;
 }
 
-void DvsHostServer::afterPolledRealDataNotification(
-    const uint32_t dvs/* = 0*/, 
-    const int32_t stream/* = -1*/, 
-    const uint32_t type/* = 0*/, 
-    const uint8_t* data/* = nullptr*/, 
-    const uint32_t bytes/* = 0*/)
+uint32_t DvsHostServer::afterFetchConnectedEventNotification(const int32_t e/* = 0*/)
+{
+    return 0;
+}
+
+void DvsHostServer::afterPolledReadDataNotification(
+    const uint32_t id/* = 0*/, 
+    const void* data/* = nullptr*/, 
+    const uint64_t bytes/* = 0*/, 
+    const int32_t e/* = 0*/)
 {
 
 }
+
+void DvsHostServer::afterPolledSendDataNotification(
+    const uint32_t id/* = 0*/, 
+    const uint64_t bytes/* = 0*/, 
+    const int32_t e/* = 0*/)
+{}
 
 void DvsHostServer::processDvsControlMessage(Url& requestUrl)
 {
@@ -195,15 +200,13 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
     {
         std::string url{
             (boost::format("config://%s?command=query") % from).str()};
-        const std::vector<DeviceInfo> infos{dvsHostMan.queryDeviceInfos()};
-        for (int i = 0; i != infos.size(); ++i)
+        std::vector<DVSModeConf> confs;
+        DVSNode::queryConf(confs);
+
+        for (int i = 0; i != confs.size(); ++i)
         {
-            std::string dvs{
-                (boost::format("&dvs=%s_%s_%d_%s") 
-                % infos[i].uuid.c_str() 
-                % infos[i].ip.c_str() 
-                % static_cast<int>(infos[i].cameras.size()) 
-                % infos[i].name.c_str()).str()};
+            const std::string dvs{
+                (boost::format("&dvs=%d_%s_%d_%s") % confs[i].id % confs[i].ip % confs[i].channels % confs[i].name).str()};
             url.append(dvs);
         }
 
@@ -211,28 +214,32 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
     }
     else if (!command.compare("add"))
     {
-        const std::string uuid{Uuid().createNew()};
-        int ret{
-            dvsHostMan.addDevice(
-                uuid, 
-                name, 
-                user, 
-                passwd, 
-                ip, 
-                static_cast<unsigned short>(atoi(port.c_str())), 
-                FactoryType::FACTORY_TYPE_HK)};
+        DVSModeConf conf{0};
+        XMem().copy(conf.name, 128, (char*)user.c_str(), user.length());
+        XMem().copy(conf.passwd, 64, (char*)passwd.c_str(), passwd.length());
+        XMem().copy(conf.ip, 128, (char*)ip.c_str(), ip.length());
+        conf.port = atoi(port.c_str());
+        conf.id = ++deviceNumber;
+        conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_HK;
+        conf.model = DVSModelType::DVS_MODEL_TYPE_IPC;
+        int ret{DVSNode::addConf(conf)};
 
         if (Error_Code_Success == ret)
         {
             fileLog.write(
                 SeverityLevel::SEVERITY_LEVEL_INFO, 
-                "Add new device successfully with uuid = [ %s ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ].", 
-                uuid.c_str(), name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str());
+                "Add new device successfully with id = [ %d ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ].", 
+                deviceNumber, name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str());
 
-            const CameraPtrs cameras{dvsHostMan.queryCameraPtrs(uuid)};
+            ret = DVSNode::run(conf.id);
+            if (Error_Code_Success == ret)
+            {
+                conf = DVSNode::queryConf(conf.id);
+            }
+
             const std::string url{
                 (boost::format("config://%s?from=%s&command=add&error=%d&dvs=%s_%s_%d_%s") 
-                % from % host % ret % uuid % ip % static_cast<int>(cameras.size()) % name).str()};
+                % from % host % ret % conf.id % ip % conf.channels % name).str()};
                 
             XMQNode::send(0xB1, nullptr, url.c_str(), url.length());
         }
@@ -240,8 +247,8 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
         {
             fileLog.write(
                 SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                "Add new device failed with uuid = [ %s ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ], result = [ %d ].", 
-                uuid.c_str(), name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str(), ret);
+                "Add new device failed with id = [ %d ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ], result = [ %d ].", 
+                deviceNumber, name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str(), ret);
 
             const std::string url{
                 (boost::format("config://%s?from=%s&command=add&error=%d") % from % host % ret).str()};
@@ -251,23 +258,31 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
     }
     else if (!command.compare("remove"))
     {
-        int ret{dvsHostMan.removeDevice(id)};
-        std::string url;
+        // int ret{dvsHostMan.removeDevice(id)};
+        // std::string url;
 
-        if (Error_Code_Success == ret)
-        {
-            fileLog.write(
-                SeverityLevel::SEVERITY_LEVEL_INFO, "Remove device successfully with uuid = [ %s ].", id.c_str());
-        }
-        else
-        {
-            fileLog.write(
-                SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                "Remove device failed with uuid = [ %s ] result = [ %d ].", id.c_str(), ret);
-        }
+        // if (Error_Code_Success == ret)
+        // {
+        //     fileLog.write(
+        //         SeverityLevel::SEVERITY_LEVEL_INFO, "Remove device successfully with uuid = [ %s ].", id.c_str());
+        // }
+        // else
+        // {
+        //     fileLog.write(
+        //         SeverityLevel::SEVERITY_LEVEL_WARNING, 
+        //         "Remove device failed with uuid = [ %s ] result = [ %d ].", id.c_str(), ret);
+        // }
 
-        url.append(
-            (boost::format("config://%s?from=%s&command=remove&error=%d&id=%s") % from % host % ret % id).str());
-        XMQNode::send(0xB1, nullptr, url.c_str(), url.length());
+        // url.append(
+        //     (boost::format("config://%s?from=%s&command=remove&error=%d&id=%s") % from % host % ret % id).str());
+        // XMQNode::send(0xB1, nullptr, url.c_str(), url.length());
     }
 }
+
+void DvsHostServer::afterPolledRealplayDataNotification(
+    const uint32_t id/* = 0*/, 
+    const int32_t channel/* = 0*/, 
+    const uint32_t type/* = 0*/, 
+    const uint8_t* data/* = nullptr*/, 
+    const uint32_t bytes/* = 0*/)
+{}

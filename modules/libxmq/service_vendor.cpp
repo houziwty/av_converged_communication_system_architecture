@@ -202,6 +202,7 @@ void ServiceVendor::processQueryResponseMessage(Url& url)
     if (0 < number)
     {
         infos = new(std::nothrow) ServiceInfo[number];
+		memset(infos, 0, number * sizeof(ServiceInfo));
     }
 
     for(int i = 0; i != number; ++i)

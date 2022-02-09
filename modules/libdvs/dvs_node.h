@@ -14,6 +14,7 @@
 #ifndef MODULE_DEVICE_DVS_DVS_NODE_H
 #define MODULE_DEVICE_DVS_DVS_NODE_H
 
+#include <vector>
 #include "defs.h"
 
 namespace module
@@ -39,24 +40,36 @@ namespace module
 				//@Return : 错误码
 				int removeConf(const uint32_t id = 0);
 
-				//运行
+				//查询设备配置集
+				//@confs [in] : 设备配置集
 				//@Return : 错误码
-				virtual int run(void);
+				int queryConf(std::vector<DVSModeConf>& confs);
 
-				//停止
+				//查询设备配置
+				//@id [in] : 设备ID
+				//@Return : 设备配置
+				const DVSModeConf& queryConf(const uint32_t id = 0);
+
+				//运行设备
+				//@id [in] : 设备ID
 				//@Return : 错误码
-				virtual int stop(void);
+				virtual int run(const uint32_t id = 0);
+
+				//停止设备
+				//@id [in] : 设备ID
+				//@Return : 错误码
+				virtual int stop(const uint32_t id = 0);
 
 			protected:
-				//接收流数据通知
-				//@dvs [out] : 设备ID
-				//@strea [out] : 流ID
+				//实时流数据通知
+				//@id [out] : 设备ID
+				//@channel [out] : 通道号，从1开始计数
 				//@type [out] : 数据类型
 				//@data [out] : 数据 
 				//@bytes [out] : 大小
-				virtual void afterPolledRealDataNotification(
-					const uint32_t dvs = 0, 
-					const int32_t stream = -1, 
+				virtual void afterPolledRealplayDataNotification(
+					const uint32_t id = 0, 
+					const int32_t channel = 0, 
 					const uint32_t type = 0, 
 					const uint8_t* data = nullptr, 
 					const uint32_t bytes = 0) = 0;

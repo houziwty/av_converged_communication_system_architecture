@@ -13,9 +13,9 @@
 #ifndef MODULE_DEVICE_DVS_DEVICE_H
 #define MODULE_DEVICE_DVS_DEVICE_H
 
-#include <vector>
 #include "boost/function.hpp"
 #include "defs.h"
+#include "utils/map/unordered_map.h"
 
 namespace module
 {
@@ -23,17 +23,30 @@ namespace module
 	{
 		namespace dvs
 		{
-			typedef boost::function<void(const uint32_t, const int32_t, const uint32_t, const uint8_t*, const uint32_t)> PolledDataCallback;
+			//实时流数据回调
+			//@_1 : 设备ID
+			//@_2 : 通道号
+			//@_3 : 数据类型
+			//@_4 : 数据
+			//@_5 : 数据大小
+			typedef boost::function<void(const uint32_t, const int32_t, const uint32_t, const uint8_t*, const uint32_t)> PolledRealplayDataCallback;
 
 			class Device
 			{
 			public:
 				Device(
 					const DVSModeConf& conf, 
-					PolledDataCallback callback);
+					PolledRealplayDataCallback callback);
 				virtual ~Device(void);
 
 			public:
+				//获取设备配置
+				//@Return : 设备配置
+				inline const DVSModeConf& getConf(void) const
+				{
+					return modeconf;
+				}
+
 				//运行
 				//@Return : 错误码
 				virtual int run(void) = 0;
@@ -42,18 +55,10 @@ namespace module
 				//@Return : 错误码
 				virtual int stop(void) = 0;
 
-				//获取摄像机索引号
-				//@Return : 摄像机索引号
-				inline const std::vector<int32_t> cameras(void) const
-				{
-					return indexes;
-				}
-
 			protected:
-				const DVSModeConf modeconf;
-				std::vector<int32_t> indexes;
-				std::vector<int32_t> streams;
-				PolledDataCallback polledDataCallback;
+				DVSModeConf modeconf;
+				UnorderedMap<int32_t, int32_t> livestreamIds;
+				PolledRealplayDataCallback polledRealplayDataCallback;
 			};//class Device
 		}//namespace dvs
 	}//namespace device

@@ -1,3 +1,4 @@
+#include <vector>
 #include "boost/make_shared.hpp"
 extern "C"
 {
@@ -11,12 +12,16 @@ using namespace module::device::dvs;
 
 uint32_t HikvisionDevice::counter = 0;
 
-HikvisionDevice::HikvisionDevice(const DVSModeConf& conf, PolledDataCallback callback)
+HikvisionDevice::HikvisionDevice(
+	const DVSModeConf& conf, 
+	PolledRealplayDataCallback callback)
 	: Device(conf, callback), user{-1}
 {}
 
 HikvisionDevice::~HikvisionDevice()
-{}
+{
+	stop();
+}
 
 int HikvisionDevice::run()
 {
@@ -38,7 +43,7 @@ int HikvisionDevice::run()
 		XMem().copy(modeconf.passwd, NET_DVR_LOGIN_USERNAME_MAX_LEN, logininfo.sPassword, NET_DVR_LOGIN_PASSWD_MAX_LEN);
 
 		user = NET_DVR_Login_V40(&logininfo, &devinfo);
-		ret = (-1 < user ? openAllMainStream(&devinfo) : Error_Code_Device_Login_Failure);
+		ret = (-1 < user ? openRealplayStream(&devinfo) : Error_Code_Device_Login_Failure);
 	}
 
 	return ret;
@@ -50,7 +55,7 @@ int HikvisionDevice::stop()
 
 	if (Error_Code_Success == ret)
 	{
-		closeAllMainStream();
+		closeRealplayStream();
 		ret = NET_DVR_Logout(user) ? Error_Code_Success : Error_Code_Device_Logout_Failure;
 
 		if (0 == --counter)
@@ -62,12 +67,13 @@ int HikvisionDevice::stop()
 	return ret;
 }
 
-int HikvisionDevice::openAllMainStream(void* param/* = nullptr*/)
+int HikvisionDevice::openRealplayStream(void* param/* = nullptr*/)
 {
 	int ret{param ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
+		std::vector<int32_t> indexes;
 		NET_DVR_DEVICEINFO_V40* devinfo{
 			reinterpret_cast<NET_DVR_DEVICEINFO_V40*>(param)};
 
@@ -101,17 +107,19 @@ int HikvisionDevice::openAllMainStream(void* param/* = nullptr*/)
 			}
 		}
 
-		for (int i = 0; i != indexes.size(); ++i)
+		modeconf.channels = indexes.size();
+		for (int i = 0; i != modeconf.channels; ++i)
 		{
 			NET_DVR_PREVIEWINFO preview{0};
 			preview.lChannel = indexes[i];
 			preview.byProtoType = 1;
-			LONG stream{
+			LONG sid{
 				NET_DVR_RealPlay_V40(user, &preview, &HikvisionDevice::livestreamDataCallback, this)};
 
-			if (-1 < stream)
+			if (-1 < sid)
 			{
-				streams.push_back(stream);
+				//通道号从1开始计数
+				livestreamIds.add(sid, i + 1);
 			}
 		}
 	}
@@ -119,8 +127,10 @@ int HikvisionDevice::openAllMainStream(void* param/* = nullptr*/)
 	return ret;
 }
 
-int HikvisionDevice::closeAllMainStream()
+int HikvisionDevice::closeRealplayStream()
 {
+	const std::vector<int32_t> streams{livestreamIds.keies()};
+
 	for (int i = 0; i != streams.size(); ++i)
 	{
 		NET_DVR_StopRealPlay(streams[i]);
@@ -130,17 +140,18 @@ int HikvisionDevice::closeAllMainStream()
 }
 
 void HikvisionDevice::livestreamDataCallback(
-	int32_t stream, uint32_t type, uint8_t* data, uint32_t bytes, void* ctx)
+	int32_t sid, uint32_t type, uint8_t* data, uint32_t bytes, void* ctx)
 {
 	HikvisionDevice* dvs{ reinterpret_cast<HikvisionDevice*>(ctx) };
+	const int32_t channelID{dvs->livestreamIds.at(sid)};
 
-	if (dvs)
+	if (dvs && 0 < channelID)
 	{
 		if (/*NET_DVR_SYSHEAD == dwDataType || */NET_DVR_STREAMDATA == type)
 		{
-			if (dvs->polledDataCallback)
+			if (dvs->polledRealplayDataCallback)
 			{
-				dvs->polledDataCallback(dvs->modeconf.id, stream, type, data, bytes);
+				dvs->polledRealplayDataCallback(dvs->modeconf.id, channelID, type, data, bytes);
 			}
 		}
 		else if (NET_DVR_AUDIOSTREAMDATA == type)
