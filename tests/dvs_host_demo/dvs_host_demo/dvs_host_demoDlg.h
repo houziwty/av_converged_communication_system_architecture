@@ -6,11 +6,13 @@
 
 #include "xmq_node.h"
 using namespace module::network::xmq;
+#include "asio_node.h"
+using namespace module::network::asio;
 #include "log.h"
 using namespace module::file::log;
 
 // CdvshostdemoDlg dialog
-class CdvshostdemoDlg : public CDialogEx, protected XMQNode
+class CdvshostdemoDlg : public CDialogEx, protected XMQNode, protected ASIONode
 {
 // Construction
 public:
@@ -39,13 +41,28 @@ protected:
 protected:
 	void afterPolledDataNotification(
 		const uint32_t id = 0,
-		const char* name = nullptr,
 		const void* data = nullptr,
-		const uint64_t bytes = 0) override;
+		const uint64_t bytes = 0,
+		const char* from = nullptr) override;
 	void afterFetchOnlineStatusNotification(const bool online = false) override;
 	void afterFetchServiceCapabilitiesNotification(
 		const ServiceInfo* infos = nullptr,
 		const uint32_t number = 0) override;
+	uint32_t afterFetchAcceptedEventNotification(
+		const char* ip = nullptr,
+		const uint16_t port = 0,
+		const int32_t e = 0) override;
+	uint32_t afterFetchConnectedEventNotification(const int32_t e = 0) override;
+	void afterPolledReadDataNotification(
+		const uint32_t id = 0,
+		const void* data = nullptr,
+		const uint64_t bytes = 0,
+		const int32_t e = 0) override;
+	void afterPolledSendDataNotification(
+		const uint32_t id = 0,
+		const uint64_t bytes = 0,
+		const int32_t e = 0) override;
+
 public:
 	afx_msg void OnBnClickedXmqConnect();
 	afx_msg void OnBnClickedXmqDisconnect();
@@ -55,4 +72,7 @@ private:
 public:
 	afx_msg void OnBnClickedDvsLogin();
 	afx_msg void OnBnClickedDvsLogout();
+
+private:
+	uint32_t sid;
 };

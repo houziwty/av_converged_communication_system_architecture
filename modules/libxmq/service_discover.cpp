@@ -54,21 +54,21 @@ int ServiceDiscover::stop()
 }
 
 int ServiceDiscover::send(
-	const char* name/* = nullptr*/, 
 	const void* data/* = nullptr*/, 
-	const uint64_t bytes/* = 0*/)
+	const uint64_t bytes/* = 0*/, 
+	const char* id/* = nullptr*/)
 {
 	int ret{so ? Error_Code_Success : Error_Code_Operate_Failure};
 
 	if(Error_Code_Success == ret)
 	{
-		ret = (name && data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param);
+		ret = (data && 0 < bytes && id ? Error_Code_Success : Error_Code_Invalid_Param);
 
 		if(Error_Code_Success == ret)
 		{
-			const std::string id{name};
+			const std::string to{id};
 			Msg msg;
-			msg.append(id.c_str(), id.length());
+			msg.append(to.c_str(), to.length());
 			msg.append("", 0);
 			msg.append(data, bytes);
 			ret = msg.send(so);
@@ -98,7 +98,7 @@ void ServiceDiscover::pollDataThread()
 
 				if (polledDataCallback)
 				{
-					polledDataCallback(modeconf.id, (const char*)first->data, third->data, third->bytes);
+					polledDataCallback(modeconf.id, third->data, third->bytes, (const char*)first->data);
 				}
 			}
 		}

@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
             boost::make_shared<XmqHostServer>(fileLog)};
         if (node)
         {
-            const std::string name{"xmq_host_server"};
+            const std::string name{XMQHostID};
             XMQModeConf conf{0};
             conf.id = 0xA1;
             conf.port = atoi(local_port.c_str());

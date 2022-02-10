@@ -88,7 +88,7 @@ int DVSNode::queryConf(std::vector<DVSModeConf>& confs)
 	return Error_Code_Success;
 }
 
-const DVSModeConf& DVSNode::queryConf(const uint32_t id/* = 0*/)
+const DVSModeConf DVSNode::queryConf(const uint32_t id/* = 0*/)
 {
 	DVSModeConf conf{0};
 	DevicePtr device{devices.at(id)};
@@ -98,7 +98,7 @@ const DVSModeConf& DVSNode::queryConf(const uint32_t id/* = 0*/)
 		conf = device->getConf();
 	}
 	
-	return std::move(conf);
+	return conf;
 }
 
 int DVSNode::run(const uint32_t id/* = 0*/)

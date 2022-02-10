@@ -26,16 +26,16 @@ namespace module
 			public:
 				DataSub(
 					const XMQModeConf& conf, 
-					PolledDataCallback pollcb);
+					PolledDataCallback callback);
 				~DataSub(void);
 
 			public:
 				int run(ctx_t c = nullptr) override;
 				int stop(void) override;
 				int send(
-					const char* /*name = nullptr*/, 
 					const void* /*data = nullptr*/, 
-					const uint64_t /*bytes = 0*/) override;
+					const uint64_t /*bytes = nullptr*/, 
+					const char* /*id = 0*/) override;
 					
 			protected:
 				void pollDataThread(void) override;

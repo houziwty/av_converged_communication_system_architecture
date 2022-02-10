@@ -44,7 +44,8 @@ typedef enum class tagDVSModelType_t : int
 //DVS设备配置
 typedef struct tagDVSModeConf_t
 {
-    char name[128];
+	char name[128];
+    char user[128];
 	char passwd[64];
     char ip[128];
     uint16_t port;

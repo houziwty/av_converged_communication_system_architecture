@@ -54,9 +54,9 @@ int DataPub::stop()
 }
 
 int DataPub::send(
-	const char* /*name = nullptr*/, 
 	const void* data/* = nullptr*/, 
-	const uint64_t bytes/* = 0*/)
+	const uint64_t bytes/* = 0*/, 
+	const char* /*name = nullptr*/)
 {
 	int ret{so ? Error_Code_Success : Error_Code_Operate_Failure};
 

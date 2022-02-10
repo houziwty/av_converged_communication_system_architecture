@@ -38,9 +38,9 @@ public:
 protected:
 	void afterPolledDataNotification(
 		const uint32_t id = 0, 
-		const char* name = nullptr, 
-		const void* data = nullptr, 
-		const uint64_t bytes = 0) override;
+        const void* data = nullptr,  
+        const uint64_t bytes = 0, 
+        const char* from = nullptr) override;
 	void afterFetchOnlineStatusNotification(const bool online = false) override;
 	void afterFetchServiceCapabilitiesNotification(
 		const ServiceInfo* infos = nullptr, 
@@ -71,8 +71,9 @@ private:
     void removeExpiredSession(const std::string sid);
     
     //DVS设备业务处理
+    //@from [in] : 源ID
 	//@requestUrl [in] : 请求URL标识
-	void processDvsControlMessage(Url& requestUrl);
+	void processDvsControlMessage(const std::string from, Url& requestUrl);
 
 private:
     FileLog& fileLog;

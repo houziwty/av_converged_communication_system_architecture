@@ -57,7 +57,7 @@ END_MESSAGE_MAP()
 
 
 CdvshostdemoDlg::CdvshostdemoDlg(CWnd* pParent /*=nullptr*/)
-	: CDialogEx(IDD_DVS_HOST_DEMO_DIALOG, pParent)
+	: CDialogEx(IDD_DVS_HOST_DEMO_DIALOG, pParent), XMQNode(), ASIONode(), sid{0}
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -119,6 +119,8 @@ BOOL CdvshostdemoDlg::OnInitDialog()
 	SetDlgItemText(IDC_DVS_PORT, L"8000");
 	SetDlgItemText(IDC_DVS_USER, L"admin");
 	SetDlgItemText(IDC_DVS_PASSWORD, L"Vrc123456");
+
+	ASIONode::run();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -206,7 +208,7 @@ void CdvshostdemoDlg::afterFetchServiceCapabilitiesNotification(
 			char tick[256]{ 0 };
 			sprintf_s(tick, 128, "config://dvs_host_server?command=query&timestamp=%d", GetTickCount());
 			const std::string url{tick};
-			int ret{ XMQNode::send(0xFFFF, "dvs_host_server", url.c_str(), url.length())};
+			int ret{ XMQNode::send(0xFFFF, url.c_str(), url.length())};
 
 			if (Error_Code_Success == ret)
 			{
@@ -225,9 +227,9 @@ void CdvshostdemoDlg::afterFetchServiceCapabilitiesNotification(
 
 void CdvshostdemoDlg::afterPolledDataNotification(
 	const uint32_t id /* = 0 */, 
-	const char* name /* = nullptr */, 
 	const void* data /* = nullptr */, 
-	const uint64_t bytes /* = 0 */)
+	const uint64_t bytes /* = 0 */, 
+	const char* from /* = nullptr */)
 {
 // 	fileLog.write(
 // 		SeverityLevel::SEVERITY_LEVEL_INFO, 
@@ -240,32 +242,30 @@ void CdvshostdemoDlg::afterPolledDataNotification(
 
 	if (Error_Code_Success == ret)
 	{
-		int dvsnum{ 0 };
-		const std::vector<ParamItem> params{ url.getParameters() };
-
-		for (int i = 0; i != params.size(); ++i)
-		{
-			if (!params[i].key.compare("dvs"))
-			{
-				++dvsnum;
-				const std::string dvsid{ params[i].value.substr(0, params[i].value.find_first_of('_')) };
-				const std::string url{
-					(boost::format("dvs://dvs_host_service?from=test_dvs_host_client&command=remove&id=%s") % dvsid).str() };
-// 				int ret{ send(url.c_str(), url.length()) };
+// 		const std::vector<ParamItem> params{ url.getParameters() };
 // 
-// 				if (Error_Code_Success == ret)
-// 				{
-// //					fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Send remove device [ %s ] successed.", dvsid.c_str());
-// 				}
-// 				else
-// 				{
-// // 					fileLog.write(
-// // 						SeverityLevel::SEVERITY_LEVEL_ERROR,
-// // 						"Send remove device [ %s ] failed, result = [ %d ].",
-// // 						dvsid.c_str(), ret);
-// 				}
-			}
-		}
+// 		for (int i = 0; i != params.size(); ++i)
+// 		{
+// 			if (!params[i].key.compare("dvs"))
+// 			{
+// 				const std::string dvsid{ params[i].value.substr(0, params[i].value.find_first_of('_')) };
+// 				const std::string url{
+// 					(boost::format("config://dvs_host_server?command=remove&id=%s") % dvsid).str() };
+// 				int ret{ send(0xFFFF, url.c_str(), url.length()) };
+// 
+// // 				if (Error_Code_Success == ret)
+// // 				{
+// // //					fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Send remove device [ %s ] successed.", dvsid.c_str());
+// // 				}
+// // 				else
+// // 				{
+// // // 					fileLog.write(
+// // // 						SeverityLevel::SEVERITY_LEVEL_ERROR,
+// // // 						"Send remove device [ %s ] failed, result = [ %d ].",
+// // // 						dvsid.c_str(), ret);
+// // 				}
+// 			}
+// 		}
 
 // 		if (!dvsnum)
 // 		{
@@ -350,7 +350,7 @@ void CdvshostdemoDlg::OnBnClickedDvsLogin()
 	char url[1024]{ 0 };
 	sprintf_s(url, 1024, "config://dvs_host_server?command=add&ip=%s&port=%d&user=%s&passwd=%s&name=test_dvs", ip, port, user, passwd);
 	const std::string urlstr{ url };
-	int ret{ XMQNode::send(0xFFFF, "dvs_host_server", urlstr.c_str(), urlstr.length()) };
+	int ret{ XMQNode::send(0xFFFF, urlstr.c_str(), urlstr.length()) };
 
 	if (Error_Code_Success == ret)
 	{
@@ -369,4 +369,45 @@ void CdvshostdemoDlg::OnBnClickedDvsLogin()
 void CdvshostdemoDlg::OnBnClickedDvsLogout()
 {
 	// TODO: Add your control notification handler code here
+
+	ASIOModeConf conf;
+	conf.proto = ASIOProtoType::ASIO_PROTO_TYPE_TCP;
+	conf.port = 60820;
+	conf.tcp.mode = ASIOModeType::ASIO_MODE_TYPE_CONNECT;
+	conf.tcp.ip = "127.0.0.1";
+	int ret{ ASIONode::addConf(conf) };
+
+	if (Error_Code_Success == ret)
+	{
+	}
+}
+
+uint32_t CdvshostdemoDlg::afterFetchAcceptedEventNotification(
+	const char* ip /* = nullptr */, 
+	const uint16_t port /* = 0 */, 
+	const int32_t e /* = 0 */)
+{
+	return 0;
+}
+
+uint32_t CdvshostdemoDlg::afterFetchConnectedEventNotification(const int32_t e /* = 0 */)
+{
+	return ++sid;
+}
+
+void CdvshostdemoDlg::afterPolledReadDataNotification(
+	const uint32_t id /* = 0 */, 
+	const void* data /* = nullptr */, 
+	const uint64_t bytes /* = 0 */, 
+	const int32_t e /* = 0 */)
+{
+
+}
+
+void CdvshostdemoDlg::afterPolledSendDataNotification(
+	const uint32_t id /* = 0 */, 
+	const uint64_t bytes /* = 0 */, 
+	const int32_t e /* = 0 */)
+{
+
 }

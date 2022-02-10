@@ -44,10 +44,10 @@ int XmqHostServer::stop()
 }
 
 void XmqHostServer::afterPolledDataNotification(
-    const uint32_t uid/* = nullptr*/, 
-	const char* name/* = 0*/, 
+    const uint32_t id/* = nullptr*/, 
 	const void* data/* = nullptr*/, 
-	const uint64_t bytes/* = 0*/)
+	const uint64_t bytes/* = 0*/, 
+    const char* from/* = 0*/)
 {
     //数据解析逻辑说明：
     // 1. 解析协议名称，如果是register则处理服务注册业务，否则到（2）；
@@ -55,11 +55,11 @@ void XmqHostServer::afterPolledDataNotification(
     // 3. 在注册服务表中查找主机名称，如果存在，则执行转发消息，否则应答消息不可达错误。
     
     const std::string msg{(const char*)data, bytes};
-    fileLog.write(
-        SeverityLevel::SEVERITY_LEVEL_INFO, 
-        "Polled message with serivce name = [ %s ] and data = [ %s ].",  
-        name, 
-        msg.c_str());
+    // fileLog.write(
+    //     SeverityLevel::SEVERITY_LEVEL_INFO, 
+    //     "Polled message from serivce = [ %s ], data = [ %s ].",  
+    //     from, 
+    //     msg.c_str());
     Url requestUrl;
     int ret{requestUrl.parse(msg)};
 
@@ -67,27 +67,28 @@ void XmqHostServer::afterPolledDataNotification(
     {
         if (!requestUrl.getProtocol().compare("register"))
         {
-            processRegisterMessage(name, requestUrl);
+            processRegisterMessage(from, requestUrl);
         }
-        else if (!requestUrl.getHost().compare("xmq_host_server"))
+        else if (!requestUrl.getHost().compare(XMQHostID))
         {
-            processRequestMessage(name, requestUrl);
+            processRequestMessage(from, requestUrl);
         }
         else
         {
-            const std::string hostName{requestUrl.getHost()};
-            const unsigned long long timestamp{registeredServices.at(hostName)};
+            const std::string to{requestUrl.getHost()};
+            const unsigned long long timestamp{registeredServices.at(to)};
 
             if (0 < timestamp)
             {
-                forwardMessage(hostName, msg);
+                forwardCustomMessage(from, to, msg);
             }
             else
             {
                 fileLog.write(
                     SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                    "Parsed unknown data from service name = [ %s ].",  
-                    name);
+                    "Can not forward data from service = [ %s ] to service = [ %s ].",  
+                    from, 
+                    to.c_str());
             }
         }
     }
@@ -95,8 +96,8 @@ void XmqHostServer::afterPolledDataNotification(
     {
         fileLog.write(
             SeverityLevel::SEVERITY_LEVEL_ERROR, 
-            "Parsed data from service name = [ %s ] failed, result = [ %d ].",  
-            name, 
+            "Parsed data from service = [ %s ] failed, result = [ %d ].",  
+            from, 
             ret);
     }
 }
@@ -136,10 +137,10 @@ void XmqHostServer::checkRegisterExpiredOfServiceThread()
 	}
 }
 
-void XmqHostServer::processRegisterMessage(const std::string name, Url& requestUrl)
+void XmqHostServer::processRegisterMessage(const std::string from, Url& requestUrl)
 {
     const std::string hostName{requestUrl.getHost()};
-    int ret{!hostName.compare(name) ? Error_Code_Success : Error_Code_Bad_RequestUrl};
+    int ret{!hostName.empty() ? Error_Code_Success : Error_Code_Bad_RequestUrl};
 
     if (Error_Code_Success == ret)
     {
@@ -153,10 +154,10 @@ void XmqHostServer::processRegisterMessage(const std::string name, Url& requestU
 
                 Url responseUrl;
                 responseUrl.setProtocol(requestUrl.getProtocol());
-                responseUrl.setHost("xmq_host_server");
+                responseUrl.setHost(XMQHostID);
                 responseUrl.addParameter(items[i].key, items[i].value);
                 const std::string msg{responseUrl.encode()};
-                ret = XMQNode::send(0xA1, hostName.c_str(), msg.c_str(), msg.length());
+                ret = XMQNode::send(0xA1, msg.c_str(), msg.length(), from.c_str());
                 break;
             }
         }
@@ -166,20 +167,20 @@ void XmqHostServer::processRegisterMessage(const std::string name, Url& requestU
     {
         fileLog.write(
             SeverityLevel::SEVERITY_LEVEL_INFO, 
-            "Process register message with serivce name = [ %s ] successfully.",  
+            "Process register message from serivce = [ %s ] successfully.",  
             hostName.c_str());
     }
     else
     {
         fileLog.write(
             SeverityLevel::SEVERITY_LEVEL_WARNING, 
-            "Process register message with serivce name = [ %s ] failed, result = [ %d ].",  
+            "Process register message from serivce = [ %s ] failed, result = [ %d ].",  
             hostName.c_str(),
             ret);
     }
 }
 
-void XmqHostServer::processRequestMessage(const std::string name, Url& requestUrl)
+void XmqHostServer::processRequestMessage(const std::string from, Url& requestUrl)
 {
     const std::string protocol{requestUrl.getProtocol()};
 
@@ -188,52 +189,67 @@ void XmqHostServer::processRequestMessage(const std::string name, Url& requestUr
         const std::vector<std::string> services{registeredServices.keies()};
         Url responseUrl;
         responseUrl.setProtocol(requestUrl.getProtocol());
-        responseUrl.setHost(name);
+        responseUrl.setHost(XMQHostID);
         for(int i = 0; i != services.size(); ++i)
         {
             responseUrl.addParameter("name", services[i]);
         }
 
         const std::string msg{responseUrl.encode()};
-        int ret{XMQNode::send(0xA1, name.c_str(), msg.c_str(), msg.length())};
+        int ret{XMQNode::send(0xA1, msg.c_str(), msg.length(), from.c_str())};
 
         if (Error_Code_Success == ret)
         {
             fileLog.write(
                 SeverityLevel::SEVERITY_LEVEL_INFO, 
-                "Process query message with serivce name = [ %s ] successfully.",  
-                name.c_str());
+                "Process query message from serivce = [ %s ] successfully.",  
+                from.c_str());
         }
         else
         {
             fileLog.write(
                 SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                "Process query message with serivce name = [ %s ] failed, result = [ %d ].",  
-                name.c_str(), 
+                "Process query message with serivce = [ %s ] failed, result = [ %d ].",  
+                from.c_str(), 
                 ret);
         }
     }
+    else
+    {
+        fileLog.write(
+                SeverityLevel::SEVERITY_LEVEL_WARNING, 
+                "Parsed unknown data from service = [ %s ].",  
+                from.c_str());
+    }
 }
 
-void XmqHostServer::forwardMessage(const std::string name, const std::string data)
+void XmqHostServer::forwardCustomMessage(
+    const std::string from, 
+    const std::string to, 
+    const std::string data)
 {
+    //转发消息在XMQ服务端将源地址追加到数据尾部
+    //数据目的端解析尾部from字段可获取源地址以回复消息
+    const std::string msg{data + "&from=" + from};
     int ret{
-        XMQNode::send(0xA1, name.c_str(), data.c_str(), data.length())};
+        XMQNode::send(0xA1, msg.c_str(), msg.length(), to.c_str())};
 
     if (Error_Code_Success == ret)
     {
         fileLog.write(
             SeverityLevel::SEVERITY_LEVEL_INFO, 
-            "Forward message to serivce name = [ %s ] and data = [ %s ] successfully.",  
-            name.c_str(), 
+            "Forward message from serivce = [ %s ] to service = [ %s ] with data = [ %s ] successfully.",  
+            from.c_str(), 
+            to.c_str(), 
             data.c_str());
     }
     else
     {
         fileLog.write(
             SeverityLevel::SEVERITY_LEVEL_ERROR, 
-            "Forward message to serivce name = [ %s ] and data = [ %s ] failed, result = [ %d ].",  
-            name.c_str(), 
+            "Forward message from serivce = [ %s ] to service = [ %s ] with data = [ %s ] failed, result = [ %d ].",  
+            from.c_str(), 
+            to.c_str(),  
             data.c_str(), 
             ret);
     }

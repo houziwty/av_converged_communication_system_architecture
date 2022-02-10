@@ -63,9 +63,9 @@ int ServiceVendor::stop()
 }
 
 int ServiceVendor::send(
-	const char* /*name*//* = nullptr*/, 
 	const void* data/* = nullptr*/, 
-	const uint64_t bytes/* = 0*/)
+	const uint64_t bytes/* = 0*/, 
+	const char* /*id = nullptr*/)
 {
 	int ret{so ? Error_Code_Success : Error_Code_Operate_Failure};
 
@@ -117,9 +117,9 @@ void ServiceVendor::pollDataThread()
 					{
 						processQueryResponseMessage(url);
 					}
-					else if (polledDataCallback)
+					else
 					{
-						polledDataCallback(modeconf.id, nullptr, second->data, second->bytes);
+						processForwardCustomMessage(data);
 					}
 				}
 			}
@@ -149,7 +149,7 @@ void ServiceVendor::checkServiceOnlineStatusThread()
 
 			if(!data.empty())
 			{
-				send(nullptr, data.c_str(), data.length());
+				send(data.c_str(), data.length());
 			}
 
 			lastTickCout = currentTickCount;
@@ -184,8 +184,8 @@ void ServiceVendor::processRegisterResponseMessage(Url& url)
 			if (online)
 			{
 				//在线就获取服务信息
-				const std::string msg{(boost::format("query://%s") % url.getHost()).str()};
-            	send(nullptr, msg.c_str(), msg.length());
+				const std::string msg{(boost::format("query://%s") % XMQHostID).str()};
+            	send(msg.c_str(), msg.length());
 			}
 			
             break;
@@ -219,4 +219,19 @@ void ServiceVendor::processQueryResponseMessage(Url& url)
 	}
 	
     boost::checked_array_delete(infos);
+}
+
+void ServiceVendor::processForwardCustomMessage(const std::string data)
+{
+	//解析经XMQ转发消息时追加的from字段
+	std::size_t pos{data.find_last_of('&')};
+	const std::string msg{data.substr(0, pos)};
+	const std::string appendix{data.substr(pos + 1, data.length())};
+	pos = appendix.find_last_of('=');
+	const std::string from{appendix.substr(pos + 1, appendix.length())};
+
+	if (polledDataCallback)
+	{
+		polledDataCallback(modeconf.id, msg.c_str(), msg.length(), from.c_str());
+	}
 }

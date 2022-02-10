@@ -35,9 +35,9 @@ public:
 protected:
 	void afterPolledDataNotification(
 		const uint32_t id = 0, 
-		const char* name = nullptr, 
-		const void* data = nullptr, 
-		const uint64_t bytes = 0) override;
+		const void* data = nullptr,  
+		const uint64_t bytes = 0, 
+		const char* from = nullptr) override;
 	void afterFetchOnlineStatusNotification(const bool online = false) override;
 	void afterFetchServiceCapabilitiesNotification(
 		const ServiceInfo* infos = nullptr, 
@@ -48,20 +48,24 @@ private:
 	void checkRegisterExpiredOfServiceThread(void);
 
 	//注册业务处理
-	//@name [in] : 请求服务名称
+	//@from [in] : 源ID
 	//@requestUrl [in] : 请求URL标识
-	void processRegisterMessage(const std::string name, Url& requestUrl);
+	void processRegisterMessage(const std::string from, Url& requestUrl);
 
 	//请求业务处理
-	//@name [in] : 请求服务名称
+	//@from [in] : 源ID
 	//@requestUrl [in] : 请求URL标识
 	//@Comment : 请求业务包括：查询等
-	void processRequestMessage(const std::string name, Url& requestUrl);
+	void processRequestMessage(const std::string from, Url& requestUrl);
 
-	//转发
-	//@name [in] : 服务名称
-	//@data [in] : 数据
-	void forwardMessage(const std::string name, const std::string data);
+	//转发业务消息
+	//@from [in] : 源ID
+	//@to [in] : 目的ID
+	//@data [in] : 源数据
+	void forwardCustomMessage(
+		const std::string from, 
+		const std::string to, 
+		const std::string data);
 
 private:
 	FileLog& fileLog;

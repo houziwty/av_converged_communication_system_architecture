@@ -44,11 +44,10 @@ namespace module
 			public:
 				int run(ctx_t c = nullptr) override;
 				int stop(void) override;
-				//@Comment : 发送数据不需要服务名称
 				int send(
-					const char* /*name*/ = nullptr, 
 					const void* data = nullptr, 
-					const uint64_t bytes = 0) override;
+					const uint64_t bytes = 0, 
+					const char* /*id */= nullptr) override;
 
 			protected:
 				void pollDataThread(void) override;
@@ -62,6 +61,12 @@ namespace module
 				//查询应答处理
 				//@url [in] : 应答URL
 				void processQueryResponseMessage(Url& url);
+
+				//转发业务处理
+				//@from [in] : 源ID
+				//@to [in] : 目的ID
+				//@data [in] : 源数据
+				void processForwardCustomMessage(const std::string data);
 
 			private:
 				uint64_t registerResponseTimetamp;

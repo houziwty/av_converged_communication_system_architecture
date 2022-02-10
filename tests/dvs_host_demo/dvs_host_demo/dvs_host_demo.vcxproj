@@ -113,15 +113,15 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;_DEBUG;USE_XMQ_HOST_CLIENT;USE_MODULE_FILE_LOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;_DEBUG;USE_MODULE_NETWORK_XMQ;USE_MODULE_NETWORK_ASIO;USE_MODULE_FILE_LOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>D:\av_converged_communication_system_architecture\modules\libxmq;D:\av_converged_communication_system_architecture\modules\liblog;D:\av_converged_communication_system_architecture\include;D:\av_converged_communication_system_architecture\3rd\boost_1_78_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\av_converged_communication_system_architecture\modules\libasio;D:\av_converged_communication_system_architecture\modules\libxmq;D:\av_converged_communication_system_architecture\modules\liblog;D:\av_converged_communication_system_architecture\include;D:\av_converged_communication_system_architecture\3rd\boost_1_78_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>D:\av_converged_communication_system_architecture\build\win32\modules\libxmq\Debug;D:\av_converged_communication_system_architecture\build\win32\modules\liblog\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>xmq.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\av_converged_communication_system_architecture\build\win32\modules\libxmq\Debug;D:\av_converged_communication_system_architecture\build\win32\modules\liblog\Debug;D:\av_converged_communication_system_architecture\build\win32\modules\libasio\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>xmq.lib;asio.lib;log.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>

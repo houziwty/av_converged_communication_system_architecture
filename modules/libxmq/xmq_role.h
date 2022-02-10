@@ -22,14 +22,19 @@ namespace module
 	{
 		namespace xmq
 		{
-			typedef boost::function<void(const uint32_t, const char*, const void*, const uint64_t)> PolledDataCallback;
+			//接收数据通知
+			//@_1 [out] : 角色ID
+			//@_2 [out] : 数据 
+			//@_3 [out] : 大小
+			//@_4 [out] : 数据来源
+			typedef boost::function<void(const uint32_t, const void*, const uint64_t, const char*)> PolledDataCallback;
 			
 			class XMQRole
 			{
 			public:
 				XMQRole(
 					const XMQModeConf& conf, 
-					PolledDataCallback pollcb);
+					PolledDataCallback callback);
 				virtual ~XMQRole(void);
 
 			public:
@@ -43,14 +48,14 @@ namespace module
 				virtual int stop(void);
 
 				//发送数据
-				//@name [in] : 数据接收服务名称
 				//@data [in] : 数据
-				//@bytes [in] : 大小 
+				//@bytes [in] : 大小
+				//@id [in] : 接收端ID
 				//@Return : 错误码
 				virtual int send(
-					const char* name = nullptr, 
 					const void* data = nullptr, 
-					const uint64_t bytes = 0) = 0;
+					const uint64_t bytes = 0, 
+					const char* id = nullptr) = 0;
 
 			protected:
 				//读取数据线程

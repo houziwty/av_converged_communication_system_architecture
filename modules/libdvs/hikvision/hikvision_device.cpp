@@ -39,7 +39,7 @@ int HikvisionDevice::run()
 		logininfo.bUseAsynLogin = 0;
 		XMem().copy(modeconf.ip, 128, logininfo.sDeviceAddress, NET_DVR_DEV_ADDRESS_MAX_LEN);
 		logininfo.wPort = modeconf.port;
-		XMem().copy(modeconf.name, NET_DVR_LOGIN_USERNAME_MAX_LEN, logininfo.sUserName, NET_DVR_LOGIN_USERNAME_MAX_LEN);
+		XMem().copy(modeconf.user, NET_DVR_LOGIN_USERNAME_MAX_LEN, logininfo.sUserName, NET_DVR_LOGIN_USERNAME_MAX_LEN);
 		XMem().copy(modeconf.passwd, NET_DVR_LOGIN_USERNAME_MAX_LEN, logininfo.sPassword, NET_DVR_LOGIN_PASSWD_MAX_LEN);
 
 		user = NET_DVR_Login_V40(&logininfo, &devinfo);
@@ -58,9 +58,12 @@ int HikvisionDevice::stop()
 		closeRealplayStream();
 		ret = NET_DVR_Logout(user) ? Error_Code_Success : Error_Code_Device_Logout_Failure;
 
-		if (0 == --counter)
+		if(0 < counter)
 		{
-			NET_DVR_Cleanup();
+			if (0 == --counter)
+			{
+				NET_DVR_Cleanup();
+			}
 		}
 	}
 

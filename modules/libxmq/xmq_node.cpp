@@ -146,9 +146,9 @@ int XMQNode::stop()
 
 int XMQNode::send(
 	const uint32_t id/* = 0*/, 
-	const char* name/* = nullptr*/, 
 	const void* data/* = nullptr*/, 
-	const uint64_t bytes/* = 0*/)
+	const uint64_t bytes/* = 0*/, 
+	const char* to/* = nullptr*/)
 {
 	int ret{ctx ? Error_Code_Success : Error_Code_Operate_Failure};
 
@@ -158,7 +158,7 @@ int XMQNode::send(
 
 		if (role)
 		{
-			ret = role->send(name, data, bytes);
+			ret = role->send(data, bytes, to);
 		}
 	}
 

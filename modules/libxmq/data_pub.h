@@ -33,9 +33,9 @@ namespace module
 				int run(ctx_t c = nullptr) override;
 				int stop(void) override;
 				int send(
-					const char* /*name = nullptr*/, 
 					const void* data = nullptr, 
-					const uint64_t bytes = 0) override;
+					const uint64_t bytes = 0, 
+					const char* /*id*/ = nullptr) override;
 					
 			protected:
 				void pollDataThread(void) override;

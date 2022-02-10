@@ -9,9 +9,9 @@ using namespace module::network::xmq;
 
 XMQRole::XMQRole(
 	const XMQModeConf& conf, 
-	PolledDataCallback pollcb) 
+	PolledDataCallback callback) 
 	: modeconf{conf}, so{nullptr}, poller{nullptr}, 
-	stopped{true}, polledDataCallback{pollcb}
+	stopped{true}, polledDataCallback{callback}
 {}
 
 XMQRole::~XMQRole()

@@ -72,15 +72,16 @@ void DvsHostServer::afterFetchServiceCapabilitiesNotification(
 
 void DvsHostServer::afterPolledDataNotification(
     const uint32_t id/* = 0*/, 
-    const char* name/* = nullptr*/, 
     const void* data/* = nullptr*/, 
-    const uint64_t bytes/* = 0*/)
+    const uint64_t bytes/* = 0*/, 
+    const char* from/* = nullptr*/)
 {
     const std::string msg{reinterpret_cast<const char*>(data), bytes};
     fileLog.write(
         SeverityLevel::SEVERITY_LEVEL_INFO, 
-        "Fetch forward data = [ %s ] from xmq host server.", 
-        msg.c_str());
+        "Polled forward data = [ %s ] from server = [ %s ].", 
+        msg.c_str(), 
+        from);
 
     Url requestUrl;
     int ret{requestUrl.parse(msg)};
@@ -89,22 +90,24 @@ void DvsHostServer::afterPolledDataNotification(
     {
         if (!requestUrl.getProtocol().compare("config"))
         {
-            processDvsControlMessage(requestUrl);
+            processDvsControlMessage(from, requestUrl);
         }
         else
         {
             fileLog.write(
                 SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                "Parsed unknown data = [ %s ] from xmq host server.",  
-                msg.c_str());
+                "Parsed unknown data = [ %s ] from server = [ %s ].",  
+                msg.c_str(), 
+                from);
         }
     }
     else
     {
         fileLog.write(
             SeverityLevel::SEVERITY_LEVEL_ERROR, 
-            "Parsed forward data = [ %s ] from xmq host server failed, result = [ %d ].",  
+            "Parsed forward data = [ %s ] from server = [ %s ] failed, result = [ %d ].",  
             msg.c_str(), 
+            from, 
             ret);
     }
 }
@@ -114,6 +117,11 @@ uint32_t DvsHostServer::afterFetchAcceptedEventNotification(
     const uint16_t port/* = 0*/,  
     const int32_t e/* = 0*/)
 {
+    fileLog.write(
+        SeverityLevel::SEVERITY_LEVEL_INFO, 
+        "Fetch stream session connect from ip = [ %s ], port = [ %d ], result = [ %d ].",  
+        ip, port, e);
+
     // if (so && !e)
     // {
     //     const std::string sid{Uuid().createNew()};
@@ -154,21 +162,17 @@ void DvsHostServer::afterPolledSendDataNotification(
     const int32_t e/* = 0*/)
 {}
 
-void DvsHostServer::processDvsControlMessage(Url& requestUrl)
+void DvsHostServer::processDvsControlMessage(const std::string from, Url& requestUrl)
 {
     const std::vector<ParamItem> parameters{requestUrl.getParameters()};
     const std::string host{requestUrl.getHost()};
-    std::string command, from, ip, port, user, passwd, id, name;
+    std::string command, ip, port, user, passwd, id, name;
 
     for(int i = 0; i != parameters.size(); ++i)
     {
         if (!parameters[i].key.compare("command"))
         {
             command = parameters[i].value;
-        }
-        else if (!parameters[i].key.compare("from"))
-        {
-            from = parameters[i].value;
         }
         else if (!parameters[i].key.compare("ip"))
         {
@@ -210,14 +214,20 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
             url.append(dvs);
         }
 
-        XMQNode::send(0xB1, nullptr, url.c_str(), url.length());
+        int ret{XMQNode::send(0xB1, url.c_str(), url.length())};
+
+        fileLog.write(
+            SeverityLevel::SEVERITY_LEVEL_INFO, 
+            "Query device information successfully from service = [ %s ], result = [ %d ].", 
+            from.c_str(), ret);
     }
     else if (!command.compare("add"))
     {
         DVSModeConf conf{0};
-        XMem().copy(conf.name, 128, (char*)user.c_str(), user.length());
-        XMem().copy(conf.passwd, 64, (char*)passwd.c_str(), passwd.length());
-        XMem().copy(conf.ip, 128, (char*)ip.c_str(), ip.length());
+        XMem().copy(name.c_str(), name.length(), conf.name, 128);
+        XMem().copy(user.c_str(), user.length(), conf.user, 128);
+        XMem().copy(passwd.c_str(), passwd.length(), conf.passwd, 64);
+        XMem().copy(ip.c_str(), ip.length(), conf.ip, 128);
         conf.port = atoi(port.c_str());
         conf.id = ++deviceNumber;
         conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_HK;
@@ -226,11 +236,6 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
 
         if (Error_Code_Success == ret)
         {
-            fileLog.write(
-                SeverityLevel::SEVERITY_LEVEL_INFO, 
-                "Add new device successfully with id = [ %d ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ].", 
-                deviceNumber, name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str());
-
             ret = DVSNode::run(conf.id);
             if (Error_Code_Success == ret)
             {
@@ -238,44 +243,49 @@ void DvsHostServer::processDvsControlMessage(Url& requestUrl)
             }
 
             const std::string url{
-                (boost::format("config://%s?from=%s&command=add&error=%d&dvs=%s_%s_%d_%s") 
-                % from % host % ret % conf.id % ip % conf.channels % name).str()};
-                
-            XMQNode::send(0xB1, nullptr, url.c_str(), url.length());
+                (boost::format("config://%s?command=add&error=%d&dvs=%s_%s_%d_%s") 
+                % from % ret % conf.id % ip % conf.channels % name).str()};
+            ret = XMQNode::send(0xB1, url.c_str(), url.length());
+
+            fileLog.write(
+                SeverityLevel::SEVERITY_LEVEL_INFO, 
+                "Add new device successfully with id = [ %d ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ], result = [ %d ].", 
+                deviceNumber, name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str(), ret);
+        }
+        else
+        {
+            const std::string url{
+                (boost::format("config://%s?command=add&error=%d") % from % ret).str()};
+            XMQNode::send(0xB1, url.c_str(), url.length());
+
+            fileLog.write(
+                SeverityLevel::SEVERITY_LEVEL_WARNING, 
+                "Add new device failed with id = [ %d ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ], result = [ %d ].", 
+                deviceNumber, name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str(), ret);
+        }
+    }
+    else if (!command.compare("remove"))
+    {
+        int ret{DVSNode::removeConf(atoi(id.c_str()))};
+        const std::string msg{
+                (boost::format("config://%s?command=remove&error=%d&id=%s") % from % ret % id).str()};
+        XMQNode::send(0xB1, msg.c_str(), msg.length());
+
+        if (Error_Code_Success == ret)
+        {
+            fileLog.write(
+                SeverityLevel::SEVERITY_LEVEL_INFO, 
+                "Remove device successfully with id = [ %s ].", 
+                id.c_str());
         }
         else
         {
             fileLog.write(
                 SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                "Add new device failed with id = [ %d ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ], result = [ %d ].", 
-                deviceNumber, name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str(), ret);
-
-            const std::string url{
-                (boost::format("config://%s?from=%s&command=add&error=%d") % from % host % ret).str()};
-                
-            XMQNode::send(0xB1, nullptr, url.c_str(), url.length());
+                "Remove device failed with uuid = [ %s ] result = [ %d ].",
+                id.c_str(), 
+                ret);
         }
-    }
-    else if (!command.compare("remove"))
-    {
-        // int ret{dvsHostMan.removeDevice(id)};
-        // std::string url;
-
-        // if (Error_Code_Success == ret)
-        // {
-        //     fileLog.write(
-        //         SeverityLevel::SEVERITY_LEVEL_INFO, "Remove device successfully with uuid = [ %s ].", id.c_str());
-        // }
-        // else
-        // {
-        //     fileLog.write(
-        //         SeverityLevel::SEVERITY_LEVEL_WARNING, 
-        //         "Remove device failed with uuid = [ %s ] result = [ %d ].", id.c_str(), ret);
-        // }
-
-        // url.append(
-        //     (boost::format("config://%s?from=%s&command=remove&error=%d&id=%s") % from % host % ret % id).str());
-        // XMQNode::send(0xB1, nullptr, url.c_str(), url.length());
     }
 }
 

@@ -32,9 +32,9 @@ public:
 protected:
 	void afterPolledDataNotification(
 		const uint32_t id = 0, 
-		const char* name = nullptr, 
-		const void* data = nullptr, 
-		const uint64_t bytes = 0)
+    const void* data = nullptr,  
+    const uint64_t bytes = 0, 
+    const char* from = nullptr)
   {
     const std::string msg{reinterpret_cast<const char*>(data), bytes};
     fileLog.write(
@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
     // const unsigned long long tick{XTime().tickcount()};
     // memcpy(buffer, &tick, 8);
     // memcpy(buffer + 8, &sequence, 4);
-    ret = node->send(0xC1, nullptr, buffer, jpgbytes);
+    ret = node->send(0xC1, buffer, jpgbytes);
 
     XTime().sleep(10);
 //    printf("Pub timestamp = [ %llu ], sequence = [ %d ], result = [%d].\r\n", tick, sequence, ret);

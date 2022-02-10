@@ -31,9 +31,9 @@ public:
 protected:
 	void afterPolledDataNotification(
 		const uint32_t id = 0, 
-		const char* name = nullptr, 
-		const void* data = nullptr, 
-		const uint64_t bytes = 0)
+    const void* data = nullptr,  
+    const uint64_t bytes = 0, 
+    const char* from = nullptr)
   {
     const std::string msg{reinterpret_cast<const char*>(data), bytes};
     fileLog.write(
@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 {
   fileLog.createNew(argv[0]);
 
-  const std::string xmq_addr{"127.0.0.1"};
+  const std::string xmq_addr{"192.168.2.72"};
   const std::string name{"test_xmq_sub"};
   boost::shared_ptr<XMQNode> node{
       boost::make_shared<TestXMQSub>()};

@@ -49,28 +49,28 @@ namespace module
 				virtual int stop(void);
 
 				//发送数据
-				//@id [in] : 数据发送角色ID
-				//@name [in] : 数据接收服务名称
+				//@id [in] : 角色ID
 				//@data [in] : 数据
-				//@bytes [in] : 大小 
+				//@bytes [in] : 大小
+				//@to [out] : 数据目的地
 				//@Return : 错误码
 				virtual int send(
 					const uint32_t id = 0, 
-					const char* name = nullptr, 
 					const void* data = nullptr, 
-					const uint64_t bytes = 0);
+					const uint64_t bytes = 0, 
+					const char* to = nullptr);
 			
 			protected:
 				//接收数据通知
 				//@id [out] : 角色ID
-				//@name [out] : 服务名称
 				//@data [out] : 数据 
 				//@bytes [out] : 大小
+				//@from [out] : 数据来源
 				virtual void afterPolledDataNotification(
 					const uint32_t id = 0, 
-					const char* name = nullptr, 
-					const void* data = nullptr, 
-					const uint64_t bytes = 0) = 0;
+					const void* data = nullptr,  
+					const uint64_t bytes = 0, 
+					const char* from = nullptr) = 0;
 
 				//在线状态通知
 				//@online [out] : true表示在线，false表示离线

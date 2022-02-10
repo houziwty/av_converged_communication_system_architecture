@@ -48,7 +48,7 @@ namespace module
 				//查询设备配置
 				//@id [in] : 设备ID
 				//@Return : 设备配置
-				const DVSModeConf& queryConf(const uint32_t id = 0);
+				const DVSModeConf queryConf(const uint32_t id = 0);
 
 				//运行设备
 				//@id [in] : 设备ID
