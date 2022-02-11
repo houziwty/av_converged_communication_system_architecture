@@ -57,11 +57,6 @@ int ASIONode::addConf(const ASIOModeConf& conf)
 									so->remote_endpoint().port(), 
 									e)};
 
-							if (!e)
-							{
-								acceptor->listen();
-							}
-
 							if (0 < sid)
 							{
 								int status{Error_Code_Success};
@@ -82,6 +77,14 @@ int ASIONode::addConf(const ASIOModeConf& conf)
 								{
 									sp->receive();
 									sessions.add(sid, sp);
+								}
+							}
+							else
+							{
+								if (so)
+								{
+									so->close();
+									boost::checked_delete(so);
 								}
 							}
 						},

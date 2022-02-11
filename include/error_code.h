@@ -43,4 +43,8 @@ static const int Error_Code_Device_Logout_Failure = -2003;
 static const int Error_Code_Stream_Open_Failure = -2004;
 static const int Error_Code_Stream_Close_Failure = -2005;
 
+//解析
+static const int Error_Code_Invalid_Flag = -3000;
+static const int Error_Code_Out_Of_Range = -3001;
+
 #endif//GLOBAL_ERROR_CODE_H

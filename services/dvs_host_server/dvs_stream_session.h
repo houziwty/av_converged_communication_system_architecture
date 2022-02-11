@@ -1,0 +1,75 @@
+//
+//		Copyright : @2021, ***, All Rights Reserved
+//
+//		Author : 王科威
+//		E-mail : wangkw531@hotmail.com
+//		Date : 2022-02-11
+//		Description : DVS流会话
+//
+//		History:
+//					1. 2022-02-11 由王科威创建
+//
+
+#ifndef SERVICE_DVS_STREAM_SESSION_H
+#define SERVICE_DVS_STREAM_SESSION_H
+
+#include "boost/shared_ptr.hpp"
+#include "network/buffer/buffer_parser.h"
+using namespace framework::network::buffer;
+
+using BufferParserPtr = boost::shared_ptr<BufferParser>;
+
+class DvsStreamSession
+{
+public:
+    //id [in] : 会话ID
+    DvsStreamSession(const uint32_t id = 0);
+    ~DvsStreamSession(void);
+
+public:
+    //接收数据
+    //@data [in] : 数据
+    //@bytes [in] : 数据大小
+    //@Return ：错误码
+	int recv(
+        const uint8_t* data = nullptr, 
+        const uint64_t bytes = 0);
+
+    //发送数据
+    //@did [in] : 设备ID
+    //@cid [in] : 通道ID
+    //@data [in] : 数据
+    //@bytes [in] : 数据大小
+    //@Return ：错误码
+	int send(
+        const uint32_t did = 0, 
+        const uint32_t cid = 0, 
+        const uint8_t* data = nullptr, 
+        const uint64_t bytes = 0);
+
+private:
+    //解析单帧数据回调
+    //@dataType [out] : 数据类型
+    //@streamType [out] : 流类型
+    //@frameType [out] : 帧类型
+    //@frameBytes [out] : 帧大小
+    //@frameSeq [out] : 帧序号
+    //@frameTs [out] : 帧时间戳
+    //@frameData [out] : 帧数据
+    void afterParsedOneFrameNotification(
+        const uint32_t dataType = 0, 
+        const uint32_t streamType = 0, 
+        const uint32_t frameType = 0, 
+        const uint32_t frameBytes = 0, 
+        const uint64_t frameSeq = 0, 
+        const uint64_t frameTs = 0, 
+        const uint8_t* frameData = nullptr);
+
+private:
+    const uint32_t sid;
+    uint32_t did;
+    uint32_t cid;
+    BufferParserPtr bufferParserPtr;
+};//class DvsStreamSession
+
+#endif//SERVICE_DVS_STREAM_SESSION_H

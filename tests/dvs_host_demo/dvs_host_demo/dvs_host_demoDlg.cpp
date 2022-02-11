@@ -10,8 +10,6 @@
 
 #include <string>
 #include "boost/format.hpp"
-#include "utils/url/url.h"
-using namespace framework::utils::url;
 #include "error_code.h"
 
 #ifdef _DEBUG
@@ -75,6 +73,7 @@ BEGIN_MESSAGE_MAP(CdvshostdemoDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_XMQ_DISCONNECT, &CdvshostdemoDlg::OnBnClickedXmqDisconnect)
 	ON_BN_CLICKED(IDC_DVS_LOGIN, &CdvshostdemoDlg::OnBnClickedDvsLogin)
 	ON_BN_CLICKED(IDC_DVS_LOGOUT, &CdvshostdemoDlg::OnBnClickedDvsLogout)
+	ON_BN_CLICKED(IDC_REALPLAY_TEST, &CdvshostdemoDlg::OnBnClickedRealplayTest)
 END_MESSAGE_MAP()
 
 
@@ -242,49 +241,10 @@ void CdvshostdemoDlg::afterPolledDataNotification(
 
 	if (Error_Code_Success == ret)
 	{
-// 		const std::vector<ParamItem> params{ url.getParameters() };
-// 
-// 		for (int i = 0; i != params.size(); ++i)
-// 		{
-// 			if (!params[i].key.compare("dvs"))
-// 			{
-// 				const std::string dvsid{ params[i].value.substr(0, params[i].value.find_first_of('_')) };
-// 				const std::string url{
-// 					(boost::format("config://dvs_host_server?command=remove&id=%s") % dvsid).str() };
-// 				int ret{ send(0xFFFF, url.c_str(), url.length()) };
-// 
-// // 				if (Error_Code_Success == ret)
-// // 				{
-// // //					fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Send remove device [ %s ] successed.", dvsid.c_str());
-// // 				}
-// // 				else
-// // 				{
-// // // 					fileLog.write(
-// // // 						SeverityLevel::SEVERITY_LEVEL_ERROR,
-// // // 						"Send remove device [ %s ] failed, result = [ %d ].",
-// // // 						dvsid.c_str(), ret);
-// // 				}
-// 			}
-// 		}
-
-// 		if (!dvsnum)
-// 		{
-// 			const std::string url{
-// 				"dvs://dvs_host_service?from=test_dvs_host_client&command=add&ip=192.168.2.225&port=8000&user=admin&passwd=Vrc123456&name=test" };
-// 			int ret{ send(url.c_str(), url.length()) };
-// 
-// 			if (Error_Code_Success == ret)
-// 			{
-// //				fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Send add device information to dvs host service successed.");
-// 			}
-// 			else
-// 			{
-// // 				fileLog.write(
-// // 					SeverityLevel::SEVERITY_LEVEL_ERROR,
-// // 					"Send add device information to dvs host service failed, result = [ %d ].",
-// // 					ret);
-// 			}
-// 		}
+		if (!url.getProtocol().compare("config"))
+		{
+			processDvsControlMessage(url);
+		}
 	}
 }
 
@@ -410,4 +370,51 @@ void CdvshostdemoDlg::afterPolledSendDataNotification(
 	const int32_t e /* = 0 */)
 {
 
+}
+
+
+void CdvshostdemoDlg::OnBnClickedRealplayTest()
+{
+	// TODO: Add your control notification handler code here
+
+	const std::string url{ "realplay://1?command=1&channel=1&stream=0" };
+	const uint64_t bytes{ 36 + url.length() };
+	char* data{ new char[bytes] };
+	*((uint32_t*)data) = 0xFF050301;
+	*((uint32_t*)(data + 4)) = 0;
+	*((uint32_t*)(data + 8)) = 0;
+	*((uint32_t*)(data + 12)) = 1;
+	*((uint32_t*)(data + 16)) = url.length();
+	*((uint64_t*)(data + 20)) = 50;
+	*((uint64_t*)(data + 28)) = 11223344;
+	memcpy_s(data + 36, url.length(), url.c_str(), url.length());
+
+	ASIONode::send(sid, data, bytes);
+}
+
+void CdvshostdemoDlg::processDvsControlMessage(Url& requestUrl)
+{
+	const std::vector<ParamItem> parameters{ requestUrl.getParameters() };
+	std::string command, error;
+
+	for (int i = 0; i != parameters.size(); ++i)
+	{
+		if (!parameters[i].key.compare("command"))
+		{
+			command = parameters[i].value;
+		}
+		else if (!parameters[i].key.compare("error"))
+		{
+			error = parameters[i].value;
+		}
+		else if (!parameters[i].key.compare("dvs"))
+		{
+			dvs = parameters[i].value;
+		}
+	}
+
+	if (!command.compare("add") && 0 == atoi(error.c_str()))
+	{
+		MessageBox(CString(dvs.c_str()), NULL, MB_ICONINFORMATION | MB_OK);
+	}
 }

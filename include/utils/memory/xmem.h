@@ -13,6 +13,8 @@
 #ifndef FRAMEWORK_UTILS_MEMORY_XMEM_H
 #define FRAMEWORK_UTILS_MEMORY_XMEM_H
 
+#include <stdint.h>
+
 namespace framework
 {
 	namespace utils
@@ -48,6 +50,16 @@ namespace framework
                 void* copyNew(
                     const void* src = nullptr, 
                     const uint64_t bytes = 0);
+
+                //内存移动
+                //@src [in] : 源数据
+                //@dest [in] : 目标数据
+                //@dest_bytes [in] : 大小
+                //@Return : 错误码
+                int move(
+                    const void* src = nullptr, 
+                    void* dest = nullptr, 
+                    const uint64_t dest_bytes = 0);
             };//class XMem
         }//namespace memory
     }//namespace utils

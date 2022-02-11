@@ -48,7 +48,11 @@ void Acceptor::afterAcceptedRemoteCallback(
 		acceptedRemoteConnectEventCallback(s, e.value());
 	}
 	
-	if (e.value())
+	if (!e)
+	{
+		listen();
+	}
+	else
 	{
 		s->close();
 		boost::checked_delete(s);

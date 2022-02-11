@@ -55,3 +55,18 @@ void* XMem::copyNew(
     
     return dest;
 }
+
+int XMem::move(
+    const void* src/* = nullptr*/, 
+    void* dest/* = nullptr*/, 
+    const uint64_t dest_bytes/* = 0*/)
+{
+    int ret{src && dest && 0 < dest_bytes ? Error_Code_Success : Error_Code_Invalid_Param};
+
+    if (Error_Code_Success == ret)
+    {
+        memmove(dest, src, dest_bytes);
+    }
+    
+    return ret;
+}

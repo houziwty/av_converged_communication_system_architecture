@@ -1,3 +1,5 @@
+#include "boost/bind/bind.hpp"
+using namespace boost::placeholders;
 #include "boost/format.hpp"
 #include "boost/make_shared.hpp"
 #include "error_code.h"
@@ -8,7 +10,7 @@ using namespace framework::utils::url;
 #include "dvs_host_server.h"
 
 DvsHostServer::DvsHostServer(FileLog& log)
-    : XMQNode(), ASIONode(), DVSNode(), fileLog{log}, deviceNumber{0}
+    : XMQNode(), ASIONode(), DVSNode(), fileLog{log}, deviceNumber{0}, streamNumber{0}
 {}
 
 DvsHostServer::~DvsHostServer()
@@ -117,29 +119,28 @@ uint32_t DvsHostServer::afterFetchAcceptedEventNotification(
     const uint16_t port/* = 0*/,  
     const int32_t e/* = 0*/)
 {
-    fileLog.write(
-        SeverityLevel::SEVERITY_LEVEL_INFO, 
-        "Fetch stream session connect from ip = [ %s ], port = [ %d ], result = [ %d ].",  
-        ip, port, e);
+    if (1)
+    {
+        WriteLock wl{mtx};
+        ++streamNumber;
+    }
 
-    // if (so && !e)
-    // {
-    //     const std::string sid{Uuid().createNew()};
+    if (!e && 0 < streamNumber)
+    {
+        fileLog.write(
+            SeverityLevel::SEVERITY_LEVEL_INFO, 
+            "Fetch stream session id = [ %d ] connect from ip = [ %s ], port = [ %d ] successfully, result = [ %d ].",  
+            streamNumber, ip, port, e);
+    }
+    else
+    {
+        fileLog.write(
+            SeverityLevel::SEVERITY_LEVEL_WARNING, 
+            "Fetch stream session id = [ %d ] connect from ip = [ %s ], port = [ %d ] failed, result = [ %d ].",  
+            streamNumber, ip, port, e);
+    }
 
-    //     if(!sid.empty())
-    //     {
-    //         // TcpSessionPtr ptr{boost::make_shared<DvsHostSession>(*this, sid)};
-
-    //         // if(ptr && 
-    //         //     Error_Code_Success == ptr->createNew(session) &&
-    //         //     Error_Code_Success == ptr->receive())
-    //         // {
-    //         //     sessions.add(sid, ptr);
-    //         // }
-    //     }
-    // }
-
-    return 0;
+    return streamNumber;
 }
 
 uint32_t DvsHostServer::afterFetchConnectedEventNotification(const int32_t e/* = 0*/)
@@ -153,7 +154,33 @@ void DvsHostServer::afterPolledReadDataNotification(
     const uint64_t bytes/* = 0*/, 
     const int32_t e/* = 0*/)
 {
+    if (!e)
+    {
+        DVSStreamSessionPtr sess{sessions.at(id)};
+        if (!sess)
+        {
+            sess = boost::make_shared<DvsStreamSession>(id);
+            if (sess)
+            {
+                sessions.add(id, sess);
+            }
+        }
 
+        if (sess)
+        {
+            sess->recv((const uint8_t*)data, bytes);
+        }
+    }
+    else
+    {
+        //会话异常
+        int ret{ASIONode::removeConf(id)};
+
+        fileLog.write(
+            SeverityLevel::SEVERITY_LEVEL_WARNING, 
+            "Fetch stream session id = [ %d ] exception code = [ %d ], and remove it result = [ %d ].",  
+            id, e, ret);
+    }
 }
 
 void DvsHostServer::afterPolledSendDataNotification(
@@ -295,4 +322,11 @@ void DvsHostServer::afterPolledRealplayDataNotification(
     const uint32_t type/* = 0*/, 
     const uint8_t* data/* = nullptr*/, 
     const uint32_t bytes/* = 0*/)
-{}
+{
+    const std::vector<DVSStreamSessionPtr> ss{sessions.values()};
+
+    for (int i = 0; i != ss.size(); ++i)
+    {
+        ss[i]->send(id, channel, data, bytes);
+    }
+}

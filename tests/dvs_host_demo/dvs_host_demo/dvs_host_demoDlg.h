@@ -10,6 +10,8 @@ using namespace module::network::xmq;
 using namespace module::network::asio;
 #include "log.h"
 using namespace module::file::log;
+#include "utils/url/url.h"
+using namespace framework::utils::url;
 
 // CdvshostdemoDlg dialog
 class CdvshostdemoDlg : public CDialogEx, protected XMQNode, protected ASIONode
@@ -63,6 +65,9 @@ protected:
 		const uint64_t bytes = 0,
 		const int32_t e = 0) override;
 
+private:
+	void processDvsControlMessage(Url& requestUrl);
+
 public:
 	afx_msg void OnBnClickedXmqConnect();
 	afx_msg void OnBnClickedXmqDisconnect();
@@ -75,4 +80,7 @@ public:
 
 private:
 	uint32_t sid;
+	std::string dvs;
+public:
+	afx_msg void OnBnClickedRealplayTest();
 };

@@ -10,19 +10,27 @@
 //					1. 2021-11-23 由王科威创建
 //
 
-#ifndef SERVICE_DVS_HOST_SERVICE_H
-#define SERVICE_DVS_HOST_SERVICE_H
+#ifndef SERVICE_DVS_HOST_SERVER_H
+#define SERVICE_DVS_HOST_SERVER_H
 
+#include "boost/shared_ptr.hpp"
 #include "log.h"
 using namespace module::file::log;
 #include "utils/url/url.h"
 using namespace framework::utils::url;
+#include "utils/lock/rw_lock.h"
+using namespace framework::utils::lock;
 #include "asio_node.h"
 using namespace module::network::asio;
 #include "xmq_node.h"
 using namespace module::network::xmq;
 #include "dvs_node.h"
 using namespace module::device::dvs;
+#include "dvs_stream_session.h"
+#include "utils/map/unordered_map.h"
+
+using DVSStreamSessionPtr = boost::shared_ptr<DvsStreamSession>;
+using DVSStreamSessionPtrs = UnorderedMap<const uint32_t, DVSStreamSessionPtr>;
 
 class DvsHostServer final 
     : public XMQNode, protected ASIONode, protected DVSNode
@@ -78,6 +86,9 @@ private:
 private:
     FileLog& fileLog;
     uint32_t deviceNumber;
+    uint32_t streamNumber;
+    SharedMutex mtx;
+    DVSStreamSessionPtrs sessions;
 };//class DvsHostServer
 
-#endif//SERVICE_DVS_HOST_SERVICE_H
+#endif//SERVICE_DVS_HOST_SERVER_H
