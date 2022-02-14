@@ -10,38 +10,40 @@
 //					1. 2021-11-18 由王科威创建
 //
 
-#ifndef MODULE_AV_REALPLAY_STREAM_VIDEO_ANALYSIS_GRAPH_H
-#define MODULE_AV_REALPLAY_STREAM_VIDEO_ANALYSIS_GRAPH_H
+#ifndef MODULE_AV_STREAM_REALPLAY_STREAM_VIDEO_ANALYSIS_GRAPH_H
+#define MODULE_AV_STREAM_REALPLAY_STREAM_VIDEO_ANALYSIS_GRAPH_H
 
-#include "av_stream_graph.h"
+#include "av_graph.h"
 
 namespace module
 {
-	namespace avstream
+	namespace av
 	{
-		class AV_STREAM_EXPORT RealplayStreamVideoAnalysisGraph 
-			: public AVGraph
+		namespace stream
 		{
-		public:
-			RealplayStreamVideoAnalysisGraph(void);
-			virtual ~RealplayStreamVideoAnalysisGraph(void);
+			class RealplayStreamVideoAnalysisGraph : public AVGraph
+			{
+			public:
+				RealplayStreamVideoAnalysisGraph(void);
+				virtual ~RealplayStreamVideoAnalysisGraph(void);
 
-		public:
-			//创建
-			//@param : 参数
-			//@Return : 错误码
-			//@Comment : 算法分析实时视频流程图的构建内容包括 ：
-			//						1. Video Decoder Filter
-			//						2. YUV to BGR24 Filter
-			//						3. CV Analysis Filter
-			//						4. Picture Encoder Filter
-			//						5. Target Filter
-			int createNew(void* param = nullptr) override;
+			public:
+				//创建
+				//@param : 参数
+				//@Return : 错误码
+				//@Comment : 算法分析实时视频流程图的构建内容包括 ：
+				//						1. Video Decoder Filter
+				//						2. YUV to BGR24 Filter
+				//						3. CV Analysis Filter
+				//						4. Picture Encoder Filter
+				//						5. Target Filter
+				int createNew(void* param = nullptr) override;
 
-		protected:
-			int connectPin(void) override;
-		};//class RealplayStreamVideoAnalysisGraph
-	}//namespace avstream
+			protected:
+				int connectPin(void) override;
+			};//class RealplayStreamVideoAnalysisGraph
+		}//namespace stream
+	}//namespace av
 }//namespace module
 
-#endif//MODULE_AV_REALPLAY_STREAM_VIDEO_ANALYSIS_GRAPH_H
+#endif//MODULE_AV_STREAM_REALPLAY_STREAM_VIDEO_ANALYSIS_GRAPH_H

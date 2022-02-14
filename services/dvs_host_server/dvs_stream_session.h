@@ -14,6 +14,8 @@
 #define SERVICE_DVS_STREAM_SESSION_H
 
 #include "boost/shared_ptr.hpp"
+#include "log.h"
+using namespace module::file::log;
 #include "network/buffer/buffer_parser.h"
 using namespace framework::network::buffer;
 
@@ -23,7 +25,7 @@ class DvsStreamSession
 {
 public:
     //id [in] : 会话ID
-    DvsStreamSession(const uint32_t id = 0);
+    DvsStreamSession(FileLog& log, const uint32_t id = 0);
     ~DvsStreamSession(void);
 
 public:
@@ -35,17 +37,11 @@ public:
         const uint8_t* data = nullptr, 
         const uint64_t bytes = 0);
 
-    //发送数据
-    //@did [in] : 设备ID
-    //@cid [in] : 通道ID
-    //@data [in] : 数据
-    //@bytes [in] : 数据大小
-    //@Return ：错误码
-	int send(
-        const uint32_t did = 0, 
-        const uint32_t cid = 0, 
-        const uint8_t* data = nullptr, 
-        const uint64_t bytes = 0);
+    //获取会话、设备和通道ID
+    //@data [out] : 会话ID
+    //@did [out] : 设备ID
+    //@cid [out] : 通道ID
+	void getIDs(uint32_t& sid, uint32_t& did, uint32_t& cid);
 
 private:
     //解析单帧数据回调
@@ -66,6 +62,7 @@ private:
         const uint8_t* frameData = nullptr);
 
 private:
+    FileLog& fileLog;
     const uint32_t sid;
     uint32_t did;
     uint32_t cid;

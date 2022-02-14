@@ -1,5 +1,6 @@
 #include "boost/bind/bind.hpp"
 using namespace boost::placeholders;
+#include "boost/checked_delete.hpp"
 #include "boost/format.hpp"
 #include "boost/make_shared.hpp"
 #include "error_code.h"
@@ -159,7 +160,7 @@ void DvsHostServer::afterPolledReadDataNotification(
         DVSStreamSessionPtr sess{sessions.at(id)};
         if (!sess)
         {
-            sess = boost::make_shared<DvsStreamSession>(id);
+            sess = boost::make_shared<DvsStreamSession>(fileLog, id);
             if (sess)
             {
                 sessions.add(id, sess);
@@ -327,6 +328,23 @@ void DvsHostServer::afterPolledRealplayDataNotification(
 
     for (int i = 0; i != ss.size(); ++i)
     {
-        ss[i]->send(id, channel, data, bytes);
+        uint32_t sid{0}, did{0}, cid{0};
+        ss[i]->getIDs(sid, did, cid);
+
+        if(0 < sid && did == id && cid == channel)
+        {
+            const uint32_t totalBytes{bytes + frame_header_size};
+            char* frameData{ new(std::nothrow) char[totalBytes] };
+            *((uint32_t*)frameData) = 0xFF050301;
+            *((uint32_t*)(frameData + 4)) = 0;
+            *((uint32_t*)(frameData + 8)) = 0;
+            *((uint32_t*)(frameData + 12)) = 1;
+            *((uint32_t*)(frameData + 16)) = bytes;
+            *((uint64_t*)(frameData + 20)) = 0;
+            *((uint64_t*)(frameData + 28)) = 0;
+            XMem().copy(data, bytes, frameData + frame_header_size, bytes);
+            ASIONode::send(sid, frameData, totalBytes);
+            boost::checked_array_delete(frameData);
+        }
     }
 }

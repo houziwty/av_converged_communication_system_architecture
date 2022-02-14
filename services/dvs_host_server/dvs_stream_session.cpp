@@ -6,8 +6,8 @@ using namespace boost::placeholders;
 using namespace framework::utils::url;
 #include "dvs_stream_session.h"
 
-DvsStreamSession::DvsStreamSession(const uint32_t id/* = 0*/)
-    : sid{id}, cid{0}, did{0}
+DvsStreamSession::DvsStreamSession(FileLog& log, const uint32_t id/* = 0*/)
+    : sid{id}, cid{0}, did{0}, fileLog{log}
 {}
 
 DvsStreamSession::~DvsStreamSession()
@@ -39,20 +39,11 @@ int DvsStreamSession::recv(
     return ret;
 }
 
-int DvsStreamSession::send(
-    const uint32_t did/* = 0*/, 
-    const uint32_t cid/* = 0*/, 
-    const uint8_t* data/* = nullptr*/, 
-    const uint64_t bytes/* = 0*/)
+void DvsStreamSession::getIDs(uint32_t& sid, uint32_t& did, uint32_t& cid)
 {
-    int ret{0 < did && 0 < cid && data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
-
-    if (Error_Code_Success == ret)
-    {
-        ret = (did == this->did && cid == this->cid && 0 < sid ? ASIONode::send(sid, data, bytes) : Error_Code_Operate_Failure);
-    }
-
-    return ret;
+    sid = this->sid;
+    did = this->did;
+    cid = this->cid;
 }
 
 void DvsStreamSession::afterParsedOneFrameNotification(
@@ -65,24 +56,44 @@ void DvsStreamSession::afterParsedOneFrameNotification(
     const uint8_t* frameData/* = nullptr*/)
 {
     const std::string msg{(const char*)frameData, frameBytes};
-    Url streamUrl;
-    int ret{streamUrl.parse(msg)};
+    Url url;
+    int ret{url.parse(msg)};
 
     if(Error_Code_Success == ret)
     {
-        // fileLog.write(
-        //     SeverityLevel::SEVERITY_LEVEL_INFO, 
-        //     "Parsed stream data = [ %s ] from session = [ %d ] successfully.",  
-        //     msg.c_str(), 
-        //     id);
+        //realplay://1?command=1&channel=1&stream=0
+
+        int command{-1};
+        did = atoi(url.getHost().c_str());
+        const std::vector<ParamItem> params{url.getParameters()};
+
+        for(int i  = 0; i != params.size(); ++i)
+        {
+            if(!params[i].key.compare("command"))
+            {
+                command = atoi(params[i].value.c_str());
+            }
+            else if(!params[i].key.compare("channel"))
+            {
+                cid = atoi(params[i].value.c_str());
+            }
+        }
+
+        fileLog.write(
+            SeverityLevel::SEVERITY_LEVEL_INFO, 
+            "Parsed stream play command = [ %d ], device ID = [ %d ], channel ID = [ %d ] from session = [ %d ] successfully.",  
+            command, 
+            did, 
+            cid, 
+            sid);
     }
     else
     {
-        // fileLog.write(
-        //     SeverityLevel::SEVERITY_LEVEL_ERROR, 
-        //     "Parsed stream data = [ %s ] from session = [ %d ] failed, result = [ %d ].",  
-        //     msg.c_str(), 
-        //     id, 
-        //     ret);
+        fileLog.write(
+            SeverityLevel::SEVERITY_LEVEL_ERROR, 
+            "Parsed stream play url = [ %s ] from session = [ %d ] failed, result = [ %d ].",  
+            (const char*)frameData, 
+            sid, 
+            ret);
     }
 }

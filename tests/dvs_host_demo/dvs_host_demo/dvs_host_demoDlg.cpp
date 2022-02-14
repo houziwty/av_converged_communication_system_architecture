@@ -390,6 +390,7 @@ void CdvshostdemoDlg::OnBnClickedRealplayTest()
 	memcpy_s(data + 36, url.length(), url.c_str(), url.length());
 
 	ASIONode::send(sid, data, bytes);
+	boost::checked_array_delete(data);
 }
 
 void CdvshostdemoDlg::processDvsControlMessage(Url& requestUrl)

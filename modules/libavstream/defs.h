@@ -3,15 +3,17 @@
 //
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
-//		Date : 2021-12-07
-//		Description : AVStream库定义
+//		Date : 2022-02-14
+//		Description : AV流图定义
 //
 //		History:
-//					1. 2021-12-07 由王科威创建
+//					1. 2022-02-14 由王科威创建
 //
 
-#ifndef MODULE_AV_STREAM_GRAPH_DEFS_H
-#define MODULE_AV_STREAM_GRAPH_DEFS_H
+#ifndef MODULE_AV_STREAM_AV_STREAM_DEFS_H
+#define MODULE_AV_STREAM_AV_STREAM_DEFS_H
+
+#include <cstdint>
 
 #if defined(_WINDOWS)
 #ifdef USE_MODULE_AV_STREAM
@@ -23,46 +25,11 @@
 #define AV_STREAM_EXPORT
 #endif//_WINDOWS
 
-#include <string>
-#include "boost/function.hpp"
-#include "boost/shared_ptr.hpp"
-#include "boost/unordered_map.hpp"
-#include "boost/weak_ptr.hpp"
-
-namespace module
+//AV流图角色配置
+typedef struct tagAVModeConf_t
 {
-	namespace avstream
-	{
-        class AVGraph;
-        class AVFilter;
-        class AVPin;
+    uint32_t avid;                   //>0，由调用者分配
+    void* hwnd;                      //视频播放窗口
+}AVModeConf;
 
-        using AVFilterPtr = boost::shared_ptr<AVFilter>;
-        using AVFilterRef = boost::weak_ptr<AVFilter>;
-        using AVFilterPtrs = boost::unordered_map<const std::string, AVFilterPtr>;
-        using AVPinPtr = boost::shared_ptr<AVPin>;
-        using AVPinRef = boost::weak_ptr<AVPin>;
-        using AVPinPtrs = boost::unordered_map<const std::string, AVPinPtr>;
-
-        //数据回调
-        typedef boost::function<void(void*)> AVStreamResultCallback;
-
-        //过滤器名称
-        static const std::string AVSourceFilterName = "AVSourceFilter";
-        static const std::string AVSplitterFilterName = "AVSplitterFilter";
-        static const std::string VideoDecoderFilterName = "VideoDecoderFilter";
-        static const std::string VideoRenderFilterName = "VideoRenderFilter";
-        static const std::string AudioDecoderFilterName = "AudioDecoderFilter";
-        static const std::string AudioPlayerFilterName = "AudioPlayerFilter";
-        static const std::string ImageConverterFilterName = "ImageConverterFilter";
-        static const std::string VideoAnalysisFilterName = "VideoAnalysisFilter";
-        static const std::string PictureEncoderFilterName = "PictureEncoderFilter";
-        static const std::string AVTargetFilterName = "AVTargetFilter";
-
-        //针脚名称
-        static const std::string AVInputPinName = "AVInputPin";
-        static const std::string AVOutputPinName = "AVOutputPin";
-    }//namespace avstream
-}//namespace module
-
-#endif//MODULE_AV_STREAM_GRAPH_DEFS_H
+#endif//MODULE_AV_STREAM_AV_STREAM_DEFS_H
