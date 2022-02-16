@@ -25,6 +25,8 @@ namespace module
 		{
 			class AV_EXPORT AVNode
 			{
+				class AVPkt;
+
 			public:
 				AVNode(void);
 				virtual ~AVNode(void);
@@ -42,13 +44,11 @@ namespace module
 
 				//输入数据
 				//@id [in] : AV流程图ID
-				//@data [in] : 数据
-				//@bytes [in] : 大小
+				//@avpkt [in] : 数据包
 				//@Return : 错误码
 				virtual int input(
 					const uint32_t id = 0, 
-					const uint8_t* data = nullptr, 
-					const uint64_t bytes = 0);
+					const AVPkt* avpkt = nullptr);
 			};//class AVNode
 		}//namespace stream
 	}//namespace av

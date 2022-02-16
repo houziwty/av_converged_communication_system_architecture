@@ -79,7 +79,7 @@ int AVParserNode::removeConf(const uint32_t id/* = 0*/)
 
 int AVParserNode::input(
 	const uint32_t id/* = 0*/, 
-	const uint8_t* data/* = nullptr*/, 
+	const void* data/* = nullptr*/, 
 	const uint64_t bytes/* = 0*/)
 {
 	int ret{0 < id && data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};

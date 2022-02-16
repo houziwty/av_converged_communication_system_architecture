@@ -20,7 +20,7 @@ BufferParser::~BufferParser()
 }
 
 int BufferParser::input(
-	const uint8_t* data/* = nullptr*/, 
+	const void* data/* = nullptr*/, 
 	const uint64_t bytes/* = 0*/)
 {
 	int ret{data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};

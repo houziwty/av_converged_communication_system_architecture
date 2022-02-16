@@ -32,7 +32,7 @@ public:
     //@bytes [in] : 数据大小
     //@Return ：错误码
 	int recv(
-        const uint8_t* data = nullptr, 
+        const void* data = nullptr, 
         const uint64_t bytes = 0);
 
     //获取会话、设备和通道ID
@@ -57,7 +57,7 @@ private:
         const uint32_t frameBytes = 0, 
         const uint64_t frameSeq = 0, 
         const uint64_t frameTs = 0, 
-        const uint8_t* frameData = nullptr);
+        const void* frameData = nullptr);
 
 private:
     FileLog& fileLog;

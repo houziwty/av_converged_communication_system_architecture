@@ -37,9 +37,9 @@ namespace framework
 				//@Comment : 1.数据深拷贝
                 //           2.如果src_bytes > dest_bytes，只拷贝dest_bytes大小的数据
                 int copy(
-                    const uint8_t* src = nullptr, 
+                    const void* src = nullptr, 
                     const uint64_t src_bytes = 0, 
-                    uint8_t* dest = nullptr, 
+                    void* dest = nullptr, 
                     const uint64_t dest_bytes = 0);
 
                 //创建
@@ -47,8 +47,8 @@ namespace framework
 				//@bytes [in] : 源大小
 				//@Return : 内存
 				//@Comment : 创建内存由调用者销毁
-                uint8_t* alloc(
-                    const uint8_t* src = nullptr, 
+                void* alloc(
+                    const void* src = nullptr, 
                     const uint64_t bytes = 0);
 
                 //移动
@@ -57,8 +57,8 @@ namespace framework
                 //@dest_bytes [in] : 大小
                 //@Return : 错误码
                 int move(
-                    const uint8_t* src = nullptr, 
-                    uint8_t* dest = nullptr, 
+                    const void* src = nullptr, 
+                    void* dest = nullptr, 
                     const uint64_t dest_bytes = 0);
             };//class XMem
         }//namespace memory

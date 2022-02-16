@@ -33,8 +33,8 @@ void getEncodeImageThread(void)
 
       // fwrite(data->bgr24, data->bgr24bytes, 1, fd_bgr);
 
-      delete[] (uint8_t*)(data->bgr24);
-      delete[] (uint8_t*)(data->jpeg);
+      delete[] (void*)(data->bgr24);
+      delete[] (void*)(data->jpeg);
       delete data;
     }
     else

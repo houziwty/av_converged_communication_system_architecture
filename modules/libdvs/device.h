@@ -29,7 +29,7 @@ namespace module
 			//@_3 : 数据类型
 			//@_4 : 数据
 			//@_5 : 数据大小
-			typedef boost::function<void(const uint32_t, const int32_t, const uint32_t, const uint8_t*, const uint32_t)> PolledRealplayDataCallback;
+			typedef boost::function<void(const uint32_t, const int32_t, const uint32_t, const void*, const uint32_t)> PolledRealplayDataCallback;
 
 			class Device
 			{

@@ -14,7 +14,7 @@ DvsStreamSession::~DvsStreamSession()
 {}
 
 int DvsStreamSession::recv(
-    const uint8_t* data/* = nullptr*/, 
+    const void* data/* = nullptr*/, 
     const uint64_t bytes/* = 0*/)
 {
     int ret{data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
@@ -40,7 +40,7 @@ void DvsStreamSession::afterParsedOneFrameNotification(
     const uint32_t frameBytes/* = 0*/, 
     const uint64_t frameSeq/* = 0*/, 
     const uint64_t frameTs/* = 0*/, 
-    const uint8_t* frameData/* = nullptr*/)
+    const void* frameData/* = nullptr*/)
 {
     const std::string msg{(const char*)frameData, frameBytes};
     Url url;

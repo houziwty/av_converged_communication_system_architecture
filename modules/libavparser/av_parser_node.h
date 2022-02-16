@@ -47,7 +47,7 @@ namespace module
 				//@Return : 错误码
 				virtual int input(
 					const uint32_t id = 0, 
-					const uint8_t* data = nullptr, 
+					const void* data = nullptr, 
 					const uint64_t bytes = 0) = 0;
 
 			protected:
@@ -66,7 +66,7 @@ namespace module
 					const uint32_t bytes = 0, 
 					const uint64_t seqence = 0, 
 					const uint64_t timestamp = 0, 
-					const uint8_t* data = nullptr) = 0;
+					const void* data = nullptr) = 0;
 			};//class AVParserNode
 		}//namespace stream
 	}//namespace av

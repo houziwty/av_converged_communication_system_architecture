@@ -71,7 +71,7 @@ protected:
         const uint32_t id = 0, 
         const int32_t channel = 0, 
         const uint32_t type = 0, 
-        const uint8_t* data = nullptr, 
+        const void* data = nullptr, 
         const uint32_t bytes = 0) override;
 
 private:

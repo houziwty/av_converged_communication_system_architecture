@@ -209,7 +209,7 @@ void ServiceVendor::processQueryResponseMessage(Url& url)
     {
         if(!items[i].key.compare("name"))
         {
-			XMem().copy(items[i].value.c_str(), items[i].value.length(), infos[i].name, 128);
+			XMem().copy((const void*)items[i].value.c_str(), items[i].value.length(), (void*)infos[i].name, 128);
         }
     }
 

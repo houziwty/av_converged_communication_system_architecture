@@ -52,7 +52,7 @@ int JPEGImageEncoder::input(void* data, const int w, const int h, void*& jpeg, i
 			AVCodecContext* avcc{ reinterpret_cast<AVCodecContext*>(ctx) };
 			AVFrame* avf{ reinterpret_cast<AVFrame*>(iframe) };
 			av_image_fill_arrays(
-				avf->data, avf->linesize, (const uint8_t*)data, AV_PIX_FMT_YUV420P, w, h, 1);
+				avf->data, avf->linesize, (const void*)data, AV_PIX_FMT_YUV420P, w, h, 1);
 
 			if (!avcodec_send_frame(avcc, avf))
 			{

@@ -218,7 +218,7 @@ void Dvs::DecodeOneFrameCallback(
             dvs->bgrframebufsize = av_image_get_buffer_size(AV_PIX_FMT_BGR24, pFrameInfo->nWidth, pFrameInfo->nHeight, 1);
             dvs->bgrframebuf = av_malloc(dvs->bgrframebufsize);
             av_image_fill_arrays(
-                dvs->oframe->data, dvs->oframe->linesize, (const uint8_t*)dvs->bgrframebuf,
+                dvs->oframe->data, dvs->oframe->linesize, (const void*)dvs->bgrframebuf,
                 AV_PIX_FMT_BGR24, pFrameInfo->nWidth, pFrameInfo->nHeight, 1);
             dvs->yuvframebufsize = av_image_get_buffer_size(AV_PIX_FMT_YUV420P, pFrameInfo->nWidth, pFrameInfo->nHeight, 1);
             dvs->yuvframebuf = av_malloc(dvs->yuvframebufsize);
@@ -230,9 +230,9 @@ void Dvs::DecodeOneFrameCallback(
         XMemory().copy(pBuf + ysize + uvsize, dvs->yuvframebuf + ysize, uvsize);
 
         av_image_fill_arrays(
-            dvs->iframe->data, dvs->iframe->linesize, (const uint8_t*)dvs->yuvframebuf,
+            dvs->iframe->data, dvs->iframe->linesize, (const void*)dvs->yuvframebuf,
             AV_PIX_FMT_YUV420P, pFrameInfo->nWidth, pFrameInfo->nHeight, 1);
-        uint8_t* temp{dvs->iframe->data[1]};
+        void* temp{dvs->iframe->data[1]};
             dvs->iframe->data[1] = dvs->iframe->data[2];
             dvs->iframe->data[2] = temp;
         sws_scale(

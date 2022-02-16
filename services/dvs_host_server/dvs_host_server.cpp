@@ -169,7 +169,7 @@ void DvsHostServer::afterPolledReadDataNotification(
 
         if (sess)
         {
-            sess->recv((const uint8_t*)data, bytes);
+            sess->recv((const void*)data, bytes);
         }
     }
     else
@@ -321,7 +321,7 @@ void DvsHostServer::afterPolledRealplayDataNotification(
     const uint32_t id/* = 0*/, 
     const int32_t channel/* = 0*/, 
     const uint32_t type/* = 0*/, 
-    const uint8_t* data/* = nullptr*/, 
+    const void* data/* = nullptr*/, 
     const uint32_t bytes/* = 0*/)
 {
     const std::vector<DVSStreamSessionPtr> ss{sessions.values()};

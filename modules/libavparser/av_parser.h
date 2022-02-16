@@ -31,7 +31,7 @@ namespace module
 			//@_5 [out] : 序号
 			//@_6 [out] : 时间戳
 			//@_7 [out] : 数据
-			typedef boost::function<void(const uint32_t, const MainType, const SubType, const uint32_t, const uint64_t, const uint64_t, const uint8_t*)> ParsedDataCallback;
+			typedef boost::function<void(const uint32_t, const MainType, const SubType, const uint32_t, const uint64_t, const uint64_t, const void*)> ParsedDataCallback;
 
 			class AVParser
 			{
@@ -47,7 +47,7 @@ namespace module
 				//@bytes [in] : 大小
 				//@Return : 错误码
 				virtual int input(
-					const uint8_t* data = nullptr, 
+					const void* data = nullptr, 
 					const uint64_t bytes = 0) = 0;
 
 			protected:

@@ -12,7 +12,7 @@ PSParser::~PSParser()
 {}
 
 int PSParser::input(
-    const uint8_t* data/* = nullptr*/, 
+    const void* data/* = nullptr*/, 
 	const uint64_t bytes/* = 0*/)
 {
     return 0;

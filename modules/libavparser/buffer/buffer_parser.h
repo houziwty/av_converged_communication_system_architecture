@@ -13,7 +13,7 @@
 // 							Frame size			uint32_t			4Bytes	
 // 							Frame sequence		uint64_t			8Bytes	
 // 							Frame timestamp		uint64_t			8Bytes	
-// 							Frame data			uint8_t*			nBytes
+// 							Frame data			void*			nBytes
 //
 //		History:
 //					1. 2022-02-11 由王科威创建
@@ -51,7 +51,7 @@ namespace module
 				//@bytes [in] : 大小
 				//@Return : 错误码
 				int input(
-					const uint8_t* data = nullptr, 
+					const void* data = nullptr, 
 					const uint64_t bytes = 0) override;
 
 			private:
@@ -59,7 +59,7 @@ namespace module
 				int parse(void);
 
 			private:
-				uint8_t* buffer;
+				void* buffer;
 				const uint64_t bufSize;
 				uint64_t pos;
 			};//class BufferParser

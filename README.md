@@ -1322,7 +1322,14 @@
 
    >>> + apt update & apt upgrade
    
+   # Linux
    >>> + ./configure --prefix=/usr/local --enable-gpl --enable-static --enable-shared --enable-small --disable-swscale-alpha --disable-programs --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-avdevice --disable-avfilter --disable-network --disable-vaapi --disable-vdpau --disable-everything --enable-decoder=h264 --enable-asm --enable-mmx --enable-mmxext --enable-sse --enable-sse2 --enable-sse3 --enable-ssse3 --enable-sse4 --enable-sse42 --enable-avx --enable-avx2 --enable-inline-asm --enable-x86asm --disable-iconv --disable-debug --enable-fma3 --enable-fma4 --enable-pic --extra-cflags=-fPIC --extra-cxxflags=-fPIC
+
+   # Windows
+   >>> pacman -S mingw-w64-x86_64-toolchain
+   >>> pacman -S msys/make
+   >>> pacman -S --needed base-devel mingw-w64-x86_64-toolchain
+   >>> + ./configure --prefix=./x64 --target-os=win64 --arch=x86_64 --enable-gpl --enable-static --disable-shared --enable-small --disable-swscale-alpha --disable-programs --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-avdevice --disable-avfilter --disable-network --disable-vaapi --disable-vdpau --disable-everything --enable-decoder=h264 --enable-asm --enable-mmx --enable-mmxext --enable-sse --enable-sse2 --enable-sse3 --enable-ssse3 --enable-sse4 --enable-sse42 --enable-avx --enable-avx2 --enable-inline-asm --disable-x86asm --disable-iconv --disable-debug --enable-fma3 --enable-fma4 --enable-pic --extra-cflags=-fPIC --extra-cxxflags=-fPIC --enable-cross-compile --enable-dxva2
 
 	Usage: configure [options]
 Options: [defaults in brackets after descriptions]

@@ -31,7 +31,7 @@ namespace module
 
             public:
                 int input(
-                    const uint8_t* data = nullptr, 
+                    const void* data = nullptr, 
 					const uint64_t bytes = 0) override;
             };//class PSParser
         }//namespace stream

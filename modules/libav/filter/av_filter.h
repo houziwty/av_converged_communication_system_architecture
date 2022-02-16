@@ -41,6 +41,7 @@ namespace module
 			}AVFilterConf;
 
 			class AVPin;
+			class AVPkt;
 
 			class AVFilter
 			{
@@ -55,12 +56,12 @@ namespace module
 
 			public:
 				//查询
-				//@name : 名称
+				//@name [in] : 名称
 				//@Return : 针脚实例
 				AVPinRef query(const std::string name);
 
 				//创建
-				//@param : 参数
+				//@param [in] : 参数
 				//@Return : 错误码
 				virtual int createNew(void* param = nullptr);
 
@@ -69,9 +70,10 @@ namespace module
 				virtual int destroy(void);
 
 				//输入数据
-				//@data : 数据
+				//@avpkt [in] : 数据包
 				//@Return : 错误码
-				virtual int input(const void* data = nullptr) = 0;
+				virtual int input(
+					const AVPkt* avpkt = nullptr) = 0;
 
 			protected:
 				const AVFilterType filterType;

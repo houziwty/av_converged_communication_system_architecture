@@ -15,9 +15,9 @@ XMem::~XMem()
 {}
 
 int XMem::copy(
-    const uint8_t* src/* = nullptr*/, 
+    const void* src/* = nullptr*/, 
     const uint64_t src_bytes/* = 0*/, 
-    uint8_t* dest/* = nullptr*/, 
+    void* dest/* = nullptr*/, 
     const uint64_t dest_bytes/* = 0*/)
 {
     int ret{src && 0 < src_bytes && dest && 0 < dest_bytes ? Error_Code_Success : Error_Code_Invalid_Param};
@@ -36,11 +36,11 @@ int XMem::copy(
     return ret;
 }
 
-uint8_t* XMem::alloc(
-    const uint8_t* src/* = nullptr*/, 
+void* XMem::alloc(
+    const void* src/* = nullptr*/, 
     const uint64_t bytes/* = 0*/)
 {
-    uint8_t* dest{nullptr};
+    void* dest{nullptr};
 
     if (src && 0 < bytes)
     {
@@ -56,8 +56,8 @@ uint8_t* XMem::alloc(
 }
 
 int XMem::move(
-    const uint8_t* src/* = nullptr*/, 
-    uint8_t* dest/* = nullptr*/, 
+    const void* src/* = nullptr*/, 
+    void* dest/* = nullptr*/, 
     const uint64_t dest_bytes/* = 0*/)
 {
     int ret{src && dest && 0 < dest_bytes ? Error_Code_Success : Error_Code_Invalid_Param};

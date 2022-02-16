@@ -24,7 +24,7 @@ int Msg::append(
 	const void* data/* = nullptr*/, 
 	const uint64_t bytes/* = 0*/)
 {
-	void* buf{ XMem().copyNew(data, bytes) };
+	const void* buf{ XMem().alloc(data, bytes) };
 	messages.push_back(Message{ const_cast<void*>(buf), bytes });
 	return Error_Code_Success;
 }
