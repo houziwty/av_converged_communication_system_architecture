@@ -3,7 +3,6 @@
 #else
 #include <cstring>
 #endif//WINDOWS
-#include <stdint.h>
 #include <new>
 #include "error_code.h"
 #include "utils/memory/xmem.h"
@@ -16,9 +15,9 @@ XMem::~XMem()
 {}
 
 int XMem::copy(
-    const void* src/* = nullptr*/, 
+    const uint8_t* src/* = nullptr*/, 
     const uint64_t src_bytes/* = 0*/, 
-    void* dest/* = nullptr*/, 
+    uint8_t* dest/* = nullptr*/, 
     const uint64_t dest_bytes/* = 0*/)
 {
     int ret{src && 0 < src_bytes && dest && 0 < dest_bytes ? Error_Code_Success : Error_Code_Invalid_Param};
@@ -37,15 +36,15 @@ int XMem::copy(
     return ret;
 }
 
-void* XMem::copyNew(
-    const void* src/* = nullptr*/, 
+uint8_t* XMem::alloc(
+    const uint8_t* src/* = nullptr*/, 
     const uint64_t bytes/* = 0*/)
 {
-    void* dest{nullptr};
+    uint8_t* dest{nullptr};
 
     if (src && 0 < bytes)
     {
-        dest = new(std::nothrow) char[bytes];
+        dest = new(std::nothrow) uint8_t[bytes];
         
         if (dest)
         {
@@ -57,8 +56,8 @@ void* XMem::copyNew(
 }
 
 int XMem::move(
-    const void* src/* = nullptr*/, 
-    void* dest/* = nullptr*/, 
+    const uint8_t* src/* = nullptr*/, 
+    uint8_t* dest/* = nullptr*/, 
     const uint64_t dest_bytes/* = 0*/)
 {
     int ret{src && dest && 0 < dest_bytes ? Error_Code_Success : Error_Code_Invalid_Param};

@@ -336,12 +336,11 @@ void DvsHostServer::afterPolledRealplayDataNotification(
             const uint32_t totalBytes{bytes + frame_header_size};
             char* frameData{ new(std::nothrow) char[totalBytes] };
             *((uint32_t*)frameData) = 0xFF050301;
-            *((uint32_t*)(frameData + 4)) = 0;
-            *((uint32_t*)(frameData + 8)) = 0;
-            *((uint32_t*)(frameData + 12)) = 1;
-            *((uint32_t*)(frameData + 16)) = bytes;
-            *((uint64_t*)(frameData + 20)) = 0;
-            *((uint64_t*)(frameData + 28)) = 0;
+            *((uint32_t*)(frameData + 4)) = MainType::MAIN_TYPE_HIKVISION_PS;
+            *((uint32_t*)(frameData + 8)) = SubType::SUB_TYPE_NONE;
+            *((uint32_t*)(frameData + 12)) = bytes;
+            *((uint64_t*)(frameData + 16)) = 0;
+            *((uint64_t*)(frameData + 24)) = 0;
             XMem().copy(data, bytes, frameData + frame_header_size, bytes);
             ASIONode::send(sid, frameData, totalBytes);
             boost::checked_array_delete(frameData);

@@ -16,8 +16,6 @@
 #include "boost/shared_ptr.hpp"
 #include "log.h"
 using namespace module::file::log;
-#include "network/buffer/buffer_parser.h"
-using namespace framework::network::buffer;
 
 using BufferParserPtr = boost::shared_ptr<BufferParser>;
 
@@ -66,7 +64,6 @@ private:
     const uint32_t sid;
     uint32_t did;
     uint32_t cid;
-    BufferParserPtr bufferParserPtr;
 };//class DvsStreamSession
 
 #endif//SERVICE_DVS_STREAM_SESSION_H

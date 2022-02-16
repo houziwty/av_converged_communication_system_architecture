@@ -21,19 +21,6 @@ int DvsStreamSession::recv(
 
     if (Error_Code_Success == ret)
     {
-        if (!bufferParserPtr)
-        {
-            BufferParserPtr bp{
-                boost::make_shared<BufferParser>(
-                    boost::bind(
-                        &DvsStreamSession::afterParsedOneFrameNotification, this, _1, _2, _3, _4, _5, _6, _7))};
-            if(bp)
-            {
-                bufferParserPtr.swap(bp);
-            }
-        }
-        
-        ret = (bufferParserPtr ? bufferParserPtr->append(data, bytes) : Error_Code_Bad_New_Object);
     }
     
     return ret;
