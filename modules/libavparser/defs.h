@@ -15,7 +15,7 @@
 
 #include <cstdint>
 
-#if defined(WINDOWS)
+#if defined(_WINDOWS)
 #ifdef USE_MODULE_AV_PARSER
 #define AV_PARSER_EXPORT __declspec(dllimport)
 #else
@@ -23,7 +23,7 @@
 #endif//USE_MODULE_AV_PARSER
 #elif defined(__linux__)
 #define AV_PARSER_EXPORT
-#endif//WINDOWS
+#endif//_WINDOWS
 
 //AV解析角色类型
 typedef enum class tagAVParserType_t : int

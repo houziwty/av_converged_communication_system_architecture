@@ -23,6 +23,8 @@ namespace module
 	{
 		namespace stream
 		{
+			class AVPkt;
+
 			class AV_PARSER_EXPORT AVParserNode
 			{
 			public:
@@ -30,43 +32,31 @@ namespace module
 				virtual ~AVParserNode(void);
 
 			public:
-				//添加角色
-				//@conf [in] : 角色配置参数
+				//添加解析
+				//@conf [in] : 解析配置参数
 				//@Return : 错误码
 				int addConf(const AVParserModeConf& conf);
 
-				//删除角色
-				//@id [in] : 角色ID
+				//删除解析
+				//@id [in] : 解析ID
 				//@Return : 错误码
 				int removeConf(const uint32_t id = 0);
 
 				//输入数据
-				//@id [in] : 角色ID
-				//@data [in] : 数据
-				//@bytes [in] : 大小
+				//@id [in] : 解析ID
+				//@avpkt [in] : 数据包
 				//@Return : 错误码
-				virtual int input(
+				int input(
 					const uint32_t id = 0, 
-					const void* data = nullptr, 
-					const uint64_t bytes = 0) = 0;
+					const AVPkt* avpkt = nullptr);
 
 			protected:
 				//解析数据通知
-				//@id [out] : 角色ID
-				//@data [out] : 主类型
-				//@data [out] : 子类型
-				//@bytes [out] : 大小
-				//@seqence [out] : 序号
-				//@timestamp [out] : 时间戳
-				//@data [out] : 数据
+				//@id [out] : 解析ID
+				//@avpkt [in] : 数据包
 				virtual void afterParsedDataNotification(
 					const uint32_t id = 0, 
-					const MainType maintype = MainType::MAIN_TYPE_NONE, 
-					const SubType subtype = SubType::SUB_TYPE_NONE, 
-					const uint32_t bytes = 0, 
-					const uint64_t seqence = 0, 
-					const uint64_t timestamp = 0, 
-					const void* data = nullptr) = 0;
+					const AVPkt* avpkt = nullptr) = 0;
 			};//class AVParserNode
 		}//namespace stream
 	}//namespace av

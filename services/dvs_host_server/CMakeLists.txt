@@ -15,16 +15,20 @@ set(
 	DVS_ROOT_DIR 
 	${ROOT_DIR}/modules/libdvs)
 set(
-	AV_ROOT_DIR 
-	${ROOT_DIR}/modules/libav)
+	AVPARSER_ROOT_DIR 
+	${ROOT_DIR}/modules/libavparser)
+set(
+	AVPKT_ROOT_DIR 
+	${ROOT_DIR}/modules/libavpkt)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-	link_directories(${XMQ_ROOT_DIR} ${ASIO_ROOT_DIR} ${LOG_ROOT_DIR} ${DVS_ROOT_DIR})
+	link_directories(${XMQ_ROOT_DIR} ${ASIO_ROOT_DIR} ${LOG_ROOT_DIR} ${DVS_ROOT_DIR} ${AVPARSER_ROOT_DIR} ${AVPKT_ROOT_DIR})
 	set(
 		LINK_LIBS 
 		libboost_program_options.a 
 		dvs 
 		asio 
-		av 
+		avparser 
+		avpkt 
 		xmq 
 		log)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
@@ -47,8 +51,11 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		DVS_LINK_DIR 
 		${ROOT_DIR}/win32/modules/libdvs/${CMAKE_BUILD_TYPE})
 	set(
-		AV_LINK_DIR 
-		${ROOT_DIR}/win32/modules/libav/${CMAKE_BUILD_TYPE})
+		AVPARSER_LINK_DIR 
+		${ROOT_DIR}/win32/modules/libavparser/${CMAKE_BUILD_TYPE})
+	set(
+		AVPKT_LINK_DIR 
+		${ROOT_DIR}/win32/modules/libavpkt/${CMAKE_BUILD_TYPE})
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
 			LINK_LIBS 
@@ -59,7 +66,8 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${XMQ_LINK_DIR}/xmq.lib 
 			${LOG_LINK_DIR}/log.lib 
 			${ASIO_LINK_DIR}/asio.lib 
-			${AV_LINK_DIR}/av.lib 
+			${AVPARSER_LINK_DIR}/avparser.lib 
+			${AVPKT_LINK_DIR}/avpkt.lib 
 			${DVS_HOST_LINK_DIR}/dvs.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(
@@ -71,10 +79,11 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${XMQ_LINK_DIR}/xmq.lib 
 			${LOG_LINK_DIR}/log.lib 
 			${ASIO_LINK_DIR}/asio.lib 
-			${AV_LINK_DIR}/av.lib 
+			${AVPARSER_LINK_DIR}/avparser.lib 
+			${AVPKT_LINK_DIR}/avpkt.lib 
 			${DVS_HOST_LINK_DIR}/dvs.lib)
 	endif()
-	add_definitions(-DUSE_MODULE_FILE_LOG -DUSE_MODULE_NETWORK_XMQ -DUSE_MODULE_NETWORK_ASIO -DUSE_MODULE_DEVICE_DVS -DUSE_MODULE_AV)
+	add_definitions(-DUSE_MODULE_FILE_LOG -DUSE_MODULE_NETWORK_XMQ -DUSE_MODULE_NETWORK_ASIO -DUSE_MODULE_DEVICE_DVS -DUSE_MODULE_AV_PARSER -DUSE_MODULE_AV_PKT)
 endif()
 
 set(SERVICE_ROOT_DIR ${ROOT_DIR}/service/dvs_host_service)
@@ -85,7 +94,8 @@ include_directories(
 	${XMQ_ROOT_DIR} 
 	${LOG_ROOT_DIR} 
 	${ASIO_ROOT_DIR} 
-	${AV_ROOT_DIR} 
+	${AVPARSER_ROOT_DIR} 
+	${AVPKT_ROOT_DIR} 
 	${DVS_ROOT_DIR})
 file(GLOB_RECURSE main "*.cpp")
 file(GLOB_RECURSE 

@@ -32,10 +32,11 @@ namespace module
 				//创建
 				//@hwnd : 播放窗口句柄
 				//@Return : 错误码
-				//@Comment : 实时视频流程图过滤器及顺序
-				//			1. Data Parser Filter
-				//			2. Video Decoder Filter
-				//			3. Video Render Filter
+				//@Comment : 实时视频播放流程图过滤器及顺序
+				//			1. Buffer Parser Filter
+				//			2. PS Parser Filter
+				//			3. Video Decoder Filter
+				//			4. Video Render Filter
 				int createNew(void* hwnd = nullptr) override;
 
 			protected:

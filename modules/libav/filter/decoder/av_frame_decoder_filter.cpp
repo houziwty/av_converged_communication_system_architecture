@@ -1,14 +1,14 @@
-#include "av_stream_decoder_filter.h"
-using namespace module::avstream;
+#include "av_frame_decoder_filter.h"
+using namespace module::av::stream;
 
-AVStreamDecoderFilter::AVStreamDecoderFilter() 
-	: AVFilter()
+AVFrameDecoderFilter::AVFrameDecoderFilter() 
+	: AVFilter(AVFilterType::AV_FILTER_TYPE_MEDIUM)
 {}
 
-AVStreamDecoderFilter::~AVStreamDecoderFilter()
+AVFrameDecoderFilter::~AVFrameDecoderFilter()
 {}
 
-int AVStreamDecoderFilter::input(void* data/* = nullptr*/)
+int AVFrameDecoderFilter::input(const AVPkt* avpkt/* = nullptr*/)
 {
 	return 0;
 }

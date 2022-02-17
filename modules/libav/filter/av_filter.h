@@ -40,15 +40,14 @@ namespace module
 				void* hwnd;					//hwnd表示视频播放窗口
 			}AVFilterConf;
 
-			class AVPin;
 			class AVPkt;
+			class AVPin;
+			using AVPinRef = boost::weak_ptr<AVPin>;
+			using AVPinPtr = boost::shared_ptr<AVPin>;
+			using AVPinPtrs = UnorderedMap<const std::string, AVPinPtr>;
 
 			class AVFilter
 			{
-				using AVPinRef = boost::weak_ptr<AVPin>;
-				using AVPinPtr = boost::shared_ptr<AVPin>;
-				using AVPinPtrs = UnorderedMap<const std::string, AVPinPtr>;
-
 			public:
 				//@type [in] : 过滤器类型
 				AVFilter(const AVFilterType type = AVFilterType::AV_FILTER_TYPE_NONE);

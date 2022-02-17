@@ -1,4 +1,5 @@
 #include "boost/checked_delete.hpp"
+#include "av_pkt.h"
 #include "error_code.h"
 #include "utils/memory/xmem.h"
 using namespace framework::utils::memory;
@@ -16,17 +17,19 @@ BufferParser::BufferParser(
 
 BufferParser::~BufferParser()
 {
-	boost::checked_array_delete(buffer);
+	boost::checked_array_delete(reinterpret_cast<uint8_t*>(buffer));
 }
 
-int BufferParser::input(
-	const void* data/* = nullptr*/, 
-	const uint64_t bytes/* = 0*/)
+int BufferParser::input(const AVPkt* avpkt/* = nullptr*/)
 {
-	int ret{data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
+	int ret{avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
+		const uint8_t* data{
+			reinterpret_cast<const uint8_t*>(avpkt->data())};
+		const uint64_t bytes{avpkt->bytes()};
+
 		//从数据缓存第一个字节开始解析
 		//首先检查数据头是否是帧头标志
 		//不要一开始就拷贝数据
@@ -54,12 +57,12 @@ int BufferParser::input(
 		{
 			buffer_left_bytes = bufSize - pos;
 			data_left_bytes = bytes - buffer_left_bytes;
-			XMem().copy(data, buffer_left_bytes, buffer + pos, buffer_left_bytes);
+			XMem().copy(data, buffer_left_bytes, (uint8_t*)buffer + pos, buffer_left_bytes);
 			pos += buffer_left_bytes;
 		}
 		else
 		{
-			XMem().copy(data, bytes, buffer + pos, bytes);
+			XMem().copy(data, bytes, (uint8_t*)buffer + pos, bytes);
 			pos += bytes;
 		}
 
@@ -68,7 +71,7 @@ int BufferParser::input(
 		//如果本次添加数据是部分放入缓存就将剩余部分追加入缓存
 		if (!ret && 0 < buffer_left_bytes && 0 < data_left_bytes)
 		{
-			XMem().copy(data + buffer_left_bytes, data_left_bytes, buffer + pos, data_left_bytes);
+			XMem().copy(data + buffer_left_bytes, data_left_bytes, (uint8_t*)buffer + pos, data_left_bytes);
 			pos += data_left_bytes;
 		}
 	}
@@ -87,40 +90,49 @@ int BufferParser::parse()
 		if (pos - current_pos <= frame_header_size)
 		{
 			pos -= current_pos;
-			return XMem().move(buffer + current_pos, buffer, pos);
+			return XMem().move((uint8_t*)buffer + current_pos, buffer, pos);
 		}
 
 		//检查数据头是否是帧头标志
 		//如果不是帧标志就表明数据有错
 		//重置游标到缓存第一个字节以保证后续数据正常添加到缓存
-		const uint32_t* flag{ (const uint32_t*)(buffer + current_pos) };
+		const uint32_t* flag{ (const uint32_t*)((uint8_t*)buffer + current_pos) };
 		if (frame_header_flag != *flag)
 		{
 			pos = 0;
 			return Error_Code_Invalid_Flag;
 		}
 
-		const uint32_t* main_type{ (const uint32_t*)(buffer + current_pos + 4) };
-		const uint32_t* sub_type{ (const uint32_t*)(buffer + current_pos + 8) };
-		const uint32_t* frame_size{ (const uint32_t*)(buffer + current_pos + 12) };
-		const uint64_t* sequence{ (const uint64_t*)(buffer + current_pos + 16) };
-		const uint64_t* timestamp{ (const uint64_t*)(buffer + current_pos + 24) };
+		const uint32_t* maintype{ (const uint32_t*)((uint8_t*)buffer + current_pos + 4) };
+		const uint32_t* subtype{ (const uint32_t*)((uint8_t*)buffer + current_pos + 8) };
+		const uint32_t* framebytes{ (const uint32_t*)((uint8_t*)buffer + current_pos + 12) };
+		const uint64_t* sequence{ (const uint64_t*)((uint8_t*)buffer + current_pos + 16) };
+		const uint64_t* timestamp{ (const uint64_t*)((uint8_t*)buffer + current_pos + 24) };
 
 		//检查剩余数据是否不足帧数据大小
 		//如果数据不足则将剩余数据移动到缓存第一个字节
-		if (pos - current_pos - frame_header_size < *frame_size)
+		if (pos - current_pos - frame_header_size < *framebytes)
 		{
 			pos -= current_pos;
-			XMem().move(buffer + current_pos, buffer, pos);
+			XMem().move((uint8_t*)buffer + current_pos, buffer, pos);
 			return Error_Code_Success;
 		}
 
 		if (parsedDataCallback)
 		{
-			parsedDataCallback(
-				pid, (MainType)*main_type, (SubType)*sub_type, *frame_size, *sequence, *timestamp, buffer + current_pos + frame_header_size);
+			AVPkt* avpkt{
+				new(std::nothrow) AVPkt(
+					static_cast<AVMainType>(*maintype), 
+					static_cast<AVSubType>(*subtype), 
+					*sequence, *timestamp)};
+
+			if (avpkt && Error_Code_Success == avpkt->input((uint8_t*)buffer + current_pos + frame_header_size, *framebytes))
+			{
+				parsedDataCallback(pid, avpkt);
+				boost::checked_delete(avpkt);
+			}
 		}
-		current_pos += (frame_header_size + *frame_size);
+		current_pos += (frame_header_size + *framebytes);
 	}
 
 	pos -= current_pos;

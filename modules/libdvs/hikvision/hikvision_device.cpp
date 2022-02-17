@@ -143,7 +143,7 @@ int HikvisionDevice::closeRealplayStream()
 }
 
 void HikvisionDevice::livestreamDataCallback(
-	int32_t sid, uint32_t type, void* data, uint32_t bytes, void* ctx)
+	int32_t sid, uint32_t type, uint8_t* data, uint32_t bytes, void* ctx)
 {
 	HikvisionDevice* dvs{ reinterpret_cast<HikvisionDevice*>(ctx) };
 	const int32_t channelID{dvs->livestreamIds.at(sid)};

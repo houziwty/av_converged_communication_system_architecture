@@ -23,10 +23,10 @@ namespace module
 	{
 		namespace stream
 		{
+			class AVPkt;
+			
 			class AV_EXPORT AVNode
 			{
-				class AVPkt;
-
 			public:
 				AVNode(void);
 				virtual ~AVNode(void);

@@ -1,14 +1,14 @@
-#include "av_stream_render_filter.h"
-using namespace module::avstream;
+#include "av_frame_render_filter.h"
+using namespace module::av::stream;
 
-AVStreamRenderFilter::AVStreamRenderFilter() 
-	: AVFilter()
+AVFrameRenderFilter::AVFrameRenderFilter() 
+	: AVFilter(AVFilterType::AV_FILTER_TYPE_TARGET)
 {}
 
-AVStreamRenderFilter::~AVStreamRenderFilter()
+AVFrameRenderFilter::~AVFrameRenderFilter()
 {}
 
-int AVStreamRenderFilter::input(void* data/* = nullptr*/)
+int AVFrameRenderFilter::input(const AVPkt* avpkt/* = nullptr*/)
 {
 	return 0;
 }

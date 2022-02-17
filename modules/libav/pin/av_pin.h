@@ -32,6 +32,7 @@ namespace module
 			}AVPinType;
 
 			class AVFilter;
+			class AVPkt;
 
 			class AVPin
 			{
@@ -53,16 +54,16 @@ namespace module
 				virtual int connect(AVPinRef pin);
 
 				//输入数据
-				//@data : 数据
+				//@avpkt : 数据包
 				//@Return : 错误码
-				virtual int input(void* data = nullptr);
+				virtual int input(const AVPkt* avpkt = nullptr);
 
-				//获取传输模式
-				//@Return : 传输模式
-				// inline const PinType getPinType(void) const
-				// {
-				// 	return pinType;
-				// }
+				//获取类型
+				//@Return : 类型
+				inline const AVPinType type(void) const
+				{
+					return pinType;
+				}
 
 			protected:
 				const AVPinType pinType;

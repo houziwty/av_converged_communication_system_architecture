@@ -31,15 +31,13 @@ int AVParserNode::addConf(const AVParserModeConf& conf)
 		if (AVParserType::AV_PARSER_TYPE_BUFFER_PARSER == conf.type)
 		{
 			parser = boost::make_shared<BufferParser>(
-				boost::bind(
-					&AVParserNode::afterParsedDataNotification, this, _1, _2, _3, _4, _5, _6, _7), 
+				boost::bind(&AVParserNode::afterParsedDataNotification, this, _1, _2), 
 				conf.id);
 		}
 		else if (AVParserType::AV_PARSER_TYPE_PS_PARSER == conf.type)
 		{
 			parser = boost::make_shared<PSParser>(
-				boost::bind(
-					&AVParserNode::afterParsedDataNotification, this, _1, _2, _3, _4, _5, _6, _7), 
+				boost::bind(&AVParserNode::afterParsedDataNotification, this, _1, _2), 
 				conf.id);
 		}
 		else
@@ -79,15 +77,14 @@ int AVParserNode::removeConf(const uint32_t id/* = 0*/)
 
 int AVParserNode::input(
 	const uint32_t id/* = 0*/, 
-	const void* data/* = nullptr*/, 
-	const uint64_t bytes/* = 0*/)
+	const AVPkt* avpkt/* = nullptr*/)
 {
-	int ret{0 < id && data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
+	int ret{0 < id && avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if(Error_Code_Success == ret)
 	{
 		AVParserPtr parser{parsers.at(id)};
-		ret = parser ? parser->input(data, bytes) : Error_Code_Object_Not_Exist;
+		ret = parser ? parser->input(avpkt) : Error_Code_Object_Not_Exist;
 	}
 
 	return ret;

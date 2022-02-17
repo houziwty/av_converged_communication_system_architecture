@@ -6,14 +6,18 @@ using namespace framework::utils::memory;
 using namespace module::av::stream;
 
 AVPkt::AVPkt(
-	const AVPktType type/* = AVPktType::AV_PKT_TYPE_NONE*/) 
-	: avpktType{type}, avpktData{nullptr}, avpktDataBytes{0}, next{nullptr}
+	const AVMainType mainType/* = AVMainType::AV_MAIN_TYPE_NONE*/, 
+	const AVSubType subType/* = AVSubType::AV_SUB_TYPE_NONE*/, 
+	const uint64_t sequence/* = 0*/, 
+	const uint64_t timestamp/* = 0*/) 
+	: avpktMainType{mainType}, avpktSubType{subType}, avpktSequence{sequence}, avpktTimestamp{timestamp}, 
+	avpktData{nullptr}, avpktDataBytes{0}, associateAvpkt{nullptr}
 {}
 
 AVPkt::~AVPkt()
 {
-	boost::checked_array_delete(avpktData);
-	boost::checked_delete(next);
+	boost::checked_array_delete(reinterpret_cast<uint8_t*>(avpktData));
+	boost::checked_delete(associateAvpkt);
 }
 
 int AVPkt::input(
@@ -25,7 +29,7 @@ int AVPkt::input(
 	if (Error_Code_Success == ret)
 	{
 		//Auto recover
-		boost::checked_array_delete(avpktData);
+		boost::checked_array_delete(reinterpret_cast<uint8_t*>(avpktData));
 		avpktData = XMem().alloc(data, bytes);
 		ret = (avpktData ? Error_Code_Success : Error_Code_Bad_New_Memory);
 	}
@@ -35,7 +39,7 @@ int AVPkt::input(
 
 int AVPkt::associate(AVPkt* pkt/* = nullptr*/)
 {
-	if (avpkt)
+	if (associateAvpkt)
 	{
 		return Error_Code_Object_Existed;
 	}
@@ -44,7 +48,7 @@ int AVPkt::associate(AVPkt* pkt/* = nullptr*/)
 
 	if (Error_Code_Success == ret)
 	{
-		avpkt = pkt;
+		associateAvpkt = pkt;
 	}
 	
 	return ret;

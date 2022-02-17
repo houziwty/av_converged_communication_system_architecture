@@ -16,10 +16,10 @@
 #include "boost/shared_ptr.hpp"
 #include "log.h"
 using namespace module::file::log;
+#include "av_parser_node.h"
+using namespace module::av::stream;
 
-using BufferParserPtr = boost::shared_ptr<BufferParser>;
-
-class DvsStreamSession
+class DvsStreamSession : protected AVParserNode
 {
 public:
     //id [in] : 会话ID
@@ -44,20 +44,10 @@ public:
 private:
     //解析单帧数据回调
     //@dataType [out] : 数据类型
-    //@streamType [out] : 流类型
-    //@frameType [out] : 帧类型
-    //@frameBytes [out] : 帧大小
-    //@frameSeq [out] : 帧序号
-    //@frameTs [out] : 帧时间戳
     //@frameData [out] : 帧数据
-    void afterParsedOneFrameNotification(
-        const uint32_t dataType = 0, 
-        const uint32_t streamType = 0, 
-        const uint32_t frameType = 0, 
-        const uint32_t frameBytes = 0, 
-        const uint64_t frameSeq = 0, 
-        const uint64_t frameTs = 0, 
-        const void* frameData = nullptr);
+    void afterParsedDataNotification(
+        const uint32_t id = 0, 
+        const AVPkt* avpkt = nullptr);
 
 private:
     FileLog& fileLog;

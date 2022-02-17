@@ -1,6 +1,7 @@
 #include "boost/make_shared.hpp"
 #include "error_code.h"
-#include "av_pin.h"
+#include "defs.h"
+#include "pin/av_pin.h"
 #include "av_filter.h"
 using namespace module::av::stream;
 
@@ -20,7 +21,7 @@ AVPinRef AVFilter::query(const std::string name)
 
 int AVFilter::createNew(void* param/* = nullptr*/)
 {
-	if(0 < avpins.size())
+	if(0 < avpins.values().size())
 	{
 		return Error_Code_Object_Existed;
 	}
@@ -67,7 +68,7 @@ int AVFilter::createNew(void* param/* = nullptr*/)
 		}
 	}
 
-	return 0 < avpins.size() ? Error_Code_Success : Error_Code_Bad_New_Object; 
+	return 0 < avpins.values().size() ? Error_Code_Success : Error_Code_Bad_New_Object; 
 }
 
 int AVFilter::destroy()

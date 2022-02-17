@@ -24,10 +24,10 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		${BOOST_ROOT_DIR}/stage/lib)
 	set(
 		AVPKT_LINK_DIR 
-		${ROOT_DIR}/win32/modules/libavpkt/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/win32/modules/libavpkt/${CMAKE_BUILD_TYPE})
 	set(
 		AVPARSER_LINK_DIR 
-		${ROOT_DIR}/win32/modules/libavparser/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/win32/modules/libavparser/${CMAKE_BUILD_TYPE})
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
 			LINK_LIBS 

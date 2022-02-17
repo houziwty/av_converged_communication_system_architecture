@@ -13,7 +13,6 @@
 #ifndef MODULE_AV_STREAM_AV_PARSER_H
 #define MODULE_AV_STREAM_AV_PARSER_H
 
-#include <cstdint>
 #include "boost/function.hpp"
 #include "defs.h"
 
@@ -23,15 +22,12 @@ namespace module
 	{
 		namespace stream
 		{
-			//解析单帧数据回调
+			class AVPkt;
+
+			//解析数据回调
 			//@_1 [out] : 解析ID
-			//@_2 [out] : 主类型
-			//@_3 [out] : 子类型
-			//@_4 [out] : 大小
-			//@_5 [out] : 序号
-			//@_6 [out] : 时间戳
 			//@_7 [out] : 数据
-			typedef boost::function<void(const uint32_t, const MainType, const SubType, const uint32_t, const uint64_t, const uint64_t, const void*)> ParsedDataCallback;
+			typedef boost::function<void(const uint32_t, const AVPkt*)> ParsedDataCallback;
 
 			class AVParser
 			{
@@ -43,12 +39,9 @@ namespace module
 
 			public:
 				//输入数据
-				//@data [in] : 数据
-				//@bytes [in] : 大小
+				//@avpkt [in] : 数据包
 				//@Return : 错误码
-				virtual int input(
-					const void* data = nullptr, 
-					const uint64_t bytes = 0) = 0;
+				virtual int input(const AVPkt* avpkt = nullptr) = 0;
 
 			protected:
 				const uint32_t pid;

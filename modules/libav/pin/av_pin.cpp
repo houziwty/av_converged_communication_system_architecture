@@ -1,11 +1,11 @@
 #include "error_code.h"
-#include "av_stream_filter.h"
-#include "av_stream_pin.h"
-using namespace module::avstream;
+#include "filter/av_filter.h"
+#include "av_pin.h"
+using namespace module::av::stream;
 
 AVPin::AVPin(
-	AVFilter& filter, const PinType pt /* = PinType::PIN_TYPE_INPUT */)
-	: pinType{pt}, owner{filter}
+	AVFilter& filter, const AVPinType type /* = AVPinType::PIN_TYPE_NONE */)
+	: pinType{type}, avfilter{filter}
 {}
 
 AVPin::~AVPin()
@@ -18,28 +18,28 @@ int AVPin::connect(AVPinRef pin)
 		return Error_Code_Invalid_Param;
 	}
 
-	if (PinType::PIN_TYPE_OUTPUT == pinType && 
-		PinType::PIN_TYPE_INPUT == pin.lock()->getPinType())
+	if (AVPinType::PIN_TYPE_OUTPUT == pinType && 
+		AVPinType::PIN_TYPE_INPUT == pin.lock()->type())
 	{
-		nextInputPin = pin;
+		inputPin = pin;
 	}
 
-	return nextInputPin.expired() ? Error_Code_Operate_Failure : Error_Code_Success;
+	return inputPin.expired() ? Error_Code_Operate_Failure : Error_Code_Success;
 }
 
-int AVPin::input(void* data/* = nullptr*/)
+int AVPin::input(const AVPkt* avpkt/* = nullptr*/)
 {
-	int ret{ data ? Error_Code_Success : Error_Code_Invalid_Param };
+	int ret{ avpkt ? Error_Code_Success : Error_Code_Invalid_Param };
 
 	if (Error_Code_Success == ret)
 	{
-		if (PinType::PIN_TYPE_INPUT == pinType)
+		if (AVPinType::PIN_TYPE_INPUT == pinType)
 		{
-			ret = owner.input(data);
+			ret = avfilter.input(avpkt);
 		} 
-		else if (PinType::PIN_TYPE_OUTPUT == pinType && !nextInputPin.expired())
+		else if (AVPinType::PIN_TYPE_OUTPUT == pinType && !inputPin.expired())
 		{
-			ret = nextInputPin.lock()->input(data);
+			ret = inputPin.lock()->input(avpkt);
 		}
 		else
 		{

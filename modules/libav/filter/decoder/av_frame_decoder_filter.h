@@ -28,7 +28,7 @@ namespace module
 				virtual ~AVFrameDecoderFilter(void);
 
 			public:
-				int input(const void* data = nullptr) override;
+				int input(const AVPkt* avpkt = nullptr) override;
 			};//class AVFrameDecoderFilter
 		}//namespace stream
 	}//namespace av

@@ -47,12 +47,9 @@ namespace module
 
 			public:
 				//输入数据
-				//@data [in] : 数据
-				//@bytes [in] : 大小
+				//@avpkt [in] : 数据包
 				//@Return : 错误码
-				int input(
-					const void* data = nullptr, 
-					const uint64_t bytes = 0) override;
+				int input(const AVPkt* avpkt = nullptr) override;
 
 			private:
 				//解析单帧数据

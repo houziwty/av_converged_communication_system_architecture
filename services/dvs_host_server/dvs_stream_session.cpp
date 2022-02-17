@@ -1,17 +1,23 @@
 #include "boost/bind/bind.hpp"
 using namespace boost::placeholders;
 #include "boost/make_shared.hpp"
+#include "av_pkt.h"
 #include "error_code.h"
 #include "utils/url/url.h"
 using namespace framework::utils::url;
 #include "dvs_stream_session.h"
 
 DvsStreamSession::DvsStreamSession(FileLog& log, const uint32_t id/* = 0*/)
-    : sid{id}, cid{0}, did{0}, fileLog{log}
-{}
+    : AVParserNode(), sid{id}, cid{0}, did{0}, fileLog{log}
+{
+    AVParserModeConf conf{1, AVParserType::AV_PARSER_TYPE_BUFFER_PARSER};
+    AVParserNode::addConf(conf);
+}
 
 DvsStreamSession::~DvsStreamSession()
-{}
+{
+    AVParserNode::removeConf(1);
+}
 
 int DvsStreamSession::recv(
     const void* data/* = nullptr*/, 
@@ -21,6 +27,8 @@ int DvsStreamSession::recv(
 
     if (Error_Code_Success == ret)
     {
+        AVPkt avpkt;
+        ret = AVParserNode::input(1, &avpkt);
     }
     
     return ret;
@@ -33,16 +41,11 @@ void DvsStreamSession::getIDs(uint32_t& sid, uint32_t& did, uint32_t& cid)
     cid = this->cid;
 }
 
-void DvsStreamSession::afterParsedOneFrameNotification(
-    const uint32_t dataType/* = 0*/, 
-    const uint32_t streamType/* = 0*/, 
-    const uint32_t frameType/* = 0*/, 
-    const uint32_t frameBytes/* = 0*/, 
-    const uint64_t frameSeq/* = 0*/, 
-    const uint64_t frameTs/* = 0*/, 
-    const void* frameData/* = nullptr*/)
+void DvsStreamSession::afterParsedDataNotification(
+    const uint32_t id/* = 0*/, 
+    const AVPkt* avpkt/* = nullptr*/)
 {
-    const std::string msg{(const char*)frameData, frameBytes};
+    const std::string msg{(const char*)avpkt->data(), avpkt->bytes()};
     Url url;
     int ret{url.parse(msg)};
 
@@ -79,7 +82,7 @@ void DvsStreamSession::afterParsedOneFrameNotification(
         fileLog.write(
             SeverityLevel::SEVERITY_LEVEL_ERROR, 
             "Parsed stream play url = [ %s ] from session = [ %d ] failed, result = [ %d ].",  
-            (const char*)frameData, 
+            msg.c_str(), 
             sid, 
             ret);
     }

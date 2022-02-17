@@ -1,9 +1,8 @@
 #include "boost/make_shared.hpp"
-#include "av_pkt.h"
 #include "error_code.h"
 #include "utils/map/unordered_map.h"
 #include "graph/realplay_stream_render_graph.h"
-#include "graph/realplay_stream_video_analysis_graph.h"
+#include "graph/realplay_stream_decoder_graph.h"
 #include "filter/av_filter.h"
 #include "av_node.h"
 using namespace module::av::stream;
@@ -27,13 +26,17 @@ int AVNode::addConf(const AVModeConf& conf)
 	{
 		AVGraphPtr graph;
 
-		if (conf.hwnd)
+		if (AVModeType::AV_MODE_TYPE_RENDER == conf.type)
 		{
 			graph = boost::make_shared<RealplayStreamRenderGraph>();
 		}
-		else
+		else if (AVModeType::AV_MODE_TYPE_DECODE == conf.type)
 		{
-			graph = boost::make_shared<RealplayStreamVideoAnalysisGraph>();
+			graph = boost::make_shared<RealplayStreamDecoderGraph>();
+		}
+		else if (AVModeType::AV_MODE_TYPE_ENCODE == conf.type)
+		{
+//			graph = boost::make_shared<RealplayStreamDecoderGraph>();
 		}
 
 		if (graph)
@@ -83,8 +86,8 @@ int AVNode::input(
 
 		if (graph)
 		{
-			AVFilterRef source{graph->query(av_data_parser_filter_name)};
-			ret = (!source.expired() ? source.lock()->input(data, bytes) : Error_Code_Object_Not_Exist);
+			AVFilterRef source{graph->query(av_buffer_parser_filter_name)};
+			ret = (!source.expired() ? source.lock()->input(avpkt) : Error_Code_Object_Not_Exist);
 		}
 		else
 		{

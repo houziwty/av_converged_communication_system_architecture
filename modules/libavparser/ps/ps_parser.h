@@ -30,9 +30,22 @@ namespace module
                 virtual ~PSParser(void);
 
             public:
-                int input(
-                    const void* data = nullptr, 
-					const uint64_t bytes = 0) override;
+                int input(const AVPkt* avpkt = nullptr) override;
+
+            private:
+                //PS数据解析回调
+                static int parsedPSPacketCallback(
+                    void* param, 
+                    int stream, 
+                    int codecid, 
+                    int flags, 
+                    int64_t pts, 
+                    int64_t dts, 
+                    const void* data, 
+                    size_t bytes);
+
+            private:
+                void* ps_demuxer;
             };//class PSParser
         }//namespace stream
 	}//namespace av

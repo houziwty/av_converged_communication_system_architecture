@@ -3,6 +3,8 @@ using namespace boost::placeholders;
 #include "boost/checked_delete.hpp"
 #include "boost/format.hpp"
 #include "boost/make_shared.hpp"
+#include "av_pkt.h"
+using namespace module::av::stream;
 #include "error_code.h"
 #include "utils/memory/xmem.h"
 using namespace framework::utils::memory;
@@ -333,15 +335,15 @@ void DvsHostServer::afterPolledRealplayDataNotification(
 
         if(0 < sid && did == id && cid == channel)
         {
-            const uint32_t totalBytes{bytes + frame_header_size};
+            const uint32_t totalBytes{bytes + 32};
             char* frameData{ new(std::nothrow) char[totalBytes] };
             *((uint32_t*)frameData) = 0xFF050301;
-            *((uint32_t*)(frameData + 4)) = MainType::MAIN_TYPE_HIKVISION_PS;
-            *((uint32_t*)(frameData + 8)) = SubType::SUB_TYPE_NONE;
+            *((uint32_t*)(frameData + 4)) = (uint32_t)AVMainType::AV_MAIN_TYPE_HK_PS;
+            *((uint32_t*)(frameData + 8)) = (uint32_t)AVSubType::AV_SUB_TYPE_VIDEO;
             *((uint32_t*)(frameData + 12)) = bytes;
             *((uint64_t*)(frameData + 16)) = 0;
             *((uint64_t*)(frameData + 24)) = 0;
-            XMem().copy(data, bytes, frameData + frame_header_size, bytes);
+            XMem().copy(data, bytes, frameData + 32, bytes);
             ASIONode::send(sid, frameData, totalBytes);
             boost::checked_array_delete(frameData);
         }
