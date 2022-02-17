@@ -12,6 +12,8 @@
 #include "boost/format.hpp"
 #include "error_code.h"
 
+#include "av_pkt.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -381,13 +383,12 @@ void CdvshostdemoDlg::OnBnClickedRealplayTest()
 	const uint64_t bytes{ 36 + url.length() };
 	char* data{ new char[bytes] };
 	*((uint32_t*)data) = 0xFF050301;
-	*((uint32_t*)(data + 4)) = 0;
-	*((uint32_t*)(data + 8)) = 0;
-	*((uint32_t*)(data + 12)) = 1;
-	*((uint32_t*)(data + 16)) = url.length();
-	*((uint64_t*)(data + 20)) = 50;
-	*((uint64_t*)(data + 28)) = 11223344;
-	memcpy_s(data + 36, url.length(), url.c_str(), url.length());
+	*((uint32_t*)(data + 4)) = (uint32_t)AVMainType::AV_MAIN_TYPE_NONE;
+	*((uint32_t*)(data + 8)) = (uint32_t)AVSubType::AV_SUB_TYPE_NONE;
+	*((uint32_t*)(data + 12)) = url.length();
+	*((uint32_t*)(data + 16)) = 0;
+	*((uint64_t*)(data + 24)) = 0;
+	memcpy_s(data + 32, url.length(), url.c_str(), url.length());
 
 	ASIONode::send(sid, data, bytes);
 	boost::checked_array_delete(data);
