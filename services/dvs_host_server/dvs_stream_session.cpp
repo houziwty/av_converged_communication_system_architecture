@@ -28,7 +28,8 @@ int DvsStreamSession::recv(
     if (Error_Code_Success == ret)
     {
         AVPkt avpkt;
-        ret = AVParserNode::input(1, &avpkt);
+        ret = avpkt.input(data, bytes);
+        ret = (Error_Code_Success == ret ? AVParserNode::input(1, &avpkt) : ret);
     }
     
     return ret;

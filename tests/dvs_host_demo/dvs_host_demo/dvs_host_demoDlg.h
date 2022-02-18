@@ -8,13 +8,16 @@
 using namespace module::network::xmq;
 #include "asio_node.h"
 using namespace module::network::asio;
+#include "av_node.h"
+using namespace module::av::stream;
 #include "log.h"
 using namespace module::file::log;
 #include "utils/url/url.h"
 using namespace framework::utils::url;
 
 // CdvshostdemoDlg dialog
-class CdvshostdemoDlg : public CDialogEx, protected XMQNode, protected ASIONode
+class CdvshostdemoDlg 
+	: public CDialogEx, protected XMQNode, protected ASIONode, protected AVNode
 {
 // Construction
 public:

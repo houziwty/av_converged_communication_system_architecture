@@ -39,6 +39,9 @@ namespace module
 				void afterParsedDataNotification(
 					const uint32_t id = 0, 
 					const AVPkt* avpkt = nullptr) override;
+
+			private:
+				AVParserModeConf conf;
 			};//class AVPktParserFilter
 		}//namespace stream
 	}//namespace av

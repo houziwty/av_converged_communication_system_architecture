@@ -31,10 +31,13 @@ int AVPkt::input(
 		//Auto recover
 		boost::checked_array_delete(reinterpret_cast<uint8_t*>(avpktData));
 		avpktData = XMem().alloc(data, bytes);
-		ret = (avpktData ? Error_Code_Success : Error_Code_Bad_New_Memory);
+		if (avpktData)
+		{
+			avpktDataBytes = bytes;
+		}
 	}
 	
-	return ret;
+	return (avpktData && 0 < avpktDataBytes ? Error_Code_Success : Error_Code_Bad_New_Memory);
 }
 
 int AVPkt::associate(AVPkt* pkt/* = nullptr*/)
