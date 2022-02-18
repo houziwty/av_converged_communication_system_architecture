@@ -13,6 +13,7 @@
 #ifndef MODULE_AV_STREAM_FRAME_DECODER_FILTER_H
 #define MODULE_AV_STREAM_FRAME_DECODER_FILTER_H
 
+#include "av_codec_node.h"
 #include "filter/av_filter.h"
 
 namespace module
@@ -21,14 +22,22 @@ namespace module
 	{
 		namespace stream
 		{
-			class AVFrameDecoderFilter : public AVFilter
+			class AVFrameDecoderFilter 
+				: public AVFilter, protected AVCodecNode
 			{
 			public:
 				AVFrameDecoderFilter(void);
 				virtual ~AVFrameDecoderFilter(void);
 
 			public:
+				int createNew(void* param = nullptr) override;
+				int destroy(void) override;
 				int input(const AVPkt* avpkt = nullptr) override;
+
+			protected:
+				void afterCodecDataNotification(
+					const uint32_t id = 0, 
+					const AVPkt* avpkt = nullptr) override;
 			};//class AVFrameDecoderFilter
 		}//namespace stream
 	}//namespace av

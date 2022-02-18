@@ -129,8 +129,9 @@ int BufferParser::parse()
 			if (avpkt && Error_Code_Success == avpkt->input((uint8_t*)buffer + current_pos + frame_header_size, *framebytes))
 			{
 				parsedDataCallback(pid, avpkt);
-				boost::checked_delete(avpkt);
 			}
+
+			boost::checked_delete(avpkt);
 		}
 		current_pos += (frame_header_size + *framebytes);
 	}

@@ -57,11 +57,17 @@ int PSParser::parsedPSPacketCallback(
     const void* data, 
     size_t bytes)
 {
-    PSParser* psparser{reinterpret_cast<PSParser*>(param)};
+    PSParser* parser{reinterpret_cast<PSParser*>(param)};
 
-    if (psparser)
+    //Video stream only.
+    if (parser && 0xe0 == stream && 0x1b == codecid && 0 == flags)
     {
-        /* code */
+        if (parser->parsedDataCallback)
+        {
+            AVPkt avpkt{AVMainType::AV_MAIN_TYPE_STANDARD_H264, AVSubType::AV_SUB_TYPE_VIDEO};
+            avpkt.input(data, bytes);
+            parser->parsedDataCallback(parser->pid, &avpkt);
+        }
     }
     
     return Error_Code_Success;

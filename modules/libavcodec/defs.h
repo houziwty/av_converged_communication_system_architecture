@@ -4,16 +4,18 @@
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
 //		Date : 2021-12-07
-//		Description : AVStreamCodec库定义
+//		Description : AV编解码库定义
 //
 //		History:
 //					1. 2021-12-07 由王科威创建
 //
 
-#ifndef MODULE_AV_STREAM_CODEC_DEFS_H
-#define MODULE_AV_STREAM_CODEC_DEFS_H
+#ifndef MODULE_AV_STREAM_AV_CODEC_DEFS_H
+#define MODULE_AV_STREAM_AV_CODEC_DEFS_H
 
-#if defined(WINDOWS)
+#include <cstdint>
+
+#if defined(_WINDOWS)
 #ifdef USE_MODULE_AV_CODEC
 #define AV_CODEC_EXPORT __declspec(dllimport)
 #else
@@ -21,13 +23,19 @@
 #endif//USE_MODULE_AV_CODEC
 #elif defined(__linux__)
 #define AV_CODEC_EXPORT
-#endif//WINDOWS
+#endif//_WINDOWS
 
-namespace module
+//AV编解码类型
+typedef enum class tagAVCodecType_t : uint32_t
 {
-	namespace avstream
-	{
-    }//namespace avstream
-}//namespace module
+    AV_CODEC_TYPE_NONE = 0,
+    AV_CODEC_TYPE_DECODE_H264
+}AVCodecType;
 
-#endif//MODULE_AV_STREAM_CODEC_DEFS_H
+typedef struct tagAVCodecModeConf_t
+{
+	uint32_t id;                   //>0，由调用者分配
+	AVCodecType type;
+}AVCodecModeConf;
+
+#endif//MODULE_AV_STREAM_AV_CODEC_DEFS_H

@@ -112,7 +112,7 @@ BOOL CdvshostdemoDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 
-	SetDlgItemText(IDC_XMQ_ADDRESS, L"127.0.0.1");
+	SetDlgItemText(IDC_XMQ_ADDRESS, L"172.18.5.0");
 	SetDlgItemText(IDC_XMQ_PORT, L"60531");
 	SetDlgItemText(IDC_DEMO_NAME, L"test_demo_name");
 
@@ -336,7 +336,10 @@ void CdvshostdemoDlg::OnBnClickedDvsLogout()
 	conf.proto = ASIOProtoType::ASIO_PROTO_TYPE_TCP;
 	conf.port = 60820;
 	conf.tcp.mode = ASIOModeType::ASIO_MODE_TYPE_CONNECT;
-	conf.tcp.ip = "127.0.0.1";
+	char ip[256]{ 0 };
+	HWND hwnd{ this->GetSafeHwnd() };
+	GetDlgItemTextA(hwnd, IDC_XMQ_ADDRESS, ip, 256);
+	conf.tcp.ip = ip;
 	int ret{ ASIONode::addConf(conf) };
 
 	if (Error_Code_Success == ret)
@@ -363,7 +366,18 @@ void CdvshostdemoDlg::afterPolledReadDataNotification(
 	const uint64_t bytes /* = 0 */, 
 	const int32_t e /* = 0 */)
 {
+	static bool first{ true };
 
+	if (first)
+	{
+		AVModeConf conf{ id, AVModeType::AV_MODE_TYPE_RENDER, this->GetSafeHwnd() };
+		AVNode::addConf(conf);
+		first = false;
+	}
+
+	AVPkt avpkt;
+	avpkt.input(data, bytes);
+	AVNode::input(id, &avpkt);
 }
 
 void CdvshostdemoDlg::afterPolledSendDataNotification(
