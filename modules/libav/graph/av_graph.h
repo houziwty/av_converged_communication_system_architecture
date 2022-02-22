@@ -16,6 +16,7 @@
 #include "boost/shared_ptr.hpp"
 #include "boost/weak_ptr.hpp"
 #include "utils/map/unordered_map.h"
+#include "defs.h"
 
 namespace module
 {
@@ -36,15 +37,15 @@ namespace module
 
 			public:
 				//查询
-				//@name : 名称
+				//@name [in] : 名称
 				//@Return : 过滤器实例
 				AVFilterRef query(const char* name = nullptr);
 
 				//创建
-				//@param : 参数
+				//@conf [in] : 配置参数
 				//@Return : 错误码
 				//@Comment : 派生类必须先调用，再调用基类该方法，否则可能导致派生类针脚连接异常
-				virtual int createNew(void* param = nullptr);
+				virtual int createNew(const AVModeConf& conf);
 
 				//销毁
 				//@Return : 错误码

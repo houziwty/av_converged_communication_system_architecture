@@ -4,6 +4,7 @@ using namespace boost::placeholders;
 #include "error_code.h"
 #include "utils/map/unordered_map.h"
 #include "decode/ffmpeg_h264_decode.h"
+#include "convert/ffmpeg_picture_convert.h"
 #include "av_codec.h"
 #include "av_codec_node.h"
 using namespace module::av::stream;
@@ -34,12 +35,12 @@ int AVCodecNode::addConf(const AVCodecModeConf& conf)
 				boost::bind(&AVCodecNode::afterCodecDataNotification, this, _1, _2), 
 				conf.id);
 		}
-		// else if (AVParserType::AV_PARSER_TYPE_PS_PARSER == conf.type)
-		// {
-		// 	parser = boost::make_shared<PSParser>(
-		// 		boost::bind(&AVParserNode::afterParsedDataNotification, this, _1, _2), 
-		// 		conf.id);
-		// }
+		else if (AVCodecType::AV_CODEC_TYPE_PICTURE_CONVERT == conf.type)
+		{
+			codec = boost::make_shared<FFmpegPictureConvert>(
+				boost::bind(&AVCodecNode::afterCodecDataNotification, this, _1, _2), 
+				conf.id);
+		}
 		else
 		{
 			ret = Error_Code_Operate_Not_Support;

@@ -4,16 +4,16 @@
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
 //		Date : 2021-11-22
-//		Description : AV帧格式化转换过滤器
+//		Description : AV流PS数据包解析过滤器
 //
 //		History:
 //					1. 2021-11-22 由王科威创建
 //
 
-#ifndef MODULE_AV_STREAM_AV_FRAME_CONVERTER_FILTER_H
-#define MODULE_AV_STREAM_AV_FRAME_CONVERTER_FILTER_H
+#ifndef MODULE_AV_STREAM_AV_PS_PARSER_FILTER_H
+#define MODULE_AV_STREAM_AV_PS_PARSER_FILTER_H
 
-#include "av_codec_node.h"
+#include "av_parser_node.h"
 #include "filter/av_filter.h"
 
 namespace module
@@ -22,26 +22,26 @@ namespace module
 	{
 		namespace stream
 		{
-			class AVFrameConverterFilter 
-				: public AVFilter, protected AVCodecNode
+			class AVPSParserFilter 
+				: public AVFilter, protected AVParserNode
 			{
 			public:
-				AVFrameConverterFilter(
+				AVPSParserFilter(
 					const AVFilterType type = AVFilterType::AV_FILTER_TYPE_NONE);
-				virtual ~AVFrameConverterFilter(void);
+				virtual ~AVPSParserFilter(void);
 
 			public:
 				int createNew(const AVModeConf& conf) override;
 				int destroy(void) override;
 				int input(const AVPkt* avpkt = nullptr) override;
-			
+
 			protected:
-				void afterCodecDataNotification(
+				void afterParsedDataNotification(
 					const uint32_t id = 0, 
 					const AVPkt* avpkt = nullptr) override;
-			};//class AVFrameConverterFilter
+			};//class AVPSParserFilter
 		}//namespace stream
 	}//namespace av
 }//namespace module
 
-#endif//MODULE_AV_STREAM_AV_FRAME_CONVERTER_FILTER_H
+#endif//MODULE_AV_STREAM_AV_PS_PARSER_FILTER_H

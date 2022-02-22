@@ -16,7 +16,7 @@ AVFilterRef AVGraph::query(const char* name/* = nullptr*/)
 	return avfilters.at(name);
 }
 
-int AVGraph::createNew(void* /*param = nullptr*/)
+int AVGraph::createNew(const AVModeConf& conf)
 {
 	return 0 < avfilters.values().size() ? connectPin() : Error_Code_Object_Not_Exist; 
 }

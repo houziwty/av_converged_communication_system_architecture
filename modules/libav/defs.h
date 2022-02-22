@@ -14,6 +14,7 @@
 #define MODULE_AV_STREAM_AV_STREAM_DEFS_H
 
 #include <cstdint>
+#include <functional>
 
 #if defined(_WINDOWS)
 #ifdef USE_MODULE_AV
@@ -25,12 +26,15 @@
 #define AV_EXPORT
 #endif//_WINDOWS
 
+//帧数据回调函数
+//@_1 [out] : AVPkt帧实例
+typedef std::function<void(const void*)> AVFrameDataCallback;
+
 //AV流图类型
 typedef enum class tagAVModeType_t : uint32_t
 {
-    AV_MODE_TYPE_NONE = 0,
-    AV_MODE_TYPE_ENCODE, 
-    AV_MODE_TYPE_DECODE, 
+    AV_MODE_TYPE_NONE = 0, 
+    AV_MODE_TYPE_BGR24_CONVERT, 
     AV_MODE_TYPE_RENDER
 }AVModeType;
 
@@ -40,6 +44,7 @@ typedef struct tagAVModeConf_t
     uint32_t id;                      //>0，由调用者分配
     AVModeType type;
     void* hwnd;                       //视频播放窗口
+    AVFrameDataCallback callback;     //仅当AV_MODE_TYPE_VIDEO_ANALYSIS == type时有效
 }AVModeConf;
 
 //AV过滤器名称

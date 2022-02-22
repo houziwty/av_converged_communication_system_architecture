@@ -26,11 +26,12 @@ namespace module
 				: public AVFilter, protected AVCodecNode
 			{
 			public:
-				AVFrameDecoderFilter(void);
+				AVFrameDecoderFilter(
+					const AVFilterType type = AVFilterType::AV_FILTER_TYPE_NONE);
 				virtual ~AVFrameDecoderFilter(void);
 
 			public:
-				int createNew(void* param = nullptr) override;
+				int createNew(const AVModeConf& conf) override;
 				int destroy(void) override;
 				int input(const AVPkt* avpkt = nullptr) override;
 

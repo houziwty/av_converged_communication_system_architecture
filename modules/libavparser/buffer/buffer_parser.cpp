@@ -120,18 +120,16 @@ int BufferParser::parse()
 
 		if (parsedDataCallback)
 		{
-			AVPkt* avpkt{
-				new(std::nothrow) AVPkt(
-					static_cast<AVMainType>(*maintype), 
-					static_cast<AVSubType>(*subtype), 
-					*sequence, *timestamp)};
+			AVPkt avpkt{
+				static_cast<AVMainType>(*maintype), //AV_MAIN_TYPE_HK_PS
+				static_cast<AVSubType>(*subtype), //AV_SUB_TYPE_NONE
+				*sequence, 
+				*timestamp};
 
-			if (avpkt && Error_Code_Success == avpkt->input((uint8_t*)buffer + current_pos + frame_header_size, *framebytes))
+			if (Error_Code_Success == avpkt.input((uint8_t*)buffer + current_pos + frame_header_size, *framebytes))
 			{
-				parsedDataCallback(pid, avpkt);
+				parsedDataCallback(pid, &avpkt);
 			}
-
-			boost::checked_delete(avpkt);
 		}
 		current_pos += (frame_header_size + *framebytes);
 	}
