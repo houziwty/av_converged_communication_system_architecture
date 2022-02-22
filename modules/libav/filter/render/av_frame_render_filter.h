@@ -13,6 +13,7 @@
 #ifndef MODULE_AV_STREAM_FRAME_RENDER_FILTER_H
 #define MODULE_AV_STREAM_FRAME_RENDER_FILTER_H
 
+#include "video_render_node.h"
 #include "filter/av_filter.h"
 
 namespace module
@@ -21,13 +22,16 @@ namespace module
 	{
 		namespace stream
 		{
-			class AVFrameRenderFilter : public AVFilter
+			class AVFrameRenderFilter 
+				: public AVFilter, protected VideoRenderNode
 			{
 			public:
 				AVFrameRenderFilter(void);
 				virtual ~AVFrameRenderFilter(void);
 
 			public:
+				int createNew(void* hwnd = nullptr) override;
+				int destroy(void) override;
 				int input(const AVPkt* avpkt = nullptr) override;
 			};//class AVFrameRenderFilter
 		}//namespace stream

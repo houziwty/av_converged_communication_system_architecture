@@ -2,7 +2,7 @@
 #include "error_code.h"
 #include "utils/map/unordered_map.h"
 #include "graph/realplay_stream_render_graph.h"
-#include "graph/realplay_stream_decoder_graph.h"
+#include "graph/realplay_stream_bgr24_convert_graph.h"
 #include "filter/av_filter.h"
 #include "av_node.h"
 using namespace module::av::stream;
@@ -30,18 +30,14 @@ int AVNode::addConf(const AVModeConf& conf)
 		{
 			graph = boost::make_shared<RealplayStreamRenderGraph>();
 		}
-		else if (AVModeType::AV_MODE_TYPE_DECODE == conf.type)
+		else if (AVModeType::AV_MODE_TYPE_BGR24_CONVERT == conf.type)
 		{
-			graph = boost::make_shared<RealplayStreamDecoderGraph>();
-		}
-		else if (AVModeType::AV_MODE_TYPE_ENCODE == conf.type)
-		{
-//			graph = boost::make_shared<RealplayStreamDecoderGraph>();
+			graph = boost::make_shared<RealplayStreamBGR24ConvertGraph>();
 		}
 
 		if (graph)
 		{
-			ret = graph->createNew(conf.hwnd);
+			ret = graph->createNew(conf);
 			if (Error_Code_Success == ret)
 			{
 				graphs.add(conf.id, graph);

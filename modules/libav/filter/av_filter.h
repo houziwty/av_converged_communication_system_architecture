@@ -24,7 +24,7 @@ namespace module
 	{
 		namespace stream
 		{
-			typedef enum class tagAVFilterType_t : int
+			typedef enum class tagAVFilterType_t : uint32_t
 			{
 				AV_FILTER_TYPE_NONE = 0, 
 				AV_FILTER_TYPE_SOURCE, 
@@ -32,13 +32,12 @@ namespace module
 				AV_FILTER_TYPE_TARGET
 			}AVFilterType;
 
-			typedef struct tagAVFilterConf_t
+			typedef enum class tagAVFilterConf_t : uint32_t
 			{
-				int flag;					//flag表示过滤器创建的音视频针脚
-											//1表示只创建视频针脚
-											//2表示只创建音频针脚
-											//3表示同时创建音视频针脚
-				void* hwnd;					//hwnd表示视频播放窗口
+				AV_FILTER_CONF_NONE = 0,
+				AV_FILTER_CONF_AV, 
+				AV_FILTER_CONF_VIDEO, 
+				AV_FILTER_CONF_AUDIO
 			}AVFilterConf;
 
 			class AVPkt;
@@ -51,7 +50,10 @@ namespace module
 			{
 			public:
 				//@type [in] : 过滤器类型
-				AVFilter(const AVFilterType type = AVFilterType::AV_FILTER_TYPE_NONE);
+				//@conf [in] : 配置参数
+				AVFilter(
+					const AVFilterType type = AVFilterType::AV_FILTER_TYPE_NONE, 
+					const AVFilterConf conf = AVFilterConf::AV_FILTER_CONF_NONE);
 				virtual ~AVFilter(void);
 
 			public:
@@ -61,9 +63,9 @@ namespace module
 				AVPinRef query(const std::string name);
 
 				//创建
-				//@param [in] : 参数
+				//@conf [in] : 配置参数
 				//@Return : 错误码
-				virtual int createNew(void* param = nullptr);
+				virtual int createNew(const AVModeConf& conf);
 
 				//销毁
 				//@Return : 错误码
@@ -77,6 +79,7 @@ namespace module
 
 			protected:
 				const AVFilterType filterType;
+				const AVFilterConf filterConf;
 				AVPinPtrs avpins;
 			};//class AVFilter
 		}//namespace stream

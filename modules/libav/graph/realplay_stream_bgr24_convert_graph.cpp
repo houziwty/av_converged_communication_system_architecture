@@ -2,31 +2,31 @@
 #include "defs.h"
 #include "error_code.h"
 #include "pin/av_pin.h"
-#include "filter/parser/av_pkt_parser_filter.h"
+#include "filter/parser/av_buffer_parser_filter.h"
+#include "filter/parser/av_ps_parser_filter.h"
 #include "filter/decoder/av_frame_decoder_filter.h"
-#include "filter/encoder/av_frame_encoder_filter.h"
 #include "filter/converter/av_frame_converter_filter.h"
-#include "filter/callback/av_data_callback_filter.h"
-#include "realplay_stream_decoder_graph.h"
+#include "realplay_stream_bgr24_convert_graph.h"
 using namespace module::av::stream;
 
-RealplayStreamDecoderGraph::RealplayStreamDecoderGraph()
+RealplayStreamBGR24ConvertGraph::RealplayStreamBGR24ConvertGraph()
 	: AVGraph()
 {}
 
-RealplayStreamDecoderGraph::~RealplayStreamDecoderGraph()
+RealplayStreamBGR24ConvertGraph::~RealplayStreamBGR24ConvertGraph()
 {}
 
-int RealplayStreamDecoderGraph::createNew(void* /*param = nullptr*/)
+int RealplayStreamBGR24ConvertGraph::createNew(const AVModeConf& conf)
 {
 	int ret{Error_Code_Bad_New_Object};
-	AVParserModeConf bufferParserConf{1, AVParserType::AV_PARSER_TYPE_BUFFER_PARSER}, 
-			psParserConf{1, AVParserType::AV_PARSER_TYPE_PS_PARSER};
-	AVFilterPtr bufferParserPtr{boost::make_shared<AVPktParserFilter>(AVFilterType::AV_FILTER_TYPE_SOURCE)};
-	AVFilterPtr psParserPtr{boost::make_shared<AVPktParserFilter>(AVFilterType::AV_FILTER_TYPE_MEDIUM)};
-	AVFilterPtr videoDecoderPtr{boost::make_shared<AVFrameDecoderFilter>()};
-	AVFilterPtr imageConverterPtr{boost::make_shared<AVFrameConverterFilter>()};
-	AVFilterPtr dataCallbackPtr{boost::make_shared<AVDataCallbackFilter>()};
+	AVFilterPtr bufferParserPtr{
+		boost::make_shared<AVBufferParserFilter>(AVFilterType::AV_FILTER_TYPE_SOURCE)};
+	AVFilterPtr psParserPtr{
+		boost::make_shared<AVPSParserFilter>(AVFilterType::AV_FILTER_TYPE_MEDIUM)};
+	AVFilterPtr videoDecoderPtr{
+		boost::make_shared<AVFrameDecoderFilter>(AVFilterType::AV_FILTER_TYPE_MEDIUM)};
+	AVFilterPtr imageConverterPtr{
+		boost::make_shared<AVFrameConverterFilter>(AVFilterType::AV_FILTER_TYPE_TARGET)};
 
 	if (bufferParserPtr && Error_Code_Success == bufferParserPtr->createNew(&bufferParserConf) && 
 		psParserPtr && Error_Code_Success == psParserPtr->createNew(&psParserConf) && 
@@ -45,7 +45,7 @@ int RealplayStreamDecoderGraph::createNew(void* /*param = nullptr*/)
 	return Error_Code_Success == ret ? AVGraph::createNew() : ret;
 }
 
-int RealplayStreamDecoderGraph::connectPin()
+int RealplayStreamBGR24ConvertGraph::connectPin()
 {
 	int ret{0 < avfilters.values().size() ? Error_Code_Success : Error_Code_Object_Not_Exist};
 

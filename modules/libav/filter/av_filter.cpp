@@ -5,8 +5,10 @@
 #include "av_filter.h"
 using namespace module::av::stream;
 
-AVFilter::AVFilter(const AVFilterType type /* = AVFilterType::AV_FILTER_TYPE_NONE */)
-	: filterType{type}
+AVFilter::AVFilter(
+	const AVFilterType type /* = AVFilterType::AV_FILTER_TYPE_NONE */, 
+	const AVFilterConf conf /*= AVFilterConf::AV_FILTER_CONF_NONE*/)
+	: filterType{type}, filterConf{conf}
 {}
 
 AVFilter::~AVFilter()
@@ -19,14 +21,12 @@ AVPinRef AVFilter::query(const std::string name)
 	return avpins.at(name);
 }
 
-int AVFilter::createNew(void* param/* = nullptr*/)
+int AVFilter::createNew(const AVModeConf& conf)
 {
 	if(0 < avpins.values().size())
 	{
 		return Error_Code_Object_Existed;
 	}
-
-	AVFilterConf* conf{reinterpret_cast<AVFilterConf*>(param)};
 
 	if (AVFilterType::AV_FILTER_TYPE_SOURCE == filterType ||
 		AVFilterType::AV_FILTER_TYPE_MEDIUM == filterType)
@@ -36,13 +36,15 @@ int AVFilter::createNew(void* param/* = nullptr*/)
 		AVPinPtr audio_out_pin{
 			boost::make_shared<AVPin>(*this, AVPinType::PIN_TYPE_OUTPUT)};
 
-		//不做位移判断就是要确定标志位值是1、2或3
-		//其他值处理
-		if (video_out_pin && (1 == conf->flag || 3 == conf->flag))
+		//动态针脚实例创建
+		if (video_out_pin && 
+			(AVFilterConf::AV_FILTER_CONF_AV == filterConf || AVFilterConf::AV_FILTER_CONF_VIDEO == filterConf))
 		{
 			avpins.add(av_video_output_pin_name, video_out_pin);
 		}
-		if (audio_out_pin && (2 == conf->flag || 3 == conf->flag))
+		
+		if (audio_out_pin && 
+			(AVFilterConf::AV_FILTER_CONF_AV == filterConf || AVFilterConf::AV_FILTER_CONF_AUDIO == filterConf))
 		{
 			avpins.add(av_audio_output_pin_name, audio_out_pin);
 		}
@@ -56,13 +58,14 @@ int AVFilter::createNew(void* param/* = nullptr*/)
 		AVPinPtr audio_in_pin{
 			boost::make_shared<AVPin>(*this, AVPinType::PIN_TYPE_INPUT)};
 
-		//不做位移判断就是要确定标志位值是1、2或3
-		//其他值处理
-		if (video_in_pin && (1 == conf->flag || 3 == conf->flag))
+		//动态针脚实例创建
+		if (video_in_pin && 
+			(AVFilterConf::AV_FILTER_CONF_AV == filterConf || AVFilterConf::AV_FILTER_CONF_VIDEO == filterConf))
 		{
 			avpins.add(av_video_input_pin_name, video_in_pin);
 		}
-		if (audio_in_pin && (2 == conf->flag || 3 == conf->flag))
+		if (audio_in_pin && 
+			(AVFilterConf::AV_FILTER_CONF_AV == filterConf || AVFilterConf::AV_FILTER_CONF_AUDIO == filterConf))
 		{
 			avpins.add(av_audio_input_pin_name, audio_in_pin);
 		}

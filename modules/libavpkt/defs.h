@@ -44,6 +44,10 @@ typedef enum class tagAVSubType_t : uint32_t
 	AV_SUB_TYPE_B, 
 	AV_SUB_TYPE_P, 
 	AV_SUB_TYPE_YUV420P, 
+<<<<<<< HEAD
+=======
+	AV_SUB_TYPE_RGB24, 
+>>>>>>> 988daff8f78d5aa9a26ee4853f763da606d880b4
 	AV_SUB_TYPE_BGR24, 
 	AV_SUB_TYPE_JPEG, 
 	AV_SUB_TYPE_PNG, 

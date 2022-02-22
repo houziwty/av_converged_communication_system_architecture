@@ -17,6 +17,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 		libavutil.a 
 		libswscale.a
 		avpkt)
+	add_definitions(-D__STDC_CONSTANT_MACROS)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(
 		BOOST_ROOT_DIR 
@@ -28,7 +29,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		FFMPEG_ROOT_DIR 
 		${3RDPART_DIR}/ffmpeg/x64/ffmpeg-n5.0-latest-win64-gpl-shared-5.0/include)
 	set(
-		FFMPEG_LIK_DIR 
+		FFMPEG_LINK_DIR 
 		${3RDPART_DIR}/ffmpeg/x64/ffmpeg-n5.0-latest-win64-gpl-shared-5.0/lib)
 	set(
 		AVPKT_LINK_DIR 
@@ -38,19 +39,21 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			LINK_LIBS 
 			${BOOST_LINK_DIR}/libboost_thread-vc142-mt-sgd-x64-1_78.lib
 			${BOOST_LINK_DIR}/libboost_chrono-vc142-mt-sgd-x64-1_78.lib
-			${FFMPEG_LIK_DIR}/avcodec.lib 
-			${FFMPEG_LIK_DIR}/avutil.lib 
+			${FFMPEG_LINK_DIR}/avcodec.lib 
+			${FFMPEG_LINK_DIR}/avutil.lib 
+			${FFMPEG_LINK_DIR}/swscale.lib 
 			${AVPKT_LINK_DIR}/avpkt.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(
 			LINK_LIBS 
 			${BOOST_LINK_DIR}/libboost_thread-vc142-mt-s-x64-1_78.lib
 			${BOOST_LINK_DIR}/libboost_chrono-vc142-mt-s-x64-1_78.lib 
-			${FFMPEG_LIK_DIR}/avcodec.lib 
-			${FFMPEG_LIK_DIR}/avutil.lib 
+			${FFMPEG_LINK_DIR}/avcodec.lib 
+			${FFMPEG_LINK_DIR}/avutil.lib 
+			${FFMPEG_LINK_DIR}/swscale.lib 
 			${AVPKT_LINK_DIR}/avpkt.lib)
 	endif()
-	add_definitions(-DUSE_MODULE_AV_PKT)
+	add_definitions(-DUSE_MODULE_AV_PKT -D__STDC_CONSTANT_MACROS)
 endif()
 
 set(LIB_ROOT_DIR ${ROOT_DIR}/modules/libavcodec)

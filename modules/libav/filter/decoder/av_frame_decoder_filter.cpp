@@ -1,28 +1,23 @@
-#include "error_code.h"
 #include "av_pkt.h"
+#include "error_code.h"
 #include "pin/av_pin.h"
 #include "av_frame_decoder_filter.h"
 using namespace module::av::stream;
 
-AVFrameDecoderFilter::AVFrameDecoderFilter() 
-	: AVFilter(AVFilterType::AV_FILTER_TYPE_MEDIUM), AVCodecNode()
+AVFrameDecoderFilter::AVFrameDecoderFilter(
+	const AVFilterType type/* = AVFilterType::AV_FILTER_TYPE_NONE*/) 
+	: AVFilter(type, AVFilterConf::AV_FILTER_CONF_VIDEO), AVCodecNode()
 {}
 
 AVFrameDecoderFilter::~AVFrameDecoderFilter()
 {}
 
-int AVFrameDecoderFilter::createNew(void* param/* = nullptr*/)
+int AVFrameDecoderFilter::createNew(const AVModeConf& conf)
 {
-	AVCodecModeConf conf{1, AVCodecType::AV_CODEC_TYPE_DECODE_H264};
-	int ret{ AVCodecNode::addConf(conf) };
-
-	if (Error_Code_Success == ret)
-	{
-		AVFilterConf conf{1, nullptr};
-		ret = AVFilter::createNew(&conf);
-	}
-	
-	return ret;
+	//解码ID默认为1
+	AVCodecModeConf codecConf{1, AVCodecType::AV_CODEC_TYPE_DECODE_H264};
+	int ret{ AVCodecNode::addConf(codecConf) };
+	return Error_Code_Success == ret ? AVFilter::createNew(conf) : ret;
 }
 
 int AVFrameDecoderFilter::destroy()
@@ -40,5 +35,17 @@ void AVFrameDecoderFilter::afterCodecDataNotification(
 	const uint32_t id/* = 0*/,  
 	const AVPkt* avpkt/* = nullptr*/)
 {
+	if (0 < id && avpkt)
+	{
+		const AVSubType subtype{avpkt->subtype()};
 
+		if (AVSubType::AV_SUB_TYPE_YUV420P == subtype)
+		{
+			AVPinRef pin{AVFilter::query(av_video_output_pin_name)};
+			if (!pin.expired())
+			{
+				pin.lock()->input(avpkt);
+			}
+		}
+	}
 }
