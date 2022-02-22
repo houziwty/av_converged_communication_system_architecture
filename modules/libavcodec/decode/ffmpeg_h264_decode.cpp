@@ -4,6 +4,7 @@ extern "C"
 #include "libavformat/avformat.h"
 #include "libavcodec/avcodec.h"
 #include "libswscale/swscale.h"
+#include "libavutil/imgutils.h"
 }
 #endif//__cplusplus
 #include "av_pkt.h"
@@ -14,7 +15,8 @@ using namespace module::av::stream;
 FFmpegH264Decode::FFmpegH264Decode(
     AVCodecDataCallback callback, 
 	const uint32_t id/* = 0*/) 
-    : AVcodec(callback, id), ctx{nullptr}, codec{nullptr}, bgr24{nullptr}, cvt{nullptr}, bgr24Frame{nullptr}, picture{nullptr}
+    : AVcodec(callback, id), ctx{nullptr}, codec{nullptr}, bgr24{nullptr}, 
+    cvt{nullptr}, bgr24Frame{nullptr}, picture{nullptr}, bgr24Bytes{0}
 {}
 
 FFmpegH264Decode::~FFmpegH264Decode()
@@ -33,7 +35,7 @@ int FFmpegH264Decode::input(const AVPkt* avpkt/* = nullptr*/)
             ret = initDecode();
         }
 
-        if (ctx && codec/* && cvt*/)
+        if (ctx && codec)
         {
             AVPacket* pkt{av_packet_alloc()};
 			pkt->data = (uint8_t*)avpkt->data();
@@ -56,9 +58,23 @@ int FFmpegH264Decode::input(const AVPkt* avpkt/* = nullptr*/)
                 static FILE* fd{ nullptr };
                 if (!fd)
                 {
-                    fd = fopen("d:\\decode.yuv", "wb+");
+                    fd = fopen("C:\\Users\\Colin\\decode.yuv", "wb+");
                 }
-                fwrite(((AVFrame*)picture)->data, ((AVFrame*)picture)->linesize, 1, fd);
+                av_image_copy_to_buffer(
+                    bgr24, bgr24Bytes, 
+                    (const uint8_t * const *)(((AVFrame*)picture)->data),
+                    (const int *)(((AVFrame*)picture)->linesize), 
+                    AV_PIX_FMT_YUV420P, 
+                    1920, 1080, 1);
+                fwrite(bgr24, bgr24Bytes, 1, fd);
+
+                if (avcodecDataCallback)
+                {
+                    AVPkt avpkt{AVMainType::AV_MAIN_TYPE_IMAGE, AVSubType::AV_SUB_TYPE_YUV420P};
+                    avpkt.input(bgr24, bgr24Bytes);
+                    avcodecDataCallback(cid, &avpkt);
+                }
+                
             }
 
             av_packet_unref(pkt);
@@ -83,11 +99,10 @@ int FFmpegH264Decode::initDecode()
         {
             bgr24Frame = av_frame_alloc();
             picture = av_frame_alloc();
-//             bgr24 = (uint8_t*)av_malloc(
-//                 av_samples_get_buffer_size(AVPixelFormat::AV_PIX_FMT_BGR24, 1920, 1080,/*codecctx->width, codecctx->height*/ 1));
-//             av_samples_fill_arrays(
-//                 ((AVFrame*)bgr24Frame)->data, ((AVFrame*)bgr24Frame)->linesize, bgr24, AV_PIX_FMT_BGR24, 
-//                 1920, 1080,/*codecctx->width, codecctx->height*/ 1);
+            bgr24Bytes = av_image_get_buffer_size(AV_PIX_FMT_YUV420P, 1920, 1080,/*codecctx->width, codecctx->height*/ 1);
+            bgr24 = (uint8_t*)av_malloc(bgr24Bytes);
+            // av_image_fill_(
+            //     picture, bgr24, AV_PIX_FMT_YUV420P, 1920, 1080,/*codecctx->width, codecctx->height*/ 1);
 // //	        struct SwsContext *img_convert_ctx;
 // 	        cvt = sws_getContext(
 //                 1920, 1080,/*codecctx->width, codecctx->height*/ AV_PIX_FMT_NV12, 
