@@ -43,7 +43,7 @@ int FFmpegPictureConvert::input(const AVPkt* avpkt/* = nullptr*/)
 
             if (0 < height)
             {
-				AVPkt _avpkt{ AVMainType::AV_MAIN_TYPE_IMAGE, AVSubType::AV_SUB_TYPE_RGB24 };
+				AVPkt _avpkt{ AVMainType::AV_MAIN_TYPE_IMAGE, AVSubType::AV_SUB_TYPE_BGR24 };
                 _avpkt.input(rgb24, rgb24Bytes);
 
 				if (avcodecDataCallback)

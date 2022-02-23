@@ -1,13 +1,13 @@
 //
 //		Copyright : @2021, ***, All Rights Reserved
 //
-//		Author : Íõ¿ÆÍþ
+//		Author : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //		E-mail : wangkw531@hotmail.com
 //		Date : 2022-02-21
-//		Description : D3DÊÓÆµÏÔÊ¾Æ÷
+//		Description : D3Dï¿½ï¿½Æµï¿½ï¿½Ê¾ï¿½ï¿½
 //
 //		History:
-//					1. 2022-02-21 ÓÉÍõ¿ÆÍþ´´½¨
+//					1. 2022-02-21 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //
 
 #ifndef MODULE_AV_STREAM_D3D_VIDEO_RENDER_H
@@ -15,7 +15,7 @@
 
 #include <d3d9.h>
 #include "av/d3dx9/d3dx9core.h"
-#include "video_render.h"
+#include "av_player.h"
 
 namespace module
 {
@@ -23,10 +23,10 @@ namespace module
 	{
 		namespace stream
 		{
-			class D3D : public VideoRender
+			class D3D : public AVPlayer
 			{
 			public:
-				D3D(void* hwnd = nullptr, const uint32_t id = 0);
+				D3D(const uint32_t id = 0, void* hwnd = nullptr);
 				~D3D(void);
 
 			public:

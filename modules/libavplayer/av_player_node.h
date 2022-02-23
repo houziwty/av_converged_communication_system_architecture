@@ -4,14 +4,14 @@
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
 //		Date : 2022-02-21
-//		Description : 视频显示节点
+//		Description : AV播放节点
 //
 //		History:
 //					1. 2022-02-21 由王科威创建
 //
 
-#ifndef MODULE_AV_STREAM_VIDEO_RENDER_NODE_H
-#define MODULE_AV_STREAM_VIDEO_RENDER_NODE_H
+#ifndef MODULE_AV_STREAM_AV_PLAYER_NODE_H
+#define MODULE_AV_STREAM_AV_PLAYER_NODE_H
 
 #include "defs.h"
 
@@ -23,33 +23,33 @@ namespace module
 		{
 			class AVPkt;
 
-			class VIDEO_RENDER_EXPORT VideoRenderNode
+			class AV_PLAYER_EXPORT AVPlayerNode
 			{
 			public:
-				VideoRenderNode(void);
-				virtual ~VideoRenderNode(void);
+				AVPlayerNode(void);
+				virtual ~AVPlayerNode(void);
 
 			public:
-				//添加视频显示
-				//@conf [in] : 视频显示参数
+				//添加播放器
+				//@conf [in] : 播放器参数
 				//@Return : 错误码
-				int addConf(const VideoRenderModeConf& conf);
+				int addConf(const AVPlayerModeConf& conf);
 
-				//删除视频显示
-				//@id [in] : 视频显示ID
+				//删除播放器
+				//@id [in] : 播放器ID
 				//@Return : 错误码
 				int removeConf(const uint32_t id = 0);
 
 				//输入数据
-				//@id [in] : 视频显示ID
+				//@id [in] : 播放器ID
 				//@avpkt [in] : 数据包
 				//@Return : 错误码
 				int input(
 					const uint32_t id = 0, 
 					const AVPkt* avpkt = nullptr);
-			};//class VideoRenderNode
+			};//class AVPlayerNode
 		}//namespace stream
 	}//namespace av
 }//namespace module
 
-#endif//MODULE_AV_STREAM_VIDEO_RENDER_NODE_H
+#endif//MODULE_AV_STREAM_AV_PLAYER_NODE_H

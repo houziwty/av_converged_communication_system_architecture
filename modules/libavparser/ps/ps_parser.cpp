@@ -66,13 +66,9 @@ int PSParser::parsedPSPacketCallback(
         {
             AVMainType maintype{AVMainType::AV_MAIN_TYPE_NONE};
 
-            if(PSI_STREAM_H264 == codecid)
+            if(PSI_STREAM_H264 == codecid || PSI_STREAM_H265 == codecid)
             {
-                maintype = AVMainType::AV_MAIN_TYPE_STANDARD_H264;
-            }
-            else if(PSI_STREAM_H265 == codecid)
-            {
-                maintype = AVMainType::AV_MAIN_TYPE_STANDARD_H265;
+                maintype = AVMainType::AV_MAIN_TYPE_VIDEO;
             }
 
             AVSubType subtype{AVSubType::AV_SUB_TYPE_NONE};
@@ -80,10 +76,6 @@ int PSParser::parsedPSPacketCallback(
             if (1 == flags)
             {
                 subtype = AVSubType::AV_SUB_TYPE_IDR;
-            }
-            else if(0x8000 == flags)
-            {
-                subtype = AVSubType::AV_SUB_TYPE_VIDEO;
             }
 
             AVPkt avpkt{maintype, subtype, pts, dts};

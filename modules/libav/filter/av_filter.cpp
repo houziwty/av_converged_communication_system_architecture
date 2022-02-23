@@ -1,15 +1,12 @@
 #include "boost/make_shared.hpp"
-#include "av_pkt.h"
 #include "error_code.h"
-#include "defs.h"
 #include "pin/av_pin.h"
 #include "av_filter.h"
 using namespace module::av::stream;
 
 AVFilter::AVFilter(
-	const AVFilterType type /* = AVFilterType::AV_FILTER_TYPE_NONE */, 
-	const AVFilterConf conf /*= AVFilterConf::AV_FILTER_CONF_NONE*/)
-	: filterType{type}, filterConf{conf}
+	const AVFilterType type /* = AVFilterType::AV_FILTER_TYPE_NONE */)
+	: filterType{type}
 {}
 
 AVFilter::~AVFilter()
@@ -32,43 +29,29 @@ int AVFilter::createNew(const AVModeConf& conf)
 	if (AVFilterType::AV_FILTER_TYPE_SOURCE == filterType ||
 		AVFilterType::AV_FILTER_TYPE_MEDIUM == filterType)
 	{
-		AVPinPtr video_out_pin{
+		AVPinPtr out{
 			boost::make_shared<AVPin>(*this, AVPinType::PIN_TYPE_OUTPUT)};
-		AVPinPtr audio_out_pin{
-			boost::make_shared<AVPin>(*this, AVPinType::PIN_TYPE_OUTPUT)};
-
-		//动态针脚实例创建
-		if (video_out_pin && 
-			(AVFilterConf::AV_FILTER_CONF_AV == filterConf || AVFilterConf::AV_FILTER_CONF_VIDEO == filterConf))
-		{
-			avpins.add(av_video_output_pin_name, video_out_pin);
-		}
 		
-		if (audio_out_pin && 
-			(AVFilterConf::AV_FILTER_CONF_AV == filterConf || AVFilterConf::AV_FILTER_CONF_AUDIO == filterConf))
+		if (out)
 		{
-			avpins.add(av_audio_output_pin_name, audio_out_pin);
+			avpins.add(av_output_pin_name, out);
 		}
 	}
 
 	if (AVFilterType::AV_FILTER_TYPE_TARGET == filterType ||
 		AVFilterType::AV_FILTER_TYPE_MEDIUM == filterType)
 	{
-		AVPinPtr video_in_pin{
+		AVPinPtr in{
 			boost::make_shared<AVPin>(*this, AVPinType::PIN_TYPE_INPUT)};
-		AVPinPtr audio_in_pin{
-			boost::make_shared<AVPin>(*this, AVPinType::PIN_TYPE_INPUT)};
-
-		//动态针脚实例创建
-		if (video_in_pin && 
-			(AVFilterConf::AV_FILTER_CONF_AV == filterConf || AVFilterConf::AV_FILTER_CONF_VIDEO == filterConf))
+		
+		if (in)
 		{
-			avpins.add(av_video_input_pin_name, video_in_pin);
+			avpins.add(av_input_pin_name, in);
 		}
-		if (audio_in_pin && 
-			(AVFilterConf::AV_FILTER_CONF_AV == filterConf || AVFilterConf::AV_FILTER_CONF_AUDIO == filterConf))
+
+		if (AVFilterType::AV_FILTER_TYPE_TARGET == filterType)
 		{
-			avpins.add(av_audio_input_pin_name, audio_in_pin);
+			avframeDataCallback = conf.callback;
 		}
 	}
 
@@ -87,31 +70,18 @@ int AVFilter::input(const AVPkt* avpkt/* = nullptr*/)
 
 	if (Error_Code_Success == ret)
 	{
-		const AVMainType maintype{avpkt->maintype()};
-		AVPinRef pin;
-
-		if (AVMainType::AV_MAIN_TYPE_MUXER == maintype || 
-			AVMainType::AV_MAIN_TYPE_VIDEO == maintype)
-		{
-			pin = AVFilter::query(av_video_output_pin_name);
-		}
-		else if (AVMainType::AV_MAIN_TYPE_AUDIO == maintype)
-		{
-			pin = AVFilter::query(av_audio_output_pin_name);
-		}
-
-		//It must be one.
-		if (!pin.expired())
-		{
-			ret = pin.lock()->input(avpkt);
-		}
-		else if (avframeDataCallback)
+		if (AVFilterType::AV_FILTER_TYPE_TARGET == filterType && avframeDataCallback)
 		{
 			avframeDataCallback(avpkt);
 		}
 		else
 		{
-			ret = Error_Code_Operate_Failure;
+			AVPinRef out{AVFilter::query(av_output_pin_name)};
+
+			if (!out.expired())
+			{
+				ret = out.lock()->input(avpkt);
+			}
 		}
 	}
 	

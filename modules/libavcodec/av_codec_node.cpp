@@ -35,7 +35,7 @@ int AVCodecNode::addConf(const AVCodecModeConf& conf)
 				boost::bind(&AVCodecNode::afterCodecDataNotification, this, _1, _2), 
 				conf.id);
 		}
-		else if (AVCodecType::AV_CODEC_TYPE_PICTURE_CONVERT == conf.type)
+		else if (AVCodecType::AV_CODEC_TYPE_YUV420P_2_BGR24 == conf.type)
 		{
 			codec = boost::make_shared<FFmpegPictureConvert>(
 				boost::bind(&AVCodecNode::afterCodecDataNotification, this, _1, _2), 

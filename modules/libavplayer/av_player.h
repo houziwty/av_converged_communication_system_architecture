@@ -4,14 +4,14 @@
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
 //		Date : 2022-02-21
-//		Description : 视频显示器
+//		Description : AV播放器
 //
 //		History:
 //					1. 2022-02-21 由王科威创建
 //
 
-#ifndef MODULE_AV_STREAM_VIDE_RENDER_H
-#define MODULE_AV_STREAM_VIDE_RENDER_H
+#ifndef MODULE_AV_STREAM_AV_PLAYER_H
+#define MODULE_AV_STREAM_AV_PLAYER_H
 
 #include "defs.h"
 
@@ -23,11 +23,11 @@ namespace module
 		{
 			class AVPkt;
 
-			class VideoRender
+			class AVPlayer
 			{
 			public:
-				VideoRender(const uint32_t id = 0);
-				virtual ~VideoRender(void);
+				AVPlayer(const uint32_t id = 0);
+				virtual ~AVPlayer(void);
 
 			public:
 				//输入数据
@@ -37,9 +37,9 @@ namespace module
 
 			protected:
 				const uint32_t cid;
-			};//class VideoRender
+			};//class AVPlayer
 		}//namespace stream
 	}//namespace av
 }//namespace module
 
-#endif//MODULE_AV_STREAM_VIDE_RENDER_H
+#endif//MODULE_AV_STREAM_AV_PLAYER_H

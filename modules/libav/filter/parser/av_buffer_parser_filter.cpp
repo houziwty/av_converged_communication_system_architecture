@@ -5,7 +5,7 @@ using namespace module::av::stream;
 
 AVBufferParserFilter::AVBufferParserFilter(
 	const AVFilterType type/* = AVFilterType::AV_FILTER_TYPE_NONE*/) 
-	: AVFilter(type, AVFilterConf::AV_FILTER_CONF_VIDEO), AVParserNode()
+	: AVFilter(type), AVParserNode()
 {}
 
 AVBufferParserFilter::~AVBufferParserFilter()
@@ -14,19 +14,18 @@ AVBufferParserFilter::~AVBufferParserFilter()
 int AVBufferParserFilter::createNew(const AVModeConf& conf)
 {
 	//解析ID默认为1
-	AVParserModeConf parserConf{1, AVParserModeConf::AV_PARSER_TYPE_BUFFER_PARSER};
+	AVParserModeConf parserConf{1, AVParserType::AV_PARSER_TYPE_BUFFER_PARSER};
 	int ret{ AVParserNode::addConf(parserConf) };
 	return Error_Code_Success == ret ? AVFilter::createNew(conf) : ret;
 }
 
 int AVBufferParserFilter::destroy()
 {
-	int ret{AVFilter::destroy()};
-	return Error_Code_Success == ret ? AVParserNode::removeConf(1) : ret;
+	int ret{AVParserNode::removeConf(1)};
+	return Error_Code_Success == ret ? AVFilter::destroy() : ret;
 }
 
-int AVBufferParserFilter::input(
-	const AVPkt* avpkt/* = nullptr*/)
+int AVBufferParserFilter::input(const AVPkt* avpkt/* = nullptr*/)
 {
 	return AVParserNode::input(1, avpkt);
 }
@@ -37,6 +36,6 @@ void AVBufferParserFilter::afterParsedDataNotification(
 {
 	if (0 < id && avpkt)
 	{
-		
+		AVFilter::input(avpkt);
 	}
 }

@@ -4,8 +4,8 @@
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
 //		Date : 2022-02-15
-//		Description : AV数据解析节点
-//						1.PS转PES
+//		Description : AV解析节点
+//						1.PS封装解析
 //						2.缓存解析
 //
 //		History:

@@ -32,14 +32,6 @@ namespace module
 				AV_FILTER_TYPE_TARGET
 			}AVFilterType;
 
-			typedef enum class tagAVFilterConf_t : uint32_t
-			{
-				AV_FILTER_CONF_NONE = 0,
-				AV_FILTER_CONF_AV, 
-				AV_FILTER_CONF_VIDEO, 
-				AV_FILTER_CONF_AUDIO
-			}AVFilterConf;
-
 			class AVPkt;
 			class AVPin;
 			using AVPinRef = boost::weak_ptr<AVPin>;
@@ -50,10 +42,8 @@ namespace module
 			{
 			public:
 				//@type [in] : 过滤器类型
-				//@conf [in] : 配置参数
 				AVFilter(
-					const AVFilterType type = AVFilterType::AV_FILTER_TYPE_NONE, 
-					const AVFilterConf conf = AVFilterConf::AV_FILTER_CONF_NONE);
+					const AVFilterType type = AVFilterType::AV_FILTER_TYPE_NONE);
 				virtual ~AVFilter(void);
 
 			public:
@@ -79,7 +69,6 @@ namespace module
 
 			protected:
 				const AVFilterType filterType;
-				const AVFilterConf filterConf;
 				AVPinPtrs avpins;
 				AVFrameDataCallback avframeDataCallback;
 			};//class AVFilter

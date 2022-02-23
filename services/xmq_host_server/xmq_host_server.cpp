@@ -121,7 +121,7 @@ void XmqHostServer::checkRegisterExpiredOfServiceThread()
         for (int i = 0; i != keies.size(); ++i)
         {
             const uint64_t tick{registeredServices.at(keies[i])};
-            const uint32_t diff{startTickCount > tick ? startTickCount - tick : tick - startTickCount};
+            const uint64_t diff{startTickCount > tick ? startTickCount - tick : tick - startTickCount};
 
             if (diff > 90000)
             {

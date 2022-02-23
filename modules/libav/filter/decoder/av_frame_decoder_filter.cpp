@@ -1,4 +1,3 @@
-#include "av_pkt.h"
 #include "error_code.h"
 #include "pin/av_pin.h"
 #include "av_frame_decoder_filter.h"
@@ -6,7 +5,7 @@ using namespace module::av::stream;
 
 AVFrameDecoderFilter::AVFrameDecoderFilter(
 	const AVFilterType type/* = AVFilterType::AV_FILTER_TYPE_NONE*/) 
-	: AVFilter(type, AVFilterConf::AV_FILTER_CONF_VIDEO), AVCodecNode()
+	: AVFilter(type), AVCodecNode()
 {}
 
 AVFrameDecoderFilter::~AVFrameDecoderFilter()
@@ -22,8 +21,8 @@ int AVFrameDecoderFilter::createNew(const AVModeConf& conf)
 
 int AVFrameDecoderFilter::destroy()
 {
-	int ret{AVFilter::destroy()};
-	return Error_Code_Success == ret ? AVCodecNode::removeConf(1) : ret;
+	int ret{AVCodecNode::removeConf(1)};
+	return Error_Code_Success == ret ? AVFilter::destroy() : ret;
 }
 
 int AVFrameDecoderFilter::input(const AVPkt* avpkt/* = nullptr*/)
@@ -37,15 +36,6 @@ void AVFrameDecoderFilter::afterCodecDataNotification(
 {
 	if (0 < id && avpkt)
 	{
-		const AVSubType subtype{avpkt->subtype()};
-
-		if (AVSubType::AV_SUB_TYPE_YUV420P == subtype)
-		{
-			AVPinRef pin{AVFilter::query(av_video_output_pin_name)};
-			if (!pin.expired())
-			{
-				pin.lock()->input(avpkt);
-			}
-		}
+		AVFilter::input(avpkt);
 	}
 }

@@ -34,8 +34,8 @@ typedef std::function<void(const void*)> AVFrameDataCallback;
 typedef enum class tagAVModeType_t : uint32_t
 {
     AV_MODE_TYPE_NONE = 0, 
-    AV_MODE_TYPE_BGR24_CONVERT, 
-    AV_MODE_TYPE_RENDER
+    AV_MODE_TYPE_GRAB_BRG24, 
+    AV_MODE_TYPE_STREAM_PLAY
 }AVModeType;
 
 //AV流图角色配置
@@ -44,21 +44,18 @@ typedef struct tagAVModeConf_t
     uint32_t id;                      //>0，由调用者分配
     AVModeType type;
     void* hwnd;                       //视频播放窗口
-    AVFrameDataCallback callback;     //仅当AV_MODE_TYPE_VIDEO_ANALYSIS == type时有效
+    AVFrameDataCallback callback;     //仅当AV_MODE_TYPE_GRAB_BRG24 == type时有效
 }AVModeConf;
 
 //AV过滤器名称
 static const char* av_buffer_parser_filter_name = "av_buffer_parser_filter";
-static const char* av_ps_parser_filter_name = "av_ps_parser_filter";
-static const char* av_video_decoder_filter_name = "av_video_decoder_filter";
-static const char* av_image_converter_filter_name = "av_image_converter_filter";
-static const char* av_video_render_filter_name = "av_video_render_filter";
-static const char* av_data_callback_filter_name = "av_data_callback_filter";
+static const char* av_frame_parser_filter_name = "av_frame_parser_filter";
+static const char* av_frame_decoder_filter_name = "av_frame_decoder_filter";
+static const char* av_frame_converter_filter_name = "av_frame_converter_filter";
+static const char* av_frame_player_filter_name = "av_frame_player_filter";
 
 //AV针脚名称
-static const char* av_video_input_pin_name = "av_video_input_pin";
-static const char* av_video_output_pin_name = "av_video_output_pin";
-static const char* av_audio_input_pin_name = "av_audio_input_pin";
-static const char* av_audio_output_pin_name = "av_audio_output_pin";
+static const char* av_input_pin_name = "av_input_pin";
+static const char* av_output_pin_name = "av_output_pin";
 
 #endif//MODULE_AV_STREAM_AV_STREAM_DEFS_H

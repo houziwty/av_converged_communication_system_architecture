@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "av_pkt.h"
 #include "error_code.h"
 #include "d3d_device.h"
@@ -9,8 +8,8 @@
 #include "d3d.h"
 using namespace module::av::stream;
 
-D3D::D3D(void* hwnd /* = nullptr */, const uint32_t id /* = 0 */)
-	: VideoRender(id), displayHwnd{ hwnd }, d3d9{ nullptr }, d3d9Device{ nullptr }, 
+D3D::D3D(const uint32_t id /* = 0 */, void* hwnd /* = nullptr */)
+	: AVPlayer(id), displayHwnd{ hwnd }, d3d9{ nullptr }, d3d9Device{ nullptr }, 
 	d3d9PixelShader{ nullptr }, d3d9VertexBuffer{ nullptr }, d3dxFont{ nullptr }
 {
 	d3d9Texture[0] = d3d9Texture[1] = d3d9Texture[2] = nullptr;
@@ -118,16 +117,16 @@ int D3D::draw(
 {
 	int u_pos{ 0 }, v_pos{ 0 };
 
-	//	if (FrameType::FrameIYUV == mediaData.frame)
-	{
+//	if (FrameType::FrameIYUV == mediaData.frame)
+//	{
 		u_pos = width * height;
 		v_pos = u_pos * 5 / 4;
-	}
-	// 	else if (FrameType::FrameYV12 == mediaData.frame)
-	// 	{
-	// 		tempOfPositionForU = tempOfPositionForU * 5 / 4;
-	// 		tempOfPositionForV = width * height;
-	// 	}
+//	}
+// 	else if (FrameType::FrameYV12 == mediaData.frame)
+// 	{
+// 		tempOfPositionForU = tempOfPositionForU * 5 / 4;
+// 		tempOfPositionForV = width * height;
+// 	}
 
 	D3DTexture().draw(d3d9Texture[0], data, width, height);
 	D3DTexture().draw(d3d9Texture[1], (uint8_t*)data + u_pos, width / 2, height / 2);
@@ -150,7 +149,7 @@ int D3D::draw(
 	d3dxLine->SetWidth(5);
 	HRESULT result = d3dxLine->Draw(vertex1, 5, D3DCOLOR_RGBA(255, 0, 0, 255));
 	RECT r1{ X, Y-35, X+W, Y+H };
-	D3DFont().text(r1, "Ä¿±êID-1", d3dxFont);
+	D3DFont().text(r1, "Ä¿ï¿½ï¿½ID-1", d3dxFont);
 
 	X = 300; Y = 400; W = 40; H = 120;
 	D3DXVECTOR2 vertex2[5] = { {X,Y},{X + W,Y},{X + W,Y + H},{X,Y + H},{X,Y} };
