@@ -1,4 +1,5 @@
 #include "boost/make_shared.hpp"
+#include "av_pkt.h"
 #include "error_code.h"
 #include "defs.h"
 #include "pin/av_pin.h"
@@ -78,4 +79,41 @@ int AVFilter::destroy()
 {
 	avpins.clear();
 	return Error_Code_Success;
+}
+
+int AVFilter::input(const AVPkt* avpkt/* = nullptr*/)
+{
+	int ret{avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
+
+	if (Error_Code_Success == ret)
+	{
+		const AVMainType maintype{avpkt->maintype()};
+		AVPinRef pin;
+
+		if (AVMainType::AV_MAIN_TYPE_MUXER == maintype || 
+			AVMainType::AV_MAIN_TYPE_VIDEO == maintype)
+		{
+			pin = AVFilter::query(av_video_output_pin_name);
+		}
+		else if (AVMainType::AV_MAIN_TYPE_AUDIO == maintype)
+		{
+			pin = AVFilter::query(av_audio_output_pin_name);
+		}
+
+		//It must be one.
+		if (!pin.expired())
+		{
+			ret = pin.lock()->input(avpkt);
+		}
+		else if (avframeDataCallback)
+		{
+			avframeDataCallback(avpkt);
+		}
+		else
+		{
+			ret = Error_Code_Operate_Failure;
+		}
+	}
+	
+	return ret;
 }

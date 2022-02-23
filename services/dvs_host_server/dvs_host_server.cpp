@@ -338,8 +338,8 @@ void DvsHostServer::afterPolledRealplayDataNotification(
             const uint32_t totalBytes{bytes + 32};
             char* frameData{ new(std::nothrow) char[totalBytes] };
             *((uint32_t*)frameData) = 0xFF050301;
-            *((uint32_t*)(frameData + 4)) = (uint32_t)AVMainType::AV_MAIN_TYPE_HK_PS;
-            *((uint32_t*)(frameData + 8)) = (uint32_t)AVSubType::AV_SUB_TYPE_VIDEO;
+            *((uint32_t*)(frameData + 4)) = (uint32_t)AVMainType::AV_MAIN_TYPE_VIDEO;
+            *((uint32_t*)(frameData + 8)) = (uint32_t)AVSubType::AV_SUB_TYPE_PS;
             *((uint32_t*)(frameData + 12)) = bytes;
             *((uint64_t*)(frameData + 16)) = 0;
             *((uint64_t*)(frameData + 24)) = 0;

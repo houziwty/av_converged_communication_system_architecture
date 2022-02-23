@@ -37,10 +37,6 @@ void AVBufferParserFilter::afterParsedDataNotification(
 {
 	if (0 < id && avpkt)
 	{
-		AVPinRef pin{AVFilter::query(av_video_output_pin_name)};
-		if (!pin.expired())
-		{
-			pin.lock()->input(avpkt);
-		}
+		
 	}
 }

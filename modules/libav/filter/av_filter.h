@@ -75,12 +75,13 @@ namespace module
 				//@avpkt [in] : 数据包
 				//@Return : 错误码
 				virtual int input(
-					const AVPkt* avpkt = nullptr) = 0;
+					const AVPkt* avpkt = nullptr);
 
 			protected:
 				const AVFilterType filterType;
 				const AVFilterConf filterConf;
 				AVPinPtrs avpins;
+				AVFrameDataCallback avframeDataCallback;
 			};//class AVFilter
 		}//namespace stream
 	}//namespace av

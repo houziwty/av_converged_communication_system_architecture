@@ -16,16 +16,14 @@ RealplayStreamRenderGraph::RealplayStreamRenderGraph()
 RealplayStreamRenderGraph::~RealplayStreamRenderGraph()
 {}
 
-int RealplayStreamRenderGraph::createNew(void* hwnd/* = nullptr*/)
+int RealplayStreamRenderGraph::createNew(const AVModeConf& conf)
 {
 	int ret{hwnd ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
-		AVFilterConf conf{1, hwnd};
-		AVParserModeConf bufferParserConf{1, AVParserType::AV_PARSER_TYPE_BUFFER_PARSER}, 
-			psParserConf{2, AVParserType::AV_PARSER_TYPE_PS_PARSER};
-		AVFilterPtr bufferParserPtr{boost::make_shared<AVPktParserFilter>(AVFilterType::AV_FILTER_TYPE_SOURCE)};
+		AVFilterPtr bufferParserPtr{
+			boost::make_shared<AVPktParserFilter>(AVFilterType::AV_FILTER_TYPE_SOURCE)};
 		AVFilterPtr psParserPtr{boost::make_shared<AVPktParserFilter>(AVFilterType::AV_FILTER_TYPE_MEDIUM)};
 		AVFilterPtr videoDecoderPtr{boost::make_shared<AVFrameDecoderFilter>()};
 		AVFilterPtr imageConverterPtr{boost::make_shared<AVFrameConverterFilter>()};

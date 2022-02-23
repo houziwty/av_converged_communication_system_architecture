@@ -43,11 +43,7 @@ namespace module
                 void* picture;
                 void* bgr24Frame;
                 uint8_t* bgr24;
-<<<<<<< HEAD
-                uint32_t bgr24Bytes;
-=======
                 int bgr24Bytes;
->>>>>>> 988daff8f78d5aa9a26ee4853f763da606d880b4
             };//class FFmpegH264Decode
         }//namespace stream
 	}//namespace av
