@@ -78,7 +78,7 @@ int PSParser::parsedPSPacketCallback(
                 subtype = AVSubType::AV_SUB_TYPE_IDR;
             }
 
-            AVPkt avpkt{maintype, subtype, pts, dts};
+            AVPkt avpkt{maintype, subtype, 0, 0};
             if(Error_Code_Success == avpkt.input(data, bytes) && 
                 parser->parsedDataCallback)
             {

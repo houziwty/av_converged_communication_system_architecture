@@ -43,9 +43,6 @@ namespace module
 					IDirect3DDevice9* device = nullptr,
 					ID3DXConstantTable* constant = nullptr,
 					IDirect3DTexture9** textures = nullptr);
-				int present(
-					IDirect3DDevice9* device = nullptr, 
-					IDirect3DVertexBuffer9* vertexBuffer = nullptr);
 			};//class D3DDevice
 		}//namespace stream
 	}//namespace av

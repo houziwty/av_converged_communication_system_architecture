@@ -172,25 +172,3 @@ int D3DDevice::setTexture(
 
 	return ret;
 }
-
-int D3DDevice::present(
-	IDirect3DDevice9* device /* = nullptr */, 
-	IDirect3DVertexBuffer9* vertexBuffer /* = nullptr */)
-{
-	int ret{ device && vertexBuffer ? Error_Code_Success : Error_Code_Invalid_Param };
-
-	if (Error_Code_Success == ret)
-	{
-		if (SUCCEEDED(device->BeginScene()) &&
-			SUCCEEDED(device->SetStreamSource(0, vertexBuffer, 0, sizeof(D3DVertex))) &&
-			SUCCEEDED(device->DrawPrimitive(D3DPT_TRIANGLEFAN, 0, 2)) && 
-			SUCCEEDED(device->EndScene()))
-		{
-			if (SUCCEEDED(device->Present(nullptr, nullptr, nullptr, nullptr)))
-			{
-			}
-		}
-	}
-
-	return ret;
-}

@@ -60,14 +60,7 @@ int FFmpegH264Decode::input(const AVPkt* avpkt/* = nullptr*/)
                     ((AVFrame*)picture)->data, ((AVFrame*)picture)->linesize,
                     AV_PIX_FMT_YUV420P, 1920, 1080,/*codecctx->width, codecctx->height*/ 1);
 
-//                 static FILE* fd{ nullptr };
-//                 if (!fd)
-//                 {
-//                     fd = fopen("d:\\decode.yuv", "wb+");
-//                 }
-//                 fwrite(bgr24, bgr24Bytes, 1, fd);
-
-                AVPkt avpkt{AVMainType::AV_MAIN_TYPE_IMAGE, AVSubType::AV_SUB_TYPE_YUV420P};
+                AVPkt avpkt{AVMainType::AV_MAIN_TYPE_VIDEO, AVSubType::AV_SUB_TYPE_YUV420P};
                 avpkt.input(bgr24, bgr24Bytes);
 
 				if (avcodecDataCallback)

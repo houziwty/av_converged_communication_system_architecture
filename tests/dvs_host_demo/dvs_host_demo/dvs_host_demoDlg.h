@@ -70,6 +70,7 @@ protected:
 
 private:
 	void processDvsControlMessage(Url& requestUrl);
+	void avframeDataCallback(const void* avpkt = nullptr);
 
 public:
 	afx_msg void OnBnClickedXmqConnect();
@@ -84,6 +85,8 @@ public:
 private:
 	uint32_t sid;
 	std::string dvs;
+	uint32_t stream;
 public:
 	afx_msg void OnBnClickedRealplayTest();
+	afx_msg void OnBnClickedGrabTest();
 };

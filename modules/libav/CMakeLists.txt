@@ -12,11 +12,11 @@ set(
 	AVCODEC_ROOT_DIR 
 	${ROOT_DIR}/modules/libavcodec)
 set(
-	VIDOERENDER_ROOT_DIR 
-	${ROOT_DIR}/modules/libvideorender)
+	AV_PLAYER_ROOT_DIR 
+	${ROOT_DIR}/modules/libavplayer)
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-	link_directories(${AVPKT_ROOT_DIR} ${AVPARSER_ROOT_DIR} ${AVCODEC_ROOT_DIR})
+	link_directories(${AVPKT_ROOT_DIR} ${AVPARSER_ROOT_DIR} ${AVCODEC_ROOT_DIR} ${AV_PLAYER_ROOT_DIR})
 	set(
 		LINK_LIBS 
 		libboost_thread.a 
@@ -40,8 +40,8 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		AVCODEC_LINK_DIR 
 		${ROOT_DIR}/build/win32/modules/libavcodec/${CMAKE_BUILD_TYPE})
 	set(
-		VIDEORENDER_LINK_DIR 
-		${ROOT_DIR}/build/win32/modules/libvideorender/${CMAKE_BUILD_TYPE})
+		AV_PLAYER_LINK_DIR 
+		${ROOT_DIR}/build/win32/modules/libavplayer/${CMAKE_BUILD_TYPE})
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
 			LINK_LIBS 
@@ -50,7 +50,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${AVPKT_LINK_DIR}/avpkt.lib 
 			${AVPARSER_LINK_DIR}/avparser.lib 
 			${AVCODEC_LINK_DIR}/avcodec.lib 
-			${VIDEORENDER_LINK_DIR}/videorender.lib)
+			${AV_PLAYER_LINK_DIR}/avplayer.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(
 			LINK_LIBS 
@@ -59,9 +59,9 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${AVPKT_LINK_DIR}/avpkt.lib 
 			${AVPARSER_LINK_DIR}/avparser.lib 
 			${AVCODEC_LINK_DIR}/avcodec.lib 
-			${VIDEORENDER_LINK_DIR}/videorender.lib)
+			${AV_PLAYER_LINK_DIR}/avplayer.lib)
 	endif()
-	add_definitions(-DUSE_MODULE_AV_PARSER -DUSE_MODULE_AV_PKT -DUSE_MODULE_AV_CODEC -DUSE_MODULE_VIDEO_RENDER)
+	add_definitions(-DUSE_MODULE_AV_PARSER -DUSE_MODULE_AV_PKT -DUSE_MODULE_AV_CODEC -DUSE_MODULE_AV_PLAYER)
 endif()
 
 set(LIB_ROOT_DIR ${ROOT_DIR}/modules/libav)
@@ -72,7 +72,7 @@ include_directories(
 	${AVPARSER_ROOT_DIR} 
 	${AVPKT_ROOT_DIR} 
 	${AVCODEC_ROOT_DIR} 
-	${VIDOERENDER_ROOT_DIR})
+	${AV_PLAYER_ROOT_DIR})
 file(GLOB_RECURSE main "*.cpp")
 
 add_library(

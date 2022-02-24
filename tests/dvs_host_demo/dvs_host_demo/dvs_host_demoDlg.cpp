@@ -9,6 +9,8 @@
 #include "afxdialogex.h"
 
 #include <string>
+#include "boost/bind/bind.hpp"
+using namespace boost::placeholders;
 #include "boost/format.hpp"
 #include "error_code.h"
 
@@ -57,7 +59,7 @@ END_MESSAGE_MAP()
 
 
 CdvshostdemoDlg::CdvshostdemoDlg(CWnd* pParent /*=nullptr*/)
-	: CDialogEx(IDD_DVS_HOST_DEMO_DIALOG, pParent), XMQNode(), ASIONode(), sid{0}
+	: CDialogEx(IDD_DVS_HOST_DEMO_DIALOG, pParent), XMQNode(), ASIONode(), sid{0}, stream{0}
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -76,6 +78,7 @@ BEGIN_MESSAGE_MAP(CdvshostdemoDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_DVS_LOGIN, &CdvshostdemoDlg::OnBnClickedDvsLogin)
 	ON_BN_CLICKED(IDC_DVS_LOGOUT, &CdvshostdemoDlg::OnBnClickedDvsLogout)
 	ON_BN_CLICKED(IDC_REALPLAY_TEST, &CdvshostdemoDlg::OnBnClickedRealplayTest)
+	ON_BN_CLICKED(IDC_GRAB_TEST, &CdvshostdemoDlg::OnBnClickedGrabTest)
 END_MESSAGE_MAP()
 
 
@@ -112,7 +115,7 @@ BOOL CdvshostdemoDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 
-	SetDlgItemText(IDC_XMQ_ADDRESS, L"172.18.5.0");
+	SetDlgItemText(IDC_XMQ_ADDRESS, L"192.168.2.172");
 	SetDlgItemText(IDC_XMQ_PORT, L"60531");
 	SetDlgItemText(IDC_DEMO_NAME, L"test_demo_name");
 
@@ -339,7 +342,7 @@ void CdvshostdemoDlg::OnBnClickedDvsLogout()
 	char ip[256]{ 0 };
 	HWND hwnd{ this->GetSafeHwnd() };
 	GetDlgItemTextA(hwnd, IDC_XMQ_ADDRESS, ip, 256);
-	conf.tcp.ip = ip;
+	conf.tcp.ip = "127.0.0.1";
 	int ret{ ASIONode::addConf(conf) };
 
 	if (Error_Code_Success == ret)
@@ -370,7 +373,12 @@ void CdvshostdemoDlg::afterPolledReadDataNotification(
 
 	if (first)
 	{
-		AVModeConf conf{ id, AVModeType::AV_MODE_TYPE_RENDER, this->GetSafeHwnd() };
+		AVModeConf conf{ id, (AVModeType)stream, GetDlgItem(IDC_REALPLAY_WND1)->GetSafeHwnd() };
+		if (1 == stream)
+		{
+			conf.callback = boost::bind(&CdvshostdemoDlg::avframeDataCallback, this, _1);
+		}
+
 		AVNode::addConf(conf);
 		first = false;
 	}
@@ -393,8 +401,9 @@ void CdvshostdemoDlg::OnBnClickedRealplayTest()
 {
 	// TODO: Add your control notification handler code here
 
+	stream = 2;
 	const std::string url{ "realplay://1?command=1&channel=1&stream=0" };
-	const uint64_t bytes{ 36 + url.length() };
+	const uint64_t bytes{ 32 + url.length() };
 	char* data{ new char[bytes] };
 	*((uint32_t*)data) = 0xFF050301;
 	*((uint32_t*)(data + 4)) = (uint32_t)AVMainType::AV_MAIN_TYPE_NONE;
@@ -432,5 +441,41 @@ void CdvshostdemoDlg::processDvsControlMessage(Url& requestUrl)
 	if (!command.compare("add") && 0 == atoi(error.c_str()))
 	{
 		MessageBox(CString(dvs.c_str()), NULL, MB_ICONINFORMATION | MB_OK);
+	}
+}
+
+
+void CdvshostdemoDlg::OnBnClickedGrabTest()
+{
+	// TODO: Add your control notification handler code here
+
+	stream = 1;
+	const std::string url{ "realplay://1?command=1&channel=1&stream=0" };
+	const uint64_t bytes{ 32 + url.length() };
+	char* data{ new char[bytes] };
+	*((uint32_t*)data) = 0xFF050301;
+	*((uint32_t*)(data + 4)) = (uint32_t)AVMainType::AV_MAIN_TYPE_NONE;
+	*((uint32_t*)(data + 8)) = (uint32_t)AVSubType::AV_SUB_TYPE_NONE;
+	*((uint32_t*)(data + 12)) = url.length();
+	*((uint32_t*)(data + 16)) = 0;
+	*((uint64_t*)(data + 24)) = 0;
+	memcpy_s(data + 32, url.length(), url.c_str(), url.length());
+
+	ASIONode::send(sid, data, bytes);
+	boost::checked_array_delete(data);
+}
+
+void CdvshostdemoDlg::avframeDataCallback(const void* avpkt /* = nullptr */)
+{
+	AVPkt* pkt{(AVPkt*)avpkt};
+
+	if (pkt)
+	{
+// 		static FILE* fd{ nullptr };
+// 		if (!fd)
+// 		{
+// 			fopen_s(&fd, "d:\\test.bgr24", "wb+");
+// 		}
+// 		fwrite(pkt->data(), pkt->bytes(), 1, fd);
 	}
 }

@@ -4,7 +4,7 @@
 #include "filter/parser/av_buffer_parser_filter.h"
 #include "filter/parser/av_frame_parser_filter.h"
 #include "filter/decoder/av_frame_decoder_filter.h"
-#include "filter/player/av_frame_play_filter.h"
+#include "filter/player/av_frame_player_filter.h"
 #include "realplay_stream_play_graph.h"
 using namespace module::av::stream;
 
@@ -37,7 +37,7 @@ int RealplayStreamPlayGraph::createNew(const AVModeConf& conf)
 		avfilters.add(av_frame_player_filter_name, framePlayerPtr);
 	}
 	
-	return 0 < avfilters.values().size() ? AVGraph::createNew() : Error_Code_Bad_New_Object;
+	return 0 < avfilters.values().size() ? AVGraph::createNew(conf) : Error_Code_Bad_New_Object;
 }
 
 int RealplayStreamPlayGraph::connectPin()

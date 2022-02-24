@@ -1,8 +1,8 @@
-#include "video_render.h"
+#include "av_player.h"
 using namespace module::av::stream;
 
-VideoRender::VideoRender(const uint32_t id/* = 0*/) : cid{id}
+AVPlayer::AVPlayer(const uint32_t id/* = 0*/) : cid{id}
 {}
 
-VideoRender::~VideoRender()
+AVPlayer::~AVPlayer()
 {}

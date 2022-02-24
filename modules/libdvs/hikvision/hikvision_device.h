@@ -49,8 +49,8 @@ namespace module
 				//@data [out] : 数据 
 				//@bytes [out] : 大小
 				//@user [out] : 用户参数
-				static void CALLBACK livestreamDataCallback(
-					int32_t sid, uint32_t type, uint8_t* data, uint32_t bytes, void* user);
+				static void __stdcall livestreamDataCallback(
+					long sid, unsigned int type, unsigned char* data, unsigned int bytes, void* user);
 
 			private:
 				static uint32_t counter;

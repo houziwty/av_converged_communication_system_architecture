@@ -37,7 +37,6 @@ namespace module
 				int destroy(void);
 				int draw(
 					const void* data = nullptr, const int width = 0, const int height = 0);
-				int text(const RECT& rect, const char* text = nullptr);
 
 			private:
 				const void* displayHwnd;

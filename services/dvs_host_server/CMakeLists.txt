@@ -25,6 +25,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(
 		LINK_LIBS 
 		libboost_program_options.a 
+		pthread 
 		dvs 
 		asio 
 		avparser 
@@ -40,22 +41,22 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		${BOOST_ROOT_DIR}/stage/lib)
 	set(
 		XMQ_LINK_DIR 
-		${ROOT_DIR}/win32/modules/libxmq/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/win32/modules/libxmq/${CMAKE_BUILD_TYPE})
 	set(
 		LOG_LINK_DIR 
-		${ROOT_DIR}/win32/modules/liblog/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/win32/modules/liblog/${CMAKE_BUILD_TYPE})
 	set(
 		ASIO_LINK_DIR 
-		${ROOT_DIR}/win32/modules/libasio/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/win32/modules/libasio/${CMAKE_BUILD_TYPE})
 	set(
 		DVS_LINK_DIR 
-		${ROOT_DIR}/win32/modules/libdvs/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/win32/modules/libdvs/${CMAKE_BUILD_TYPE})
 	set(
 		AVPARSER_LINK_DIR 
-		${ROOT_DIR}/win32/modules/libavparser/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/win32/modules/libavparser/${CMAKE_BUILD_TYPE})
 	set(
 		AVPKT_LINK_DIR 
-		${ROOT_DIR}/win32/modules/libavpkt/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/win32/modules/libavpkt/${CMAKE_BUILD_TYPE})
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
 			LINK_LIBS 
@@ -68,7 +69,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${ASIO_LINK_DIR}/asio.lib 
 			${AVPARSER_LINK_DIR}/avparser.lib 
 			${AVPKT_LINK_DIR}/avpkt.lib 
-			${DVS_HOST_LINK_DIR}/dvs.lib)
+			${DVS_LINK_DIR}/dvs.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(
 			LINK_LIBS 
@@ -81,15 +82,15 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${ASIO_LINK_DIR}/asio.lib 
 			${AVPARSER_LINK_DIR}/avparser.lib 
 			${AVPKT_LINK_DIR}/avpkt.lib 
-			${DVS_HOST_LINK_DIR}/dvs.lib)
+			${DVS_LINK_DIR}/dvs.lib)
 	endif()
 	add_definitions(-DUSE_MODULE_FILE_LOG -DUSE_MODULE_NETWORK_XMQ -DUSE_MODULE_NETWORK_ASIO -DUSE_MODULE_DEVICE_DVS -DUSE_MODULE_AV_PARSER -DUSE_MODULE_AV_PKT)
 endif()
 
-set(SERVICE_ROOT_DIR ${ROOT_DIR}/service/dvs_host_service)
+set(SERVER_ROOT_DIR ${ROOT_DIR}/service/dvs_host_server)
 include_directories(
 	${INCLUDE_DIR} 
-	${SERVICE_ROOT_DIR} 
+	${SERVER_ROOT_DIR} 
 	${BOOST_ROOT_DIR} 
 	${XMQ_ROOT_DIR} 
 	${LOG_ROOT_DIR} 

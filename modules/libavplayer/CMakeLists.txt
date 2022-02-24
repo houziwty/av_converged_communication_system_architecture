@@ -1,18 +1,18 @@
 cmake_minimum_required(VERSION 3.5...3.16)
 
-project(videorender VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
+project(avplayer VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 
 set(
 	AVPKT_ROOT_DIR 
 	${ROOT_DIR}/modules/libavpkt)
 set(
-	VIDEORENDER_ROOT_DIR 
-	${ROOT_DIR}/modules/libvideorender)
+	AV_PLAYER_ROOT_DIR 
+	${ROOT_DIR}/modules/libavplayer)
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-Bsymbolic")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-Bsymbolic")
-	link_directories(${VIDEORENDER_ROOT_DIR})
+#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-Bsymbolic")
+#	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-Bsymbolic")
+#	link_directories(${VIDEORENDER_ROOT_DIR})
 #	set(LINK_LIBS)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(
@@ -50,10 +50,8 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	add_definitions(-DUSE_MODULE_AV_PKT)
 endif()
 
-set(LIB_ROOT_DIR ${ROOT_DIR}/modules/libvideorender)
-include_directories(${INCLUDE_DIR} ${LIB_ROOT_DIR} ${BOOST_ROOT_DIR} ${AVPKT_ROOT_DIR})
+include_directories(${INCLUDE_DIR} ${AV_PLAYER_ROOT_DIR} ${BOOST_ROOT_DIR} ${AVPKT_ROOT_DIR})
 file(GLOB_RECURSE main "*.cpp")
-
 
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	add_library(

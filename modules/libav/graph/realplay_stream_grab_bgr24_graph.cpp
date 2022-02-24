@@ -38,7 +38,7 @@ int RealplayStreamGrabBGR24Graph::createNew(const AVModeConf& conf)
 		avfilters.add(av_frame_converter_filter_name, frameConvertPtr);
 	}
 	
-	return 0 < avfilters.values().size() ? AVGraph::createNew() : Error_Code_Bad_New_Object;
+	return 0 < avfilters.values().size() ? AVGraph::createNew(conf) : Error_Code_Bad_New_Object;
 }
 
 int RealplayStreamGrabBGR24Graph::connectPin()

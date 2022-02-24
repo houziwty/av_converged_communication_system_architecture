@@ -117,7 +117,7 @@ int HikvisionDevice::openRealplayStream(void* param/* = nullptr*/)
 			preview.lChannel = indexes[i];
 			preview.byProtoType = 1;
 			LONG sid{
-				NET_DVR_RealPlay_V40(user, &preview, &HikvisionDevice::livestreamDataCallback, this)};
+				NET_DVR_RealPlay_V40(user, &preview, (REALDATACALLBACK)&HikvisionDevice::livestreamDataCallback, this)};
 
 			if (-1 < sid)
 			{
@@ -143,7 +143,7 @@ int HikvisionDevice::closeRealplayStream()
 }
 
 void HikvisionDevice::livestreamDataCallback(
-	int32_t sid, uint32_t type, uint8_t* data, uint32_t bytes, void* ctx)
+	long sid, unsigned int type, unsigned char* data, unsigned int bytes, void* ctx)
 {
 	HikvisionDevice* dvs{ reinterpret_cast<HikvisionDevice*>(ctx) };
 	const int32_t channelID{dvs->livestreamIds.at(sid)};

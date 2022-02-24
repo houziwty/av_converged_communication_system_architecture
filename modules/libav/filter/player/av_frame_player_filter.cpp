@@ -4,35 +4,35 @@
 #include "av_frame_player_filter.h"
 using namespace module::av::stream;
 
-AVFramePlayFilter::AVFramePlayFilter(
+AVFramePlayerFilter::AVFramePlayerFilter(
 	const AVFilterType type/* = AVFilterType::AV_FILTER_TYPE_NONE*/) 
-	: AVFilter(type), AVPlayerNode(), vid{0}, aid{0}, hwnd{nullptr}
+	: AVFilter(type), AVPlayerNode(), flag{false}
 {}
 
-AVFramePlayFilter::~AVFramePlayFilter()
+AVFramePlayerFilter::~AVFramePlayerFilter()
 {}
 
-int AVFramePlayFilter::createNew(const AVModeConf& conf)
+int AVFramePlayerFilter::createNew(const AVModeConf& conf)
 {
 	//延迟加载播放器
 	modeconf = conf;
 	return AVFilter::createNew(conf);
 }
 
-int AVFramePlayFilter::destroy()
+int AVFramePlayerFilter::destroy()
 {
 	int ret{AVFilter::destroy()};
 
 	if (Error_Code_Success == ret)
 	{
-		AVPlayerNode::removeConf(vid);
-		AVPlayerNode::removeConf(aid);
+		AVPlayerNode::removeConf(1);
+		AVPlayerNode::removeConf(2);
 	}
 	
 	return ret;
 }
 
-int AVFramePlayFilter::input(const AVPkt* avpkt/* = nullptr*/)
+int AVFramePlayerFilter::input(const AVPkt* avpkt/* = nullptr*/)
 {
 	int ret{avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
 
@@ -41,30 +41,32 @@ int AVFramePlayFilter::input(const AVPkt* avpkt/* = nullptr*/)
 		AVMainType maintype{avpkt->maintype()};
 		AVPlayerModeConf conf;
 
-		if (!vid && AVMainType::AV_MAIN_TYPE_VIDEO == maintype)
+		if (!flag && AVMainType::AV_MAIN_TYPE_VIDEO == maintype)
 		{
 			conf.id = 1;
 			conf.type = AVPlayerType::AV_PLAYER_TYPE_D3D;
 			conf.video.hwnd = modeconf.hwnd;
+			flag = true;
+			ret = AVPlayerNode::addConf(conf);
 		}
-		else if (!aid && AVMainType::AV_MAIN_TYPE_AUDIO == maintype)
+		else if (!flag && AVMainType::AV_MAIN_TYPE_AUDIO == maintype)
 		{
 			conf.id = 2;
 			conf.type = AVPlayerType::AV_PLAYER_TYPE_AAC;
+			flag = true;
+			ret = AVPlayerNode::addConf(conf);
 		}
 
-		ret = AVPlayerNode::addConf(conf);
-	}
-
-	if (Error_Code_Success == ret)
-	{
-		if (AVMainType::AV_MAIN_TYPE_VIDEO == maintype)
+		if (flag)
 		{
-			ret = AVPlayerNode::input(1, avpkt);
-		}
-		else if (!aid && AVMainType::AV_MAIN_TYPE_AUDIO == maintype)
-		{
-			ret = AVPlayerNode::input(2, avpkt);
+			if (AVMainType::AV_MAIN_TYPE_VIDEO == maintype)
+			{
+				ret = AVPlayerNode::input(1, avpkt);
+			}
+			else if (AVMainType::AV_MAIN_TYPE_AUDIO == maintype)
+			{
+				ret = AVPlayerNode::input(2, avpkt);
+			}
 		}
 	}
 	

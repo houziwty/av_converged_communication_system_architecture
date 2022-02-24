@@ -63,12 +63,12 @@ int FFmpegPictureConvert::initConvert()
     out = av_frame_alloc();
     cvt = sws_getContext(
         1920, 1080,/*codecctx->width, codecctx->height*/ AV_PIX_FMT_YUV420P, 
-        1920, 1080,/*codecctx->width, codecctx->height*/ AV_PIX_FMT_RGB24, 
+        1920, 1080,/*codecctx->width, codecctx->height*/ AV_PIX_FMT_BGR24, 
         SWS_BICUBIC, NULL, NULL, NULL);
     rgb24Bytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, 1920, 1080,/*codecctx->width, codecctx->height*/ 1);
     rgb24 = (uint8_t*)av_malloc(rgb24Bytes);
     av_image_fill_arrays(
-        ((AVFrame*)out)->data, ((AVFrame*)out)->linesize, rgb24, AV_PIX_FMT_RGB24,
+        ((AVFrame*)out)->data, ((AVFrame*)out)->linesize, rgb24, AV_PIX_FMT_BGR24,
         1920, 1080,/*codecctx->width, codecctx->height*/ 1);
 
     return in && out && cvt && rgb24 && 0 < rgb24Bytes ? Error_Code_Success : Error_Code_Bad_New_Object;

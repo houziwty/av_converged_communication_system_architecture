@@ -17,14 +17,31 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		BOOST_ROOT_DIR 
 		${3RDPART_DIR}/boost_1_78_0)
 	set(
+		BOOST_LINK_DIR 
+		${BOOST_ROOT_DIR}/stage/lib)
+	set(
 		HK_ROOT_DIR 
 		${3RDPART_DIR}/hikvision/win32/include)
 	set(
 		HK_LINK_DIR 
-		${3RDPART_DIR}/hikvision/win32/lib)
-	set(
-		LINK_LIBS 
-		${HK_LINK_DIR}/HCNetSDK.lib)
+		${3RDPART_DIR}/hikvision/win32/lib)		
+	if(CMAKE_BUILD_TYPE MATCHES "Debug")
+		set(
+			LINK_LIBS 
+			${BOOST_LINK_DIR}/libboost_thread-vc142-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_chrono-vc142-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_program_options-vc142-mt-sgd-x64-1_78.lib	
+			${BOOST_LINK_DIR}/libboost_serialization-vc142-mt-sgd-x64-1_78.lib 		
+			${HK_LINK_DIR}/HCNetSDK.lib)
+	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
+		set(
+			LINK_LIBS 
+			${BOOST_LINK_DIR}/libboost_thread-vc142-mt-s-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_chrono-vc142-mt-s-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_program_options-vc142-mt-s-x64-1_78.lib	
+			${BOOST_LINK_DIR}/libboost_serialization-vc142-mt-s-x64-1_78.lib 		
+			${HK_LINK_DIR}/HCNetSDK.lib)
+	endif()
 endif()
 
 set(LIB_ROOT_DIR ${ROOT_DIR}/modules/libdvs)

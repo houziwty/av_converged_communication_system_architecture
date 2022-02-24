@@ -13,15 +13,15 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		${3RDPART_DIR}/glog-master 
 		${3RDPART_DIR}/glog-master/src)
 	set(
-		LINK_DIR 
+		GLOG_LINK_DIR 
 		${3RDPART_DIR}/glog-master/${CMAKE_BUILD_TYPE})
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
-			LINK_LIBS 
+			GLOG_LINK_DIR 
 			${LINK_DIR}/glogd.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(
-			LINK_LIBS 
+			GLOG_LINK_DIR 
 			${LINK_DIR}/glog.lib)
 	endif()
 	add_definitions(-DGLOG_NO_ABBREVIATED_SEVERITIES)

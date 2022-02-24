@@ -22,13 +22,13 @@ namespace module
 	{
 		namespace stream
 		{
-			class AVFramePlayFilter 
+			class AVFramePlayerFilter 
 				: public AVFilter, protected AVPlayerNode
 			{
 			public:
-				AVFramePlayFilter(
+				AVFramePlayerFilter(
 					const AVFilterType type = AVFilterType::AV_FILTER_TYPE_NONE);
-				virtual ~AVFramePlayFilter(void);
+				virtual ~AVFramePlayerFilter(void);
 
 			public:
 				int createNew(const AVModeConf& conf) override;
@@ -36,10 +36,9 @@ namespace module
 				int input(const AVPkt* avpkt = nullptr) override;
 
 			private:
-				uint32_t vid;
-				uint32_t aid;
+				bool flag;
 				AVModeConf modeconf;
-			};//class AVFramePlayFilter
+			};//class AVFramePlayerFilter
 		}//namespace stream
 	}//namespace av
 }//namespace module

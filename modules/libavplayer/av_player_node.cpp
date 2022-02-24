@@ -50,7 +50,7 @@ int AVPlayerNode::removeConf(const uint32_t id/* = 0*/)
 	{
 		AVPlayerPtr player{ avplayers.at(id)};
 
-		if (render)
+		if (player)
 		{
 			avplayers.remove(id);
 		}
