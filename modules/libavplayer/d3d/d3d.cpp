@@ -9,8 +9,11 @@
 #include "d3d.h"
 using namespace module::av::stream;
 
-D3D::D3D(const uint32_t id /* = 0 */, void* hwnd /* = nullptr */)
-	: AVPlayer(id), displayHwnd{ hwnd }, d3d9{ nullptr }, d3d9Device{ nullptr }, 
+D3D::D3D(
+	const uint32_t id /* = 0 */, 
+	void* hwnd /* = nullptr */, 
+	void* areas /* = nullptr */)
+	: AVPlayer(id), displayHwnd{ hwnd }, drawAreaParam{areas}, d3d9{ nullptr }, d3d9Device{ nullptr },
 	d3d9PixelShader{ nullptr }, d3d9VertexBuffer{ nullptr }, d3dxFont{ nullptr }, d3dxLine{nullptr}
 {
 	d3d9Texture[0] = d3d9Texture[1] = d3d9Texture[2] = nullptr;
@@ -130,9 +133,24 @@ int D3D::draw(
 	D3DTexture().draw(d3d9Texture[1], (uint8_t*)data + u_pos, width / 2, height / 2);
 	D3DTexture().draw(d3d9Texture[2], (uint8_t*)data + v_pos, width / 2, height / 2);
 
-	RECT rc{ 100, 100, 700, 700 };
-	D3DLine().draw(rc, d3dxLine);
-	D3DFont().text(rc, "TargetID : 1", d3dxFont);
+	if (drawAreaParam)
+	{
+		std::vector<AVDrawArea>* temp_areas{
+			reinterpret_cast<std::vector<AVDrawArea>*>(drawAreaParam) };
+		std::vector<AVDrawArea> areas{ *temp_areas };
+		const std::size_t number{ areas.size() };
+
+		for (int i = 0; i != number; ++i)
+		{
+			RECT rc{
+				areas[i].left,
+				areas[i].top,
+				areas[i].right,
+				areas[i].bottom };
+			D3DLine().draw(rc, d3dxLine, D3DCOLOR_RGBA(areas[i].color[0], areas[i].color[1], areas[i].color[2], 0xFF));
+			D3DFont().text(rc, areas[i].text, d3dxFont, D3DCOLOR_RGBA(areas[i].color[0], areas[i].color[1], areas[i].color[2], 0xFF));
+		}
+	}
 
 	d3d9Device->EndScene();
 	d3d9Device->Present(nullptr, nullptr, nullptr, nullptr);

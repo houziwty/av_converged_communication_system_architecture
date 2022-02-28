@@ -26,7 +26,10 @@ namespace module
 			class D3D : public AVPlayer
 			{
 			public:
-				D3D(const uint32_t id = 0, void* hwnd = nullptr);
+				D3D(
+					const uint32_t id = 0, 
+					void* hwnd = nullptr, 
+					void* areas = nullptr);
 				~D3D(void);
 
 			public:
@@ -36,10 +39,13 @@ namespace module
 				int createNew(const uint32_t width = 0, const uint32_t height = 0);
 				int destroy(void);
 				int draw(
-					const void* data = nullptr, const int width = 0, const int height = 0);
+					const void* data = nullptr, 
+					const int width = 0, 
+					const int height = 0);
 
 			private:
 				const void* displayHwnd;
+				void* drawAreaParam;
 				IDirect3D9* d3d9;
 				IDirect3DDevice9* d3d9Device;
 				IDirect3DPixelShader9* d3d9PixelShader;

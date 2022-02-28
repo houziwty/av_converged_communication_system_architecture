@@ -36,7 +36,7 @@ int Ctx::destroy(ctx_t c/* = nullptr*/)
 
 	if (c)
 	{
-		ret = (!zmq_ctx_term(c) ? Error_Code_Success : Error_Code_Bad_Operate_Term);
+		ret = (!zmq_ctx_shutdown(c) ? Error_Code_Success : Error_Code_Bad_Operate_Term);
 	}
 	
 	return ret;

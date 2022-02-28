@@ -8,18 +8,15 @@ set(
 set(
 	LOG_ROOT_DIR 
 	${ROOT_DIR}/modules/liblog)
+
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(
-		LINK_DIR 
-		${ROOT_DIR}/build/modules)
-	link_directories(${LINK_DIR}/libxmq ${LINK_DIR}/liblog)
-	set(
 		LINK_LIBS 
-		xmq 
-		log 
 		libboost_program_options.a 
-		libboost_thread.a
-		pthread)
+		libboost_thread.a 
+		pthread 
+		xmq 
+		log)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(
 		BOOST_ROOT_DIR 
@@ -29,10 +26,10 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		${BOOST_ROOT_DIR}/stage/lib)
 	set(
 		XMQ_LINK_DIR 
-		${ROOT_DIR}/build/win32/modules/libxmq/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/x64/modules/libxmq/${CMAKE_BUILD_TYPE})
 	set(
 		LOG_LINK_DIR 
-		${ROOT_DIR}/build/win32/modules/liblog/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/x64/modules/liblog/${CMAKE_BUILD_TYPE})
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
 			LINK_LIBS 
@@ -55,8 +52,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	add_definitions(-DUSE_MODULE_FILE_LOG -DUSE_MODULE_NETWORK_XMQ)
 endif()
 
-set(SERVICE_ROOT_DIR ${ROOT_DIR}/service/xmq_host_service)
-include_directories(${INCLUDE_DIR} ${SERVICE_ROOT_DIR} ${BOOST_ROOT_DIR} ${XMQ_ROOT_DIR} ${LOG_ROOT_DIR})
+include_directories(${INCLUDE_DIR} ${BOOST_ROOT_DIR} ${XMQ_ROOT_DIR} ${LOG_ROOT_DIR})
 file(GLOB_RECURSE main "*.cpp")
 file(GLOB_RECURSE 
 	utils 

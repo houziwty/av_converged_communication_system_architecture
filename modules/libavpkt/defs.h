@@ -14,6 +14,7 @@
 #define MODULE_AV_STREAM_AV_PKT_DEFS_H
 
 #include <cstdint>
+#include <vector>
 
 #if defined(_WINDOWS)
 #ifdef USE_MODULE_AV_PKT

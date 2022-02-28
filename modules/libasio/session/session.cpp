@@ -34,7 +34,7 @@ int Session::createNew(
 
 int Session::destroy()
 {
-	int ret{buffer && 0 < sid ? Error_Code_Success : Error_Code_Operate_Failure};
+	int ret{so && buffer && 0 < sid ? Error_Code_Success : Error_Code_Operate_Failure};
 
 	if (Error_Code_Success == ret)
 	{

@@ -79,6 +79,7 @@ BEGIN_MESSAGE_MAP(CdvshostdemoDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_DVS_LOGOUT, &CdvshostdemoDlg::OnBnClickedDvsLogout)
 	ON_BN_CLICKED(IDC_REALPLAY_TEST, &CdvshostdemoDlg::OnBnClickedRealplayTest)
 	ON_BN_CLICKED(IDC_GRAB_TEST, &CdvshostdemoDlg::OnBnClickedGrabTest)
+	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 
@@ -115,7 +116,7 @@ BOOL CdvshostdemoDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 
-	SetDlgItemText(IDC_XMQ_ADDRESS, L"192.168.2.172");
+	SetDlgItemText(IDC_XMQ_ADDRESS, L"172.21.140.110");
 	SetDlgItemText(IDC_XMQ_PORT, L"60531");
 	SetDlgItemText(IDC_DEMO_NAME, L"test_demo_name");
 
@@ -342,7 +343,7 @@ void CdvshostdemoDlg::OnBnClickedDvsLogout()
 	char ip[256]{ 0 };
 	HWND hwnd{ this->GetSafeHwnd() };
 	GetDlgItemTextA(hwnd, IDC_XMQ_ADDRESS, ip, 256);
-	conf.tcp.ip = "127.0.0.1";
+	conf.tcp.ip = ip;
 	int ret{ ASIONode::addConf(conf) };
 
 	if (Error_Code_Success == ret)
@@ -369,6 +370,11 @@ void CdvshostdemoDlg::afterPolledReadDataNotification(
 	const uint64_t bytes /* = 0 */, 
 	const int32_t e /* = 0 */)
 {
+	if (1 > id || !data || !bytes || e)
+	{
+		return;
+	}
+
 	static bool first{ true };
 
 	if (first)
@@ -377,6 +383,32 @@ void CdvshostdemoDlg::afterPolledReadDataNotification(
 		if (1 == stream)
 		{
 			conf.callback = boost::bind(&CdvshostdemoDlg::avframeDataCallback, this, _1);
+		}
+		else
+		{
+			AVDrawArea area1;
+			area1.left = 300;
+			area1.top = 600;
+			area1.right = 800;
+			area1.bottom = 800;
+			area1.color[0] = 0xFF;
+			area1.color[1] = 0x00;
+			area1.color[2] = 0x00;
+			sprintf_s(area1.text, 256, "Target 1\r\nSpeed: 0 KM/H\r\nDirection: North");
+			areas.push_back(area1);
+
+			AVDrawArea area2;
+			area2.left = 200;
+			area2.top = 200;
+			area2.right = 1000;
+			area2.bottom = 1000;
+			area2.color[0] = 0x00;
+			area2.color[1] = 0x80;
+			area2.color[2] = 0x00;
+			sprintf_s(area2.text, 256, "Motion Detect Area\r\n");
+			areas.push_back(area2);
+
+			conf.areas = (void*)&areas;
 		}
 
 		AVNode::addConf(conf);
@@ -478,4 +510,17 @@ void CdvshostdemoDlg::avframeDataCallback(const void* avpkt /* = nullptr */)
 // 		}
 // 		fwrite(pkt->data(), pkt->bytes(), 1, fd);
 	}
+}
+
+
+void CdvshostdemoDlg::OnClose()
+{
+	// TODO: Add your message handler code here and/or call default
+
+	ASIONode::stop();
+	AVNode::removeConf(sid);
+	ASIONode::removeConf(sid);
+	XMQNode::removeConf(0xFFFF);
+	XMQNode::stop();
+	__super::OnClose();
 }

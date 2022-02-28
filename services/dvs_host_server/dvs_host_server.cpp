@@ -232,24 +232,24 @@ void DvsHostServer::processDvsControlMessage(const std::string from, Url& reques
 
     if (!command.compare("query"))
     {
-//         std::string url{
-//             (boost::format("config://%s?command=query") % from).str()};
-//         std::vector<DVSModeConf> confs;
-//         DVSNode::queryConf(confs);
-// 
-//         for (int i = 0; i != confs.size(); ++i)
-//         {
-//             const std::string dvs{
-//                 (boost::format("&dvs=%d_%s_%d_%s") % confs[i].id % confs[i].ip % confs[i].channels % confs[i].name).str()};
-//             url.append(dvs);
-//         }
-// 
-//         int ret{XMQNode::send(0xB1, url.c_str(), url.length())};
+        std::string url{
+            (boost::format("config://%s?command=query") % from).str()};
+        std::vector<DVSModeConf> confs;
+        DVSNode::queryConf(confs);
 
-//         fileLog.write(
-//             SeverityLevel::SEVERITY_LEVEL_INFO, 
-//             "Query device information successfully from service = [ %s ], result = [ %d ].", 
-//             from.c_str(), ret);
+        for (int i = 0; i != confs.size(); ++i)
+        {
+            const std::string dvs{
+                (boost::format("&dvs=%d_%s_%d_%s") % confs[i].id % confs[i].ip % confs[i].channels % confs[i].name).str()};
+            url.append(dvs);
+        }
+
+        int ret{XMQNode::send(0xB1, url.c_str(), url.length())};
+
+        fileLog.write(
+            SeverityLevel::SEVERITY_LEVEL_INFO, 
+            "Query device information successfully from service = [ %s ], result = [ %d ].", 
+            from.c_str(), ret);
     }
     else if (!command.compare("add"))
     {

@@ -41,22 +41,22 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		${BOOST_ROOT_DIR}/stage/lib)
 	set(
 		XMQ_LINK_DIR 
-		${ROOT_DIR}/build/win32/modules/libxmq/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/x64/modules/libxmq/${CMAKE_BUILD_TYPE})
 	set(
 		LOG_LINK_DIR 
-		${ROOT_DIR}/build/win32/modules/liblog/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/x64/modules/liblog/${CMAKE_BUILD_TYPE})
 	set(
 		ASIO_LINK_DIR 
-		${ROOT_DIR}/build/win32/modules/libasio/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/x64/modules/libasio/${CMAKE_BUILD_TYPE})
 	set(
 		DVS_LINK_DIR 
-		${ROOT_DIR}/build/win32/modules/libdvs/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/x64/modules/libdvs/${CMAKE_BUILD_TYPE})
 	set(
 		AVPARSER_LINK_DIR 
-		${ROOT_DIR}/build/win32/modules/libavparser/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/x64/modules/libavparser/${CMAKE_BUILD_TYPE})
 	set(
 		AVPKT_LINK_DIR 
-		${ROOT_DIR}/build/win32/modules/libavpkt/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/x64/modules/libavpkt/${CMAKE_BUILD_TYPE})
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
 			LINK_LIBS 

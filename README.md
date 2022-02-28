@@ -1313,6 +1313,7 @@
    >>> + apt install pkg-config
 
    ### 10.1.3 glog
+   >>> + cmake -S . -B build -G "Unix Makefiles"
    >>> + apt install libgoogle-glog-dev
 
    ### 10.1.4 ffmpeg

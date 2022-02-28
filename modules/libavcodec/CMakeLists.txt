@@ -33,7 +33,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		${3RDPART_DIR}/ffmpeg/x64/ffmpeg-n5.0-latest-win64-gpl-shared-5.0/lib)
 	set(
 		AVPKT_LINK_DIR 
-		${ROOT_DIR}/build/win32/modules/libavpkt/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/x64/modules/libavpkt/${CMAKE_BUILD_TYPE})
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
 			LINK_LIBS 

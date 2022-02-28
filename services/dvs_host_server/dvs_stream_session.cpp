@@ -10,7 +10,7 @@ using namespace framework::utils::url;
 DvsStreamSession::DvsStreamSession(FileLog& log, const uint32_t id/* = 0*/)
     : AVParserNode(), sid{id}, cid{0}, did{0}, fileLog{log}
 {
-    AVParserModeConf conf{1, AVParserType::AV_PARSER_TYPE_BUFFER_PARSER};
+    AVParserModeConf conf{sid, AVParserType::AV_PARSER_TYPE_BUFFER_PARSER};
     AVParserNode::addConf(conf);
 }
 
@@ -29,7 +29,7 @@ int DvsStreamSession::recv(
     {
         AVPkt avpkt;
         ret = avpkt.input(data, bytes);
-        ret = (Error_Code_Success == ret ? AVParserNode::input(1, &avpkt) : ret);
+        ret = (Error_Code_Success == ret ? AVParserNode::input(sid, &avpkt) : ret);
     }
     
     return ret;

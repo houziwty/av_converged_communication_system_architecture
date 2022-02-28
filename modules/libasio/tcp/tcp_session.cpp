@@ -23,6 +23,7 @@ int TcpSession::destroy()
             reinterpret_cast<boost::asio::ip::tcp::socket*>(so)};
         s->close();
         boost::checked_delete(s);
+		so = nullptr;
     }
     
     return Error_Code_Success == ret ? Session::destroy() : ret;
@@ -80,7 +81,7 @@ int TcpSession::receive()
 					receivedDataEventCallback(sid, buffer, bytes_transferred, e.value());
 				}
 
-                if (!e)
+                if (!e && so)
                 {
                     receive();
                 }

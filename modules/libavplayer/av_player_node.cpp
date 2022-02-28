@@ -26,7 +26,7 @@ int AVPlayerNode::addConf(const AVPlayerModeConf& conf)
 
 		if (AVPlayerType::AV_PLAYER_TYPE_D3D == conf.type)
 		{
-			player = boost::make_shared<D3D>(conf.id, conf.video.hwnd);
+			player = boost::make_shared<D3D>(conf.id, conf.video.hwnd, conf.video.areas);
 		}
 		else
 		{

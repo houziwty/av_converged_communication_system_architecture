@@ -49,7 +49,7 @@ namespace module
 				//@data [out] : 数据 
 				//@bytes [out] : 大小
 				//@user [out] : 用户参数
-				static void __stdcall livestreamDataCallback(
+				static void CALLBACK livestreamDataCallback(
 					long sid, unsigned int type, unsigned char* data, unsigned int bytes, void* user);
 
 			private:

@@ -44,6 +44,7 @@ typedef struct tagAVModeConf_t
     uint32_t id;                      //>0，由调用者分配
     AVModeType type;
     void* hwnd;                       //视频播放窗口
+    void* areas;                      //仅当AV_MODE_TYPE_STREAM_PLAY == type时有效
     AVFrameDataCallback callback;     //仅当AV_MODE_TYPE_GRAB_BRG24 == type时有效
 }AVModeConf;
 

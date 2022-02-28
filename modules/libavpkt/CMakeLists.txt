@@ -22,4 +22,8 @@ file(GLOB_RECURSE
 	utils 
 	"${SOURCE_DIR}/utils/memory/*.cpp")
 
-add_library(${PROJECT_NAME} SHARED ${main} ${utils})
+add_library(
+	${PROJECT_NAME} 
+	SHARED 
+	${main} 
+	${utils})

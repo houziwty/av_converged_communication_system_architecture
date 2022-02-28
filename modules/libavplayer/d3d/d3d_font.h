@@ -13,6 +13,7 @@
 #ifndef MODULE_AV_STREAM_D3D_FONT_H
 #define MODULE_AV_STREAM_D3D_FONT_H
 
+#include <cstdint>
 #include <d3d9.h>
 #include "av/d3dx9/d3dx9core.h"
 
@@ -32,8 +33,9 @@ namespace module
 				ID3DXFont* createNew(IDirect3DDevice9* device = nullptr);
 				int text(
 					const RECT& rect, 
-					const char* text = nullptr, 
-					ID3DXFont* font = nullptr);
+					const char* text = nullptr,  
+					ID3DXFont* font = nullptr, 
+					const uint32_t color = D3DCOLOR_RGBA(255, 0, 0, 255));
 			};//class D3DFont
 		}//namespace stream
 	}//namespace av

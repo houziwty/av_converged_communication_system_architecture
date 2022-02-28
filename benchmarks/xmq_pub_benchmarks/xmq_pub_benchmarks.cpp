@@ -72,22 +72,33 @@ int main(int argc, char* argv[])
   const int jpgbytes{(int)fread(buffer, 1, 4 * 1024 * 1024, fd)};
   fclose(fd);
 
-  const std::string xmq_addr{"127.0.0.1"};
+  const std::string xmq_addr{"192.168.2.172"};
   const std::string name{"test_xmq_pub"};
   boost::shared_ptr<XMQNode> node{
       boost::make_shared<TestXMQPub>()};
   XMQModeConf conf{0};
-  conf.id = 0xC1;
-  conf.port = 60927;
-  conf.type = XMQModeType::XMQ_MODE_TYPE_PUB;
-  XMem().copy(name.c_str(), name.length(), conf.name, 128);
-  node->addConf(conf);
-  conf.id = 0xD1;
+  conf.id = 0xC2;
   conf.port = 60531;
   conf.type = XMQModeType::XMQ_MODE_TYPE_DEALER;
   XMem().copy(name.c_str(), name.length(), conf.name, 128);
   XMem().copy(xmq_addr.c_str(), xmq_addr.length(), conf.ip, 32);
   node->addConf(conf);
+
+  XMQModeConf conf1{0};
+  conf1.id = 0xC9;
+  conf1.port = 60927;
+  conf1.type = XMQModeType::XMQ_MODE_TYPE_PUB;
+  XMem().copy(name.c_str(), name.length(), conf1.name, 128);
+  node->addConf(conf1);
+
+  XMQModeConf conf2{0};
+  conf2.id = 0xC4;
+  conf2.port = 60928;
+  conf2.type = XMQModeType::XMQ_MODE_TYPE_PUB;
+  XMem().copy(name.c_str(), name.length(), conf2.name, 128);
+//  XMem().copy(xmq_addr.c_str(), xmq_addr.length(), conf.ip, 32);
+  node->addConf(conf2);
+
   int ret{node->run()}, sequence{0};
 
   while (Error_Code_Success == ret)

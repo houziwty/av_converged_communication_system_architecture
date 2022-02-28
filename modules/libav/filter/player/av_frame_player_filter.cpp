@@ -1,3 +1,4 @@
+#ifdef _WINDOWS
 #include "av_pkt.h"
 #include "error_code.h"
 #include "pin/av_pin.h"
@@ -46,6 +47,7 @@ int AVFramePlayerFilter::input(const AVPkt* avpkt/* = nullptr*/)
 			conf.id = 1;
 			conf.type = AVPlayerType::AV_PLAYER_TYPE_D3D;
 			conf.video.hwnd = modeconf.hwnd;
+			conf.video.areas = modeconf.areas;
 			flag = true;
 			ret = AVPlayerNode::addConf(conf);
 		}
@@ -72,3 +74,5 @@ int AVFramePlayerFilter::input(const AVPkt* avpkt/* = nullptr*/)
 	
 	return ret;
 }
+
+#endif//_WINDOWS

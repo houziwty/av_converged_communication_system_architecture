@@ -9,6 +9,7 @@ using namespace module::network::xmq;
 #include "asio_node.h"
 using namespace module::network::asio;
 #include "av_node.h"
+#include "av_player.h"
 using namespace module::av::stream;
 #include "log.h"
 using namespace module::file::log;
@@ -89,4 +90,9 @@ private:
 public:
 	afx_msg void OnBnClickedRealplayTest();
 	afx_msg void OnBnClickedGrabTest();
+
+private:
+	std::vector<AVDrawArea> areas;
+public:
+	afx_msg void OnClose();
 };

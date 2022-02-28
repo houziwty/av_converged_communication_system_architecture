@@ -6,14 +6,10 @@ set(
 	AVPKT_ROOT_DIR 
 	${ROOT_DIR}/modules/libavpkt)
 set(
-	AV_PLAYER_ROOT_DIR 
+	AVPLAYER_ROOT_DIR 
 	${ROOT_DIR}/modules/libavplayer)
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-Bsymbolic")
-#	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-Bsymbolic")
-#	link_directories(${VIDEORENDER_ROOT_DIR})
-#	set(LINK_LIBS)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(
 		BOOST_ROOT_DIR 
@@ -29,7 +25,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		${ROOT_DIR}/3rd/d3d/lib)
 	set(
 		AVPKT_LINK_DIR 
-		${ROOT_DIR}/build/win32/modules/libavpkt/${CMAKE_BUILD_TYPE})
+		${ROOT_DIR}/build/x64/modules/libavpkt/${CMAKE_BUILD_TYPE})
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
 			LINK_LIBS 
@@ -50,7 +46,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	add_definitions(-DUSE_MODULE_AV_PKT)
 endif()
 
-include_directories(${INCLUDE_DIR} ${AV_PLAYER_ROOT_DIR} ${BOOST_ROOT_DIR} ${AVPKT_ROOT_DIR})
+include_directories(${INCLUDE_DIR} ${BOOST_ROOT_DIR} ${AVPKT_ROOT_DIR} ${AVPLAYER_ROOT_DIR})
 file(GLOB_RECURSE main "*.cpp")
 
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")

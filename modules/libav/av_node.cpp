@@ -1,7 +1,9 @@
 #include "boost/make_shared.hpp"
 #include "error_code.h"
 #include "utils/map/unordered_map.h"
+#ifdef _WINDOWS
 #include "graph/realplay_stream_play_graph.h"
+#endif//_WINDOWS
 #include "graph/realplay_stream_grab_bgr24_graph.h"
 #include "filter/av_filter.h"
 #include "av_node.h"
@@ -26,14 +28,16 @@ int AVNode::addConf(const AVModeConf& conf)
 	{
 		AVGraphPtr graph;
 
-		if (AVModeType::AV_MODE_TYPE_STREAM_PLAY == conf.type)
-		{
-			graph = boost::make_shared<RealplayStreamPlayGraph>();
-		}
-		else if (AVModeType::AV_MODE_TYPE_GRAB_BRG24 == conf.type)
+		if (AVModeType::AV_MODE_TYPE_GRAB_BRG24 == conf.type)
 		{
 			graph = boost::make_shared<RealplayStreamGrabBGR24Graph>();
 		}
+#ifdef _WINDOWS
+		else if (AVModeType::AV_MODE_TYPE_STREAM_PLAY == conf.type)
+		{
+			graph = boost::make_shared<RealplayStreamPlayGraph>();
+		}
+#endif//_WINDOWS
 
 		if (graph)
 		{

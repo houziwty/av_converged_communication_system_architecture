@@ -21,10 +21,10 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		${BOOST_ROOT_DIR}/stage/lib)
 	set(
 		HK_ROOT_DIR 
-		${3RDPART_DIR}/hikvision/win32/include)
+		${3RDPART_DIR}/hikvision/x64/include)
 	set(
 		HK_LINK_DIR 
-		${3RDPART_DIR}/hikvision/win32/lib)		
+		${3RDPART_DIR}/hikvision/x64/lib)		
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
 			LINK_LIBS 
@@ -45,7 +45,11 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 endif()
 
 set(LIB_ROOT_DIR ${ROOT_DIR}/modules/libdvs)
-include_directories(${INCLUDE_DIR} ${LIB_ROOT_DIR} ${BOOST_ROOT_DIR} ${HK_ROOT_DIR})
+include_directories(
+	${INCLUDE_DIR} 
+	${LIB_ROOT_DIR} 
+	${BOOST_ROOT_DIR} 
+	${HK_ROOT_DIR})
 file(GLOB_RECURSE main "*.cpp")
 file(GLOB_RECURSE 
 	utils 

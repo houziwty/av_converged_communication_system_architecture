@@ -25,13 +25,14 @@ ID3DXFont* D3DFont::createNew(IDirect3DDevice9* device /* = NULL */)
 int D3DFont::text(
 	const RECT& rect, 
 	const char* text /* = nullptr */, 
-	ID3DXFont* font /* = nullptr */)
+	ID3DXFont* font /* = nullptr */, 
+	const uint32_t color /* = D3DCOLOR_RGBA(255, 0, 0, 255) */)
 {
 	int ret{ text && font ? Error_Code_Success : Error_Code_Invalid_Param };
 
 	if (Error_Code_Success == ret)
 	{
-		ret = (0 <= font->DrawTextA(NULL, text, -1, (RECT*)&rect, DT_SINGLELINE | DT_NOCLIP | DT_LEFT | DT_TOP, D3DCOLOR_RGBA(255, 0, 0, 255)) ? Error_Code_Success : Error_Code_Operate_Failure);
+		ret = (0 <= font->DrawTextA(NULL, text, -1, (RECT*)&rect, DT_NOCLIP | DT_LEFT | DT_TOP, color) ? Error_Code_Success : Error_Code_Operate_Failure);
 	}
 
 	return ret;

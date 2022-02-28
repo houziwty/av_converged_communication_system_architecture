@@ -5,8 +5,7 @@ using namespace module::network::asio;
 
 Service::Service() 
 	: idle{ 0 }, 
-	ctxs{ std::max(static_cast<int>(std::thread::hardware_concurrency()), 1) },
-	works{ ctxs.size() }, threads{ ctxs.size() }
+	ctxs{ std::max(static_cast<int>(std::thread::hardware_concurrency()), 1) }, works{ ctxs.size() }
 {}
 
 Service::~Service()
@@ -39,21 +38,30 @@ int Service::run()
 
 int Service::stop()
 {
-	for (auto& ctx : ctxs)
+	for (auto& work : works)
 	{
-		ctx->stop();
-		boost::checked_delete(ctx);
+		boost::checked_delete(work);
 	}
 
 	for (auto& thread : threads)
 	{
-		thread->join();
+		//Forbidden waiting
+		if (thread)
+		{
+			thread->join();
+		}
+
 		boost::checked_delete(thread);
 	}
 
-	for (auto& work : works)
+	for (auto& ctx : ctxs)
 	{
-		boost::checked_delete(work);
+		if (ctx)
+		{
+			ctx->stop();
+		}
+		
+		boost::checked_delete(ctx);
 	}
 
 	ctxs.clear();

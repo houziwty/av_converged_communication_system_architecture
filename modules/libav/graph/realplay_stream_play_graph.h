@@ -13,6 +13,7 @@
 #ifndef MODULE_AV_STREAM_REALPLAY_STREAM_PLAY_GRAPH_H
 #define MODULE_AV_STREAM_REALPLAY_STREAM_PLAY_GRAPH_H
 
+#ifdef _WINDOWS
 #include "av_graph.h"
 
 namespace module
@@ -44,5 +45,7 @@ namespace module
 		}//namespace stream
 	}//namespace av
 }//namespace module
+
+#endif//_WINDOWS
 
 #endif//MODULE_AV_STREAM_REALPLAY_STREAM_PLAY_GRAPH_H

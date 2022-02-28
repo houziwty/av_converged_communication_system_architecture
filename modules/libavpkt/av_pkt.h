@@ -45,19 +45,6 @@ namespace module
 					const void* data = nullptr, 
 					const uint64_t bytes = 0);
 
-                //关联数据
-                //@pkt [in] : 数据包
-                //@Return : 错误码
-                int associate(AVPkt* pkt = nullptr);
-
-                //获取关联数据
-                //@pkt [in] : 数据包
-                //@Return : 错误码
-                inline AVPkt* associate(void) const
-                {
-                    return associateAvpkt;
-                }
-
                 //获取数据
                 //@Return : 数据
                 inline const void* data(void) const
@@ -107,7 +94,6 @@ namespace module
                 const uint64_t avpktTimestamp;
                 void* avpktData;
                 uint64_t avpktDataBytes;
-                AVPkt* associateAvpkt;
             };//class AVPkt
         }//namespace stream
     }//namespace av

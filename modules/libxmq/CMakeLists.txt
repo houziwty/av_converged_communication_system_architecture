@@ -13,13 +13,10 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(
 		ZMQ_ROOT_DIR 
-		${3RDPART_DIR}/libzmq-master)
-	set(
-		ZMQ_INCLUDE_DIR 
-		${ZMQ_ROOT_DIR}/include)
+		${3RDPART_DIR}/libzmq-master/include)
 	set(
 		ZMQ_LINK_DIR 
-		${ZMQ_ROOT_DIR}/win32/lib/${CMAKE_BUILD_TYPE})
+		${3RDPART_DIR}/libzmq-master/build/x64/lib/${CMAKE_BUILD_TYPE})
 	set(
 		BOOST_ROOT_DIR 
 		${3RDPART_DIR}/boost_1_78_0)
@@ -48,7 +45,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 endif()
 
 set(LIB_ROOT_DIR ${ROOT_DIR}/modules/libxmq)
-include_directories(${INCLUDE_DIR} ${LIB_ROOT_DIR} ${ZMQ_INCLUDE_DIR} ${BOOST_ROOT_DIR})
+include_directories(${INCLUDE_DIR} ${LIB_ROOT_DIR} ${ZMQ_ROOT_DIR} ${BOOST_ROOT_DIR})
 add_definitions(-DZMQ_STATIC)
 file(GLOB_RECURSE main "*.cpp")
 file(GLOB_RECURSE 
