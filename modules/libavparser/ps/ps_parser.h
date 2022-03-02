@@ -45,7 +45,8 @@ namespace module
                     size_t bytes);
 
             private:
-                void* ps_demuxer;
+                void* demuxer;
+                uint64_t sequence;
             };//class PSParser
         }//namespace stream
 	}//namespace av

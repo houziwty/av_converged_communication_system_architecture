@@ -45,13 +45,17 @@ file(GLOB_RECURSE
 file(GLOB_RECURSE 
 	mpeg 
 	"${SOURCE_DIR}/av/mpeg/*.c")
+file(GLOB_RECURSE 
+	sps 
+	"${SOURCE_DIR}/av/sps/*.c")
 
 add_library(
 	${PROJECT_NAME} 
 	SHARED 
 	${main} 
     ${utils} 
-	${mpeg})
+	${mpeg} 
+	${sps})
 target_link_libraries(
 	${PROJECT_NAME} 
 	PRIVATE 

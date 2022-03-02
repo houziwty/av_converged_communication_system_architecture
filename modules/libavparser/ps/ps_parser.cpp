@@ -1,5 +1,6 @@
 #include "av/mpeg/mpeg-ps.h"
 #include "av/mpeg/mpeg-ts-proto.h"
+#include "av/sps/sps_parser.h"
 #include "av_pkt.h"
 #include "error_code.h"
 #include "ps_parser.h"
@@ -8,14 +9,14 @@ using namespace module::av::stream;
 PSParser::PSParser(
     ParsedDataCallback callback, 
 	const uint32_t id/* = 0*/) 
-    : AVParser(callback, id), ps_demuxer{nullptr}
+    : AVParser(callback, id), demuxer{nullptr}, sequence{0}
 {}
 
 PSParser::~PSParser()
 {
-    if (ps_demuxer)
+    if (demuxer)
     {
-        ps_demuxer_destroy(reinterpret_cast<ps_demuxer_t*>(ps_demuxer));
+        ps_demuxer_destroy(reinterpret_cast<ps_demuxer_t*>(demuxer));
     } 
 }
 
@@ -25,17 +26,17 @@ int PSParser::input(const AVPkt* avpkt/* = nullptr*/)
 
     if(Error_Code_Success == ret)
     {
-        if (!ps_demuxer)
+        if (!demuxer)
         {
             struct ps_demuxer_notify_t notify{};
-            ps_demuxer = ps_demuxer_create(&PSParser::parsedPSPacketCallback, this);
+            demuxer = ps_demuxer_create(&PSParser::parsedPSPacketCallback, this);
         }
 
-        if (ps_demuxer)
+        if (demuxer)
         {
             ret = 
                 (0 <= ps_demuxer_input(
-                    reinterpret_cast<ps_demuxer_t*>(ps_demuxer), 
+                    reinterpret_cast<ps_demuxer_t*>(demuxer), 
                     (const uint8_t*)avpkt->data(), 
                     avpkt->bytes()) ? Error_Code_Success : Error_Code_Operate_Failure);
         }
@@ -65,20 +66,25 @@ int PSParser::parsedPSPacketCallback(
         if (parser->parsedDataCallback)
         {
             AVMainType maintype{AVMainType::AV_MAIN_TYPE_NONE};
+            int w{0}, h{0}, ret{0};
 
-            if(PSI_STREAM_H264 == codecid || PSI_STREAM_H265 == codecid)
+            if(PSI_STREAM_H264 == codecid)
+            {
+                sps_info_struct sps{ 0 };
+                if (1 == h264_parse_sps((uint8_t*)data + 4, bytes, &sps))
+                {
+                    w = sps.width;
+                    h = sps.height;
+                }
+                
+                maintype = AVMainType::AV_MAIN_TYPE_VIDEO;
+            }
+            else if(PSI_STREAM_H265 == codecid)
             {
                 maintype = AVMainType::AV_MAIN_TYPE_VIDEO;
             }
 
-            AVSubType subtype{AVSubType::AV_SUB_TYPE_NONE};
-
-            if (1 == flags)
-            {
-                subtype = AVSubType::AV_SUB_TYPE_IDR;
-            }
-
-            AVPkt avpkt{maintype, subtype, 0, 0};
+            AVPkt avpkt{maintype, AVSubType::AV_SUB_TYPE_NONE, ++parser->sequence, static_cast<uint64_t>(dts)};
             if(Error_Code_Success == avpkt.input(data, bytes) && 
                 parser->parsedDataCallback)
             {

@@ -408,6 +408,17 @@ void CdvshostdemoDlg::afterPolledReadDataNotification(
 			sprintf_s(area2.text, 256, "Motion Detect Area\r\n");
 			areas.push_back(area2);
 
+			AVDrawArea area3;
+			area3.left = 1500;
+			area3.top = 800;
+			area3.right = 1900;
+			area3.bottom = 1000;
+			area3.color[0] = 0x00;
+			area3.color[1] = 0x80;
+			area3.color[2] = 0x00;
+			sprintf_s(area3.text, 256, "Target 2\r\nSpeed: 90 KM/H\r\nDirection: West");
+			areas.push_back(area3);
+
 			conf.areas = (void*)&areas;
 		}
 
