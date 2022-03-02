@@ -23,14 +23,14 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
 			LINK_LIBS 
-			${BOOST_LINK_DIR}/libboost_thread-vc142-mt-sgd-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_chrono-vc142-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_thread-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-sgd-x64-1_78.lib 
 			${AVPKT_LINK_DIR}/avpkt.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(
 			LINK_LIBS 
-			${BOOST_LINK_DIR}/libboost_thread-vc142-mt-s-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_chrono-vc142-mt-s-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_thread-vc143-mt-s-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-s-x64-1_78.lib 
 			${AVPKT_LINK_DIR}/avpkt.lib)
 	endif()
 	add_definitions(-DUSE_MODULE_AV_PKT)

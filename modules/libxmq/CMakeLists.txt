@@ -27,18 +27,18 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		set(
 			LINK_LIBS 
 			${ZMQ_LINK_DIR}/libzmq-v142-mt-sgd-4_3_5.lib
-			${BOOST_LINK_DIR}/libboost_serialization-vc142-mt-sgd-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_thread-vc142-mt-sgd-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_chrono-vc142-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_thread-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-sgd-x64-1_78.lib 
 			ws2_32.lib 
 			Iphlpapi.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(
 			LINK_LIBS 
 			${ZMQ_LINK_DIR}/libzmq-v142-mt-s-4_3_5.lib
-			${BOOST_LINK_DIR}/libboost_serialization-vc142-mt-s-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_thread-vc142-mt-sgd-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_chrono-vc142-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-s-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_thread-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-sgd-x64-1_78.lib 
 			ws2_32.lib 
 			Iphlpapi.lib)
 	endif()

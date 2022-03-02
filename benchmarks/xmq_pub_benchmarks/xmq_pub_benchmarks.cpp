@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 {
   fileLog.createNew(argv[0]);
   const std::string path{argv[0]};
-  const int pos{path.rfind('/')};
+  const int pos{(int)path.rfind('/')};
   const std::string dir{path.substr(0, pos)};
   char* buffer = new char[4 * 1024 * 1024];
   FILE* fd{fopen((dir + "/img102").c_str(), "rb+")};
