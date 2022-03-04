@@ -234,22 +234,35 @@ void DvsHostServer::processDvsControlMessage(const std::string from, Url& reques
     {
         std::string url{
             (boost::format("config://%s?command=query") % from).str()};
-        std::vector<DVSModeConf> confs;
-        DVSNode::queryConf(confs);
+        DVSModeConf* confs{ nullptr };
+        uint32_t number{ 0 };
 
-        for (int i = 0; i != confs.size(); ++i)
+        if (Error_Code_Success == DVSNode::queryConfs(confs, number))
         {
-            const std::string dvs{
-                (boost::format("&dvs=%d_%s_%d_%s") % confs[i].id % confs[i].ip % confs[i].channels % confs[i].name).str()};
-            url.append(dvs);
+			for (int i = 0; i != number; ++i)
+			{
+				const std::string dvs{
+					(boost::format("&dvs=%d_%s_%d_%s") % confs[i].id % confs[i].ip % confs[i].channels % confs[i].name).str() };
+				url.append(dvs);
+			}
         }
 
-        int ret{XMQNode::send(0xB1, url.c_str(), url.length())};
+       int ret{XMQNode::send(0xB1, url.c_str(), url.length())};
 
-        fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_INFO, 
-            "Query device information successfully from service = [ %s ], result = [ %d ].", 
-            from.c_str(), ret);
+       if (Error_Code_Success == ret)
+       {
+		   fileLog.write(
+			   SeverityLevel::SEVERITY_LEVEL_INFO,
+			   "Query device information successfully from service = [ %s ], result = [ %s ].",
+			   from.c_str(), url.c_str());
+       } 
+       else
+       {
+		   fileLog.write(
+			   SeverityLevel::SEVERITY_LEVEL_WARNING,
+			   "Query device information successfully from service = [ %s ], result = [ %d ].",
+			   from.c_str(), ret);
+       }
     }
     else if (!command.compare("add"))
     {

@@ -14,68 +14,75 @@ D3D::D3D(
 	void* hwnd /* = nullptr */, 
 	void* areas /* = nullptr */)
 	: AVPlayer(id), displayHwnd{ hwnd }, drawAreaParam{areas}, d3d9{ nullptr }, d3d9Device{ nullptr },
-	d3d9PixelShader{ nullptr }, d3d9VertexBuffer{ nullptr }, d3dxFont{ nullptr }, d3dxLine{nullptr}
+	d3d9PixelShader{ nullptr }, d3d9VertexBuffer{ nullptr }, d3dxFont{ nullptr }, d3dxLine{nullptr},
+	width{ 0 }, height{ 0 }
 {
 	d3d9Texture[0] = d3d9Texture[1] = d3d9Texture[2] = nullptr;
 }
 
 D3D::~D3D()
 {
-	destroy();
+	uninit();
 }
 
 int D3D::input(const AVPkt* avpkt /* = nullptr */)
 {
 	int ret{ avpkt ? Error_Code_Success : Error_Code_Invalid_Param };
 
+	if (Error_Code_Success == ret && Error_Code_Success == init(avpkt))
+	{
+		ret = draw(avpkt);
+	}
+
+	return ret;
+}
+
+int D3D::init(const AVPkt* avpkt /* = nullptr */)
+{
+	int ret{ avpkt ? Error_Code_Success : Error_Code_Invalid_Param };
+
 	if (Error_Code_Success == ret)
 	{
-		if (!d3d9 && !d3d9Device && !d3d9PixelShader && !d3d9VertexBuffer)
-		{
-			ret = createNew(1920, 1080);
-		}
+		const uint32_t w{ avpkt->width() }, h{ avpkt->height() };
 
-		ret = (Error_Code_Success == ret ? draw(avpkt->data(), 1920, 1080) : Error_Code_Bad_New_Object);
+		if (0 < w && 0 < h)
+		{
+			if ((!d3d9 && !d3d9Device) || (width != w && height != h))
+			{
+				uninit();
+				d3d9 = Direct3DCreate9(D3D_SDK_VERSION);
+				d3d9Device = D3DDevice().createNew(d3d9, displayHwnd, w, h);
+				d3d9PixelShader = D3DPixelShader().createNew(d3d9Device);
+				d3d9VertexBuffer = D3DVertexBuffer().createNew(d3d9Device, w, h);
+				d3d9Texture[0] = D3DTexture().createNew(d3d9Device, w, h);
+				d3d9Texture[1] = D3DTexture().createNew(d3d9Device, w / 2, h / 2);
+				d3d9Texture[2] = D3DTexture().createNew(d3d9Device, w / 2, h / 2);
+				d3dxFont = D3DFont().createNew(d3d9Device);
+				d3dxLine = D3DLine().createNew(d3d9Device);
+
+				if (d3d9 && d3d9Device && d3d9PixelShader && d3d9VertexBuffer && d3dxFont &&
+					d3d9Texture[0] && d3d9Texture[1] && d3d9Texture[2])
+				{
+					ID3DXConstantTable* table{ D3DPixelShader().constanttable(d3d9Device) };
+					if (table)
+					{
+						D3DDevice().setPixelShader(d3d9Device, d3d9PixelShader);
+						D3DDevice().setTexture(d3d9Device, table, d3d9Texture);
+						table->Release();
+
+						width = w;
+						height = h;
+					}
+				}
+			}
+		}
 	}
 
-	return ret;
+	return d3d9 && d3d9Device && d3d9PixelShader && d3d9VertexBuffer && d3dxFont &&
+		d3d9Texture[0] && d3d9Texture[1] && d3d9Texture[2] ? Error_Code_Success : Error_Code_Operate_Failure;
 }
 
-int D3D::createNew(const uint32_t width /* = 0 */, const uint32_t height /* = 0 */)
-{
-	int ret{ Error_Code_Bad_New_Object };
-	d3d9 = Direct3DCreate9(D3D_SDK_VERSION);
-	d3d9Device = D3DDevice().createNew(d3d9, displayHwnd, width, height);
-	d3d9PixelShader = D3DPixelShader().createNew(d3d9Device);
-	d3d9VertexBuffer = D3DVertexBuffer().createNew(d3d9Device, width, height);
-	d3d9Texture[0] = D3DTexture().createNew(d3d9Device, width, height);
-	d3d9Texture[1] = D3DTexture().createNew(d3d9Device, width / 2, height / 2);
-	d3d9Texture[2] = D3DTexture().createNew(d3d9Device, width / 2, height / 2);
-	d3dxFont = D3DFont().createNew(d3d9Device);
-	d3dxLine = D3DLine().createNew(d3d9Device);
-
-	if (d3d9 && d3d9Device && d3d9PixelShader && d3d9VertexBuffer && d3dxFont &&
-		d3d9Texture[0] && d3d9Texture[1] && d3d9Texture[2])
-	{
-		ID3DXConstantTable* table{ D3DPixelShader().constanttable(d3d9Device) };
-		if (table)
-		{
-			D3DDevice().setPixelShader(d3d9Device, d3d9PixelShader);
-			D3DDevice().setTexture(d3d9Device, table, d3d9Texture);
-			table->Release();
-		}
-
-		ret = Error_Code_Success;
-	}
-	else
-	{
-		destroy();
-	}
-
-	return ret;
-}
-
-int D3D::destroy(void)
+int D3D::uninit(void)
 {
 	for (int i = 0; i != 3; ++i)
 	{
@@ -118,12 +125,10 @@ int D3D::destroy(void)
 	return Error_Code_Success;
 }
 
-int D3D::draw(
-	const void* data /* = nullptr */, 
-	const int width /* = 0 */, 
-	const int height /* = 0 */)
+int D3D::draw(const AVPkt* avpkt /* = nullptr */)
 {
-	int u_pos{ width * height }, v_pos{ u_pos * 5 / 4 };
+	uint32_t u_pos{ width * height }, v_pos{ u_pos * 5 / 4 };
+	const uint8_t* data{ reinterpret_cast<const uint8_t*>(avpkt->data()) };
 
 	d3d9Device->BeginScene();
 	d3d9Device->SetStreamSource(0, d3d9VertexBuffer, 0, sizeof(D3DVertex));

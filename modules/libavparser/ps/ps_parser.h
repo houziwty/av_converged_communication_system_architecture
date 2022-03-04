@@ -13,6 +13,7 @@
 #ifndef MODULE_AV_STREAM_PS_PARSER_H
 #define MODULE_AV_STREAM_PS_PARSER_H
 
+#include "av/sps/sps_parser.h"
 #include "av_parser.h"
 
 namespace module
@@ -47,6 +48,9 @@ namespace module
             private:
                 void* demuxer;
                 uint64_t sequence;
+                SPSParser spsParser;
+                uint32_t width;
+                uint32_t height;
             };//class PSParser
         }//namespace stream
 	}//namespace av

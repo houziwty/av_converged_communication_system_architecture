@@ -1,6 +1,5 @@
 #include "av/mpeg/mpeg-ps.h"
 #include "av/mpeg/mpeg-ts-proto.h"
-#include "av/sps/sps_parser.h"
 #include "av_pkt.h"
 #include "error_code.h"
 #include "ps_parser.h"
@@ -9,7 +8,7 @@ using namespace module::av::stream;
 PSParser::PSParser(
     ParsedDataCallback callback, 
 	const uint32_t id/* = 0*/) 
-    : AVParser(callback, id), demuxer{nullptr}, sequence{0}
+    : AVParser(callback, id), demuxer{nullptr}, sequence{0}, width{0}, height{0}
 {}
 
 PSParser::~PSParser()
@@ -66,15 +65,14 @@ int PSParser::parsedPSPacketCallback(
         if (parser->parsedDataCallback)
         {
             AVMainType maintype{AVMainType::AV_MAIN_TYPE_NONE};
-            int w{0}, h{0}, ret{0};
 
             if(PSI_STREAM_H264 == codecid)
             {
-                sps_info_struct sps{ 0 };
-                if (1 == h264_parse_sps((uint8_t*)data + 4, bytes, &sps))
+                const SPSInfo sps{ parser->spsParser.h264_parse_sps((const uint8_t*)data, bytes) };
+                if (0 < sps.width && 0 < sps.height)
                 {
-                    w = sps.width;
-                    h = sps.height;
+                    parser->width = sps.width;
+                    parser->height = sps.height;
                 }
                 
                 maintype = AVMainType::AV_MAIN_TYPE_VIDEO;
@@ -84,11 +82,21 @@ int PSParser::parsedPSPacketCallback(
                 maintype = AVMainType::AV_MAIN_TYPE_VIDEO;
             }
 
-            AVPkt avpkt{maintype, AVSubType::AV_SUB_TYPE_NONE, ++parser->sequence, static_cast<uint64_t>(dts)};
-            if(Error_Code_Success == avpkt.input(data, bytes) && 
-                parser->parsedDataCallback)
+            //保证每一帧数据都有宽高值
+            if (0 < parser->width && 0 < parser->height)
             {
-                parser->parsedDataCallback(parser->pid, &avpkt);
+				AVPkt avpkt{
+				maintype,
+				AVSubType::AV_SUB_TYPE_NONE,
+				++parser->sequence,
+				static_cast<uint64_t>(dts),
+				parser->width,
+				parser->height };
+
+				if (Error_Code_Success == avpkt.input(data, bytes) && parser->parsedDataCallback)
+				{
+					parser->parsedDataCallback(parser->pid, &avpkt);
+				}
             }
         }
     }

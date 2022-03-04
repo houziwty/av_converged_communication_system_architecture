@@ -98,7 +98,9 @@ void ServiceDiscover::pollDataThread()
 
 				if (polledDataCallback)
 				{
-					polledDataCallback(modeconf.id, third->data, third->bytes, (const char*)first->data);
+					//避免Windows下数据超界产生的错误
+					const std::string from{ (const char*)first->data, first->bytes };
+					polledDataCallback(modeconf.id, third->data, third->bytes, from.c_str());
 				}
 			}
 		}

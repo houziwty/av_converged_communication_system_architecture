@@ -36,12 +36,9 @@ namespace module
 				int input(const AVPkt* avpkt = nullptr) override;
 
 			private:
-				int createNew(const uint32_t width = 0, const uint32_t height = 0);
-				int destroy(void);
-				int draw(
-					const void* data = nullptr, 
-					const int width = 0, 
-					const int height = 0);
+				int init(const AVPkt* avpkt = nullptr);
+				int uninit(void);
+				int draw(const AVPkt* avpkt = nullptr);
 
 			private:
 				const void* displayHwnd;
@@ -53,6 +50,8 @@ namespace module
 				IDirect3DTexture9* d3d9Texture[3];
 				ID3DXFont* d3dxFont;
 				ID3DXLine* d3dxLine;
+				uint32_t width;
+				uint32_t height;
 			};//class D3D
 		}//namespace stream
 	}//namespace av

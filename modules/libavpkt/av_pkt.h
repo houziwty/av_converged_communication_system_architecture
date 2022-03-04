@@ -32,7 +32,9 @@ namespace module
                     const AVMainType mainType = AVMainType::AV_MAIN_TYPE_NONE, 
                     const AVSubType subType = AVSubType::AV_SUB_TYPE_NONE, 
                     const uint64_t sequence = 0, 
-                    const uint64_t timestamp = 0);
+                    const uint64_t timestamp = 0, 
+                    const uint32_t w = 0, 
+                    const uint32_t h = 0);
                 virtual ~AVPkt(void);
 
             public:
@@ -87,6 +89,20 @@ namespace module
                     return avpktTimestamp;
                 }
 
+				//获取宽
+				//@Return : 宽
+				inline const uint32_t width(void) const
+				{
+					return pixelWidth;
+				}
+
+				//获取高
+				//@Return : 高
+				inline const uint32_t height(void) const
+				{
+					return pixelHeight;
+				}
+
             private:
                 const AVMainType avpktMainType;
                 const AVSubType avpktSubType;
@@ -94,6 +110,8 @@ namespace module
                 const uint64_t avpktTimestamp;
                 void* avpktData;
                 uint64_t avpktDataBytes;
+                const uint32_t pixelWidth;
+                const uint32_t pixelHeight;
             };//class AVPkt
         }//namespace stream
     }//namespace av

@@ -40,10 +40,11 @@ namespace module
 				//@Return : 错误码
 				int removeConf(const uint32_t id = 0);
 
-				//查询设备配置集
-				//@confs [in] : 设备配置集
+				//获取所有设备配置集
+				//@confs [in,out] : 设备配置集
+				//@number [in,out] : 设备个数
 				//@Return : 错误码
-				int queryConf(std::vector<DVSModeConf>& confs);
+				int queryConfs(DVSModeConf*& confs, uint32_t& number);
 
 				//查询设备配置
 				//@id [in] : 设备ID

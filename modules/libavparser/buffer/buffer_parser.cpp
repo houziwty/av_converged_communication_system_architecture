@@ -121,8 +121,8 @@ int BufferParser::parse()
 		if (parsedDataCallback)
 		{
 			AVPkt avpkt{
-				static_cast<AVMainType>(*maintype), //AV_MAIN_TYPE_HK_PS
-				static_cast<AVSubType>(*subtype), //AV_SUB_TYPE_NONE
+				static_cast<AVMainType>(*maintype),
+				static_cast<AVSubType>(*subtype),
 				*sequence, 
 				*timestamp};
 

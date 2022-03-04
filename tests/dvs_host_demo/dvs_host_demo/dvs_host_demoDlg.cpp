@@ -116,7 +116,7 @@ BOOL CdvshostdemoDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 
-	SetDlgItemText(IDC_XMQ_ADDRESS, L"172.21.140.110");
+	SetDlgItemText(IDC_XMQ_ADDRESS, L"127.0.0.1");
 	SetDlgItemText(IDC_XMQ_PORT, L"60531");
 	SetDlgItemText(IDC_DEMO_NAME, L"test_demo_name");
 
@@ -514,12 +514,12 @@ void CdvshostdemoDlg::avframeDataCallback(const void* avpkt /* = nullptr */)
 
 	if (pkt)
 	{
-// 		static FILE* fd{ nullptr };
-// 		if (!fd)
-// 		{
-// 			fopen_s(&fd, "d:\\test.bgr24", "wb+");
-// 		}
-// 		fwrite(pkt->data(), pkt->bytes(), 1, fd);
+ 		static FILE* fd{ nullptr };
+ 		if (!fd)
+ 		{
+ 			fopen_s(&fd, "d:\\test.bgr24", "wb+");
+ 		}
+ 		fwrite(pkt->data(), pkt->bytes(), 1, fd);
 	}
 }
 

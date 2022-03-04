@@ -33,17 +33,16 @@ namespace module
                 int input(const AVPkt* avpkt = nullptr) override;
 
             private:
-                int initDecode(void);
-                int uninitDecode(void);
+                int init(const AVPkt* avpkt = nullptr);
+                int uninit(void);
 
             private:
                 void* ctx;
                 void* codec;
-                void* cvt;
-                void* picture;
-                void* bgr24Frame;
-                uint8_t* bgr24;
-                int bgr24Bytes;
+                void* iframe;
+                void* oframe;
+                uint8_t* obuffer;
+                uint32_t obytes;
             };//class FFmpegH264Decode
         }//namespace stream
 	}//namespace av

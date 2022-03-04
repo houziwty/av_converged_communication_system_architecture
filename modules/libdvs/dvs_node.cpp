@@ -1,5 +1,6 @@
 #include "boost/bind/bind.hpp"
 using namespace boost::placeholders;
+#include "boost/format.hpp"
 #include "boost/make_shared.hpp"
 #include "error_code.h"
 #include "hikvision/hikvision_device.h"
@@ -75,17 +76,28 @@ int DVSNode::removeConf(const uint32_t id/* = 0*/)
 	return ret;
 }
 
-int DVSNode::queryConf(std::vector<DVSModeConf>& confs)
+int DVSNode::queryConfs(DVSModeConf*& confs, uint32_t& number)
 {
-	confs.clear();
+	int ret{ Error_Code_Bad_New_Object };
 	const std::vector<DevicePtr> dvss{devices.values()};
+	number = dvss.size();
 
-	for (int i = 0; i != dvss.size(); ++i)
+	if (0 < number)
 	{
-		confs.push_back(dvss[i]->getConf());
+		confs = new(std::nothrow) DVSModeConf[number]{0};
 	}
 
-	return Error_Code_Success;
+	if (confs)
+	{
+		for (int i = 0; i != dvss.size(); ++i)
+		{
+			confs[i] = dvss[i]->getConf();
+		}
+
+		ret = Error_Code_Success;
+	}
+
+	return ret;
 }
 
 const DVSModeConf DVSNode::queryConf(const uint32_t id/* = 0*/)

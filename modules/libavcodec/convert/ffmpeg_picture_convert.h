@@ -33,15 +33,17 @@ namespace module
                 int input(const AVPkt* avpkt = nullptr) override;
 
             private:
-                int initConvert(void);
-                int uninitConvert(void);
+                int init(const AVPkt* avpkt = nullptr);
+                int uninit(void);
 
             private:
                 void* cvt;
-                uint8_t* rgb24;
-                int rgb24Bytes;
-                void* in;
-                void* out;
+				void* iframe;
+				void* oframe;
+				uint8_t* obuffer;
+                uint32_t obytes;
+                uint32_t width;
+                uint32_t height;
             };//class FFmpegPictureConvert
         }//namespace stream
 	}//namespace av

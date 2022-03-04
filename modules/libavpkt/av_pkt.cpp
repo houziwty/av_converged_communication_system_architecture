@@ -6,12 +6,15 @@ using namespace framework::utils::memory;
 using namespace module::av::stream;
 
 AVPkt::AVPkt(
-	const AVMainType mainType/* = AVMainType::AV_MAIN_TYPE_NONE*/, 
-	const AVSubType subType/* = AVSubType::AV_SUB_TYPE_NONE*/, 
-	const uint64_t sequence/* = 0*/, 
-	const uint64_t timestamp/* = 0*/) 
+	const AVMainType mainType /* = AVMainType::AV_MAIN_TYPE_NONE */, 
+	const AVSubType subType /* = AVSubType::AV_SUB_TYPE_NONE */, 
+	const uint64_t sequence /* = 0 */, 
+	const uint64_t timestamp /* = 0 */, 
+	const uint32_t w /* = 0 */, 
+	const uint32_t h /* = 0 */)
 	: avpktMainType{mainType}, avpktSubType{subType}, avpktSequence{sequence}, 
-	avpktTimestamp{timestamp}, avpktData{nullptr}, avpktDataBytes{0}
+	avpktTimestamp{timestamp}, avpktData{nullptr}, avpktDataBytes{0}, 
+	pixelWidth{w}, pixelHeight{h}
 {}
 
 AVPkt::~AVPkt()

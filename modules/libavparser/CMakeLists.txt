@@ -47,7 +47,7 @@ file(GLOB_RECURSE
 	"${SOURCE_DIR}/av/mpeg/*.c")
 file(GLOB_RECURSE 
 	sps 
-	"${SOURCE_DIR}/av/sps/*.c")
+	"${SOURCE_DIR}/av/sps/*.cpp")
 
 add_library(
 	${PROJECT_NAME} 

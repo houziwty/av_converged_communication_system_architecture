@@ -29,13 +29,13 @@
 
 typedef void* _thread_t;
 
-typedef enum class tagDVSFactoryType_t : int
+typedef enum class tagDVSFactoryType_t : uint32_t
 {
 	DVS_FACTORY_TYPE_NONE = 0,
 	DVS_FACTORY_TYPE_HK
 }DVSFactoryType;
 
-typedef enum class tagDVSModelType_t : int
+typedef enum class tagDVSModelType_t : uint32_t
 {
 	DVS_MODEL_TYPE_NONE = 0,
 	DVS_MODEL_TYPE_IPC
