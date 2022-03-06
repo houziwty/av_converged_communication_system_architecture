@@ -173,10 +173,10 @@
             "miDebuggerPath": "/usr/bin/gdb"
         },
         {
-            "name": "test_linux_stream",
+            "name": "http_server_benchmarks",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/benchmarks/stream/stream",
+            "program": "${workspaceFolder}/build/benchmarks/http_server_benchmarks/http_server_benchmarks",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${fileDirname}",
