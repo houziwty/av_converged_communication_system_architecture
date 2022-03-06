@@ -29,8 +29,6 @@
 typedef struct tagHTTPModeConf_t
 {
     uint32_t id;                   //>0，由调用者分配
-    char ip[32];
-    uint16_t port;
 }HTTPModeConf;
 
 #endif//MODULE_NETWORK_HTTP_DEFS_H

@@ -74,6 +74,8 @@ protected:
         SeverityLevel::SEVERITY_LEVEL_INFO, 
         "Polled data = [ %s ], bytes = [ %d ] from session id = [ %u ] successfully.", 
         (const char*)data, bytes, id);
+
+      HttpNode::input(id, e, data, bytes);
     }
     else
     {
@@ -109,7 +111,7 @@ int main(int argc, char* argv[])
   int ret{node->run()}, number{0};
   ASIOModeConf conf;
   conf.proto = ASIOProtoType::ASIO_PROTO_TYPE_TCP;
-  conf.port = 60001;
+  conf.port = 8080;
   conf.tcp.mode = ASIOModeType::ASIO_MODE_TYPE_LISTEN;
   node->addConf(conf);  
   getchar();

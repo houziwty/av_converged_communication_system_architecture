@@ -58,15 +58,15 @@ struct http_server_t* http_server_create(const char* ip, int port)
 {
 	struct http_server_t *http;
 
-	// http = (struct http_server_t*)calloc(1, sizeof(*http));
-	// if (http)
-	// {
-	// 	if (0 != http_server_listen(http, ip, port))
-	// 	{
-	// 		http_server_ondestroy(http);
-	// 		return NULL;
-	// 	}
-	// }
+	http = (struct http_server_t*)calloc(1, sizeof(*http));
+	if (http)
+	{
+		// if (0 != http_server_listen(http, ip, port))
+		// {
+		// 	http_server_ondestroy(http);
+		// 	return NULL;
+		// }
+	}
 
 	return http;
 }

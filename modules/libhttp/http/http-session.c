@@ -103,7 +103,7 @@ static int http_session_try_upgrade(http_session_t* session)
 	const char* wskey;
 	const char* version;
 
-	if (!session->server->wshandler.onupgrade || 0 != strcasecmp(http_get_request_method(session->parser), "GET"))
+	if (/*!session->server->wshandler.onupgrade || */0 != strcasecmp(http_get_request_method(session->parser), "GET"))
 		return 0;
 
 	upgrade = http_server_get_header(session, "Upgrade");
