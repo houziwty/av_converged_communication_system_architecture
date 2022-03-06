@@ -84,6 +84,11 @@
         "variant": "cpp",
         "*.inc": "cpp",
         "string.h": "c",
-        "assert.h": "c"
+        "assert.h": "c",
+        "http-server.h": "c",
+        "stdlib.h": "c",
+        "http-parser.h": "c",
+        "http-server-internal.h": "c",
+        "http-websocket-internal.h": "c"
     }
 }

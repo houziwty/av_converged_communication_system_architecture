@@ -84,7 +84,7 @@ int DVSNode::queryConfs(DVSModeConf*& confs, uint32_t& number)
 
 	if (0 < number)
 	{
-		confs = new(std::nothrow) DVSModeConf[number]{0};
+		confs = new(std::nothrow) DVSModeConf[number];
 	}
 
 	if (confs)

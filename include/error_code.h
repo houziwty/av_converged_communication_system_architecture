@@ -29,11 +29,12 @@ static const int Error_Code_Method_Not_Support = -10;
 //网络操作
 static const int Error_Code_Bad_New_Socket = -1000;
 static const int Error_Code_Bad_Operate_Bind = -1001;
-static const int Error_Code_Bad_Operate_Connect = -1002;
-static const int Error_Code_Bad_Operate_Term = -1003;
-static const int Error_Code_Bad_Operate_Send = -1004;
-static const int Error_Code_Bad_Operate_Recv = -1005;
-static const int Error_Code_Bad_RequestUrl = -1006;
+static const int Error_Code_Bad_Operate_Accept = -1002;
+static const int Error_Code_Bad_Operate_Connect = -1003;
+static const int Error_Code_Bad_Operate_Term = -1004;
+static const int Error_Code_Bad_Operate_Send = -1005;
+static const int Error_Code_Bad_Operate_Recv = -1006;
+static const int Error_Code_Bad_RequestUrl = -1007;
 
 //SDK
 static const int Error_Code_Init_Sdk_Failure = -2000;

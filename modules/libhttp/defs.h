@@ -13,6 +13,8 @@
 #ifndef MODULE_NETWORK_HTTP_DEFS_H
 #define MODULE_NETWORK_HTTP_DEFS_H
 
+#include <cstdint>
+
 #if defined(_WINDOWS)
 #ifdef USE_MODULE_NETWORK_HTTP
 #define NETWORK_HTTP_EXPORT __declspec(dllimport)
@@ -22,5 +24,13 @@
 #elif defined(__linux__)
 #define NETWORK_HTTP_EXPORT
 #endif//_WINDOWS
+
+//HTTP角色配置
+typedef struct tagHTTPModeConf_t
+{
+    uint32_t id;                   //>0，由调用者分配
+    char ip[32];
+    uint16_t port;
+}HTTPModeConf;
 
 #endif//MODULE_NETWORK_HTTP_DEFS_H
