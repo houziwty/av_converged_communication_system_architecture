@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <assert.h>
 
-#if defined(_WIN32) || defined(_WIN64) || defined(OS_WINDOWS)
+#if defined(_WINDOWS)
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
 #endif

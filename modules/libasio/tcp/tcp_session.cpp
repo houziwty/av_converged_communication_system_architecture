@@ -1,4 +1,6 @@
 #include "boost/asio.hpp"
+#include "boost/bind/bind.hpp"
+using namespace boost::placeholders;
 #include "boost/checked_delete.hpp"
 #include "error_code.h"
 #include "tcp_session.h"
@@ -23,7 +25,6 @@ int TcpSession::destroy()
             reinterpret_cast<boost::asio::ip::tcp::socket*>(so)};
         s->close();
         boost::checked_delete(s);
-		so = nullptr;
     }
     
     return Error_Code_Success == ret ? Session::destroy() : ret;
@@ -48,14 +49,20 @@ int TcpSession::send(
 			transferred = bytes - pos;
 			transferred = (transferred > 1048576 ? 1048576 : transferred);
 			s->async_write_some(
-				boost::asio::buffer((const char*)data + pos, transferred),
-				[&](boost::system::error_code e, std::size_t bytes_transferred)
-				{
-					if (sentDataEventCallback)
-					{
-						sentDataEventCallback(sid, bytes_transferred, e.value());
-					}
-				});
+				boost::asio::buffer((const char*)data + pos, transferred), 
+				boost::bind(
+					&TcpSession::afterAsyncWriteSomeCallback, 
+					boost::enable_shared_from_this<TcpSession>::shared_from_this(), 
+					_1, _2)
+				//It will be blocked in lambda expressions if tcp session has been shared from this.
+// 				[&](boost::system::error_code e, std::size_t bytes_transferred)
+// 				{
+// 					if (sentDataEventCallback)
+// 					{
+// 						sentDataEventCallback(sid, bytes_transferred, e.value());
+// 					}
+// 				}
+			);
 			pos += transferred;
 		}
 	}
@@ -73,19 +80,27 @@ int TcpSession::receive()
             reinterpret_cast<boost::asio::ip::tcp::socket*>(so)};
         
 		s->async_read_some(
-			boost::asio::buffer(buffer, bufBytes),
-			[&](boost::system::error_code e, std::size_t bytes_transferred)
-			{
-				if (receivedDataEventCallback)
-				{
-					receivedDataEventCallback(sid, buffer, bytes_transferred, e.value());
-				}
-
-                if (!e && so)
-                {
-                    receive();
-                }
-			});
+			boost::asio::buffer(buffer, bufBytes), 
+			boost::bind(
+				&TcpSession::afterAsyncReadSomeCallback,
+				boost::enable_shared_from_this<TcpSession>::shared_from_this(),
+				_1, _2)
+			//It will be blocked in lambda expressions if tcp session has been shared from this.
+// 			[&, self](boost::system::error_code e, std::size_t bytes_transferred)
+// 			{
+// 				const int32_t ec{ e.value() };
+// 
+// 				if (receivedDataEventCallback)
+// 				{
+// 					receivedDataEventCallback(sid, buffer, bytes_transferred, ec);
+// 				}
+// 
+//                 if (!ec)
+//                 {
+//                     receive();
+//                 }
+// 			}
+		);
 	}
 
 	return ret;

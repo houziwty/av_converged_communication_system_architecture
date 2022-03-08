@@ -74,10 +74,7 @@ protected:
         const void* data = nullptr, 
         const uint32_t bytes = 0) override;
 
-private:
-    //移除超时未更新会话
-    void removeExpiredSession(const std::string sid);
-    
+private:    
     //DVS设备业务处理
     //@from [in] : 源ID
 	//@requestUrl [in] : 请求URL标识

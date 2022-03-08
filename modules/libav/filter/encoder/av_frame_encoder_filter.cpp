@@ -8,7 +8,9 @@ AVFrameEncoderFilter::AVFrameEncoderFilter()
 AVFrameEncoderFilter::~AVFrameEncoderFilter()
 {}
 
-int AVFrameEncoderFilter::input(const AVPkt* avpkt/* = nullptr*/)
+int AVFrameEncoderFilter::input(
+	const uint32_t id /* = 0 */, 
+	const AVPkt* avpkt /* = nullptr */)
 {
 	return 0;
 }

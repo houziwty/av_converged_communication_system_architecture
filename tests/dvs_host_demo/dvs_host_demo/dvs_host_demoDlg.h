@@ -42,6 +42,7 @@ protected:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
+	afx_msg LRESULT OnOpenRealplay(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
 protected:
@@ -71,7 +72,9 @@ protected:
 
 private:
 	void processDvsControlMessage(Url& requestUrl);
-	void avframeDataCallback(const void* avpkt = nullptr);
+	void avframeDataCallback(
+		const uint32_t id = 0, 
+		const void* avpkt = nullptr);
 
 public:
 	afx_msg void OnBnClickedXmqConnect();
@@ -93,6 +96,7 @@ public:
 
 private:
 	std::vector<AVDrawArea> areas;
+	static int WM_OPEN_REALPLAY;
 public:
 	afx_msg void OnClose();
 };

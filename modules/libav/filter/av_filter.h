@@ -58,13 +58,16 @@ namespace module
 				virtual int createNew(const AVModeConf& conf);
 
 				//销毁
+				//@id [in] : 模块ID标识
 				//@Return : 错误码
-				virtual int destroy(void);
+				virtual int destroy(const uint32_t id = 0);
 
 				//输入数据
+				//@id [in] : 模块ID标识
 				//@avpkt [in] : 数据包
 				//@Return : 错误码
 				virtual int input(
+					const uint32_t id = 0, 
 					const AVPkt* avpkt = nullptr);
 
 			protected:

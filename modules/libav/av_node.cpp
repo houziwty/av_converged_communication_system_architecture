@@ -62,7 +62,7 @@ int AVNode::removeConf(const uint32_t id/* = 0*/)
 
 		if (graph)
 		{
-			ret = graph->destroy();
+			ret = graph->destroy(id);
 			graphs.remove(id);
 		}
 		else
@@ -87,7 +87,7 @@ int AVNode::input(
 		if (graph)
 		{
 			AVFilterRef source{graph->query(av_buffer_parser_filter_name)};
-			ret = (!source.expired() ? source.lock()->input(avpkt) : Error_Code_Object_Not_Exist);
+			ret = (!source.expired() ? source.lock()->input(id, avpkt) : Error_Code_Object_Not_Exist);
 		}
 		else
 		{

@@ -32,8 +32,10 @@ namespace module
 
 			public:
 				int createNew(const AVModeConf& conf) override;
-				int destroy(void) override;
-				int input(const AVPkt* avpkt = nullptr) override;
+				int destroy(const uint32_t id = 0) override;
+				int input(
+					const uint32_t id = 0,
+					const AVPkt* avpkt = nullptr) override;
 
 			protected:
 				void afterCodecDataNotification(

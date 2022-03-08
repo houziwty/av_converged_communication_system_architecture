@@ -20,6 +20,8 @@ using namespace boost::placeholders;
 #define new DEBUG_NEW
 #endif
 
+int CdvshostdemoDlg::WM_OPEN_REALPLAY = WM_USER + 1000;
+
 
 // CAboutDlg dialog used for App About
 
@@ -79,6 +81,7 @@ BEGIN_MESSAGE_MAP(CdvshostdemoDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_DVS_LOGOUT, &CdvshostdemoDlg::OnBnClickedDvsLogout)
 	ON_BN_CLICKED(IDC_REALPLAY_TEST, &CdvshostdemoDlg::OnBnClickedRealplayTest)
 	ON_BN_CLICKED(IDC_GRAB_TEST, &CdvshostdemoDlg::OnBnClickedGrabTest)
+	ON_MESSAGE(WM_OPEN_REALPLAY, &CdvshostdemoDlg::OnOpenRealplay)
 	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
@@ -123,7 +126,8 @@ BOOL CdvshostdemoDlg::OnInitDialog()
 	SetDlgItemText(IDC_DVS_ADDRESS, L"192.168.2.225");
 	SetDlgItemText(IDC_DVS_PORT, L"8000");
 	SetDlgItemText(IDC_DVS_USER, L"admin");
-	SetDlgItemText(IDC_DVS_PASSWORD, L"Vrc123456");
+	SetDlgItemText(IDC_DVS_PASSWD, L"Vrc123456");
+	SetDlgItemText(IDC_STREAM_URL, L"realplay://1?command=1&channel=1&stream=0");
 
 	ASIONode::run();
 
@@ -177,6 +181,73 @@ void CdvshostdemoDlg::OnPaint()
 HCURSOR CdvshostdemoDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
+}
+
+LRESULT CdvshostdemoDlg::OnOpenRealplay(WPARAM wParam, LPARAM lParam)
+{
+//	HWND hwnd{ GetDlgItem(IDC_REALPLAY_WND1 + wParam)->GetSafeHwnd() };
+	AVModeConf conf{ ++wParam, AVModeType::AV_MODE_TYPE_GRAB_BRG24, /*hwnd*/nullptr };
+	conf.callback = boost::bind(&CdvshostdemoDlg::avframeDataCallback, this, _1, _2);
+	conf.areas = nullptr;
+// 	AVDrawArea area1;
+// 	area1.left = 300;
+// 	area1.top = 600;
+// 	area1.right = 800;
+// 	area1.bottom = 800;
+// 	area1.color[0] = 0xFF;
+// 	area1.color[1] = 0x00;
+// 	area1.color[2] = 0x00;
+// 	sprintf_s(area1.text, 256, "Target 1\r\nSpeed: 0 KM/H\r\nDirection: North");
+// 	areas.push_back(area1);
+// 
+// 	AVDrawArea area2;
+// 	area2.left = 200;
+// 	area2.top = 200;
+// 	area2.right = 1000;
+// 	area2.bottom = 1000;
+// 	area2.color[0] = 0x00;
+// 	area2.color[1] = 0x80;
+// 	area2.color[2] = 0x00;
+// 	sprintf_s(area2.text, 256, "Motion Detect Area\r\n");
+// 	areas.push_back(area2);
+// 
+// 	AVDrawArea area3;
+// 	area3.left = 1500;
+// 	area3.top = 800;
+// 	area3.right = 1900;
+// 	area3.bottom = 1000;
+// 	area3.color[0] = 0x00;
+// 	area3.color[1] = 0x80;
+// 	area3.color[2] = 0x00;
+// 	sprintf_s(area3.text, 256, "Target 2\r\nSpeed: 90 KM/H\r\nDirection: West");
+// 	areas.push_back(area3);
+// 
+// 	conf.areas = (void*)&areas;
+
+	int ret = AVNode::addConf(conf);
+
+	char temp[256]{ 0 };
+	GetDlgItemTextA(this->GetSafeHwnd(), IDC_STREAM_URL, temp, 256);
+
+//	stream = 2;
+	const std::string url{ temp };
+	const uint64_t bytes{ 32 + url.length() };
+	char* data{ new char[bytes] };
+	*((uint32_t*)data) = 0xFF050301;
+	*((uint32_t*)(data + 4)) = (uint32_t)AVMainType::AV_MAIN_TYPE_NONE;
+	*((uint32_t*)(data + 8)) = (uint32_t)AVSubType::AV_SUB_TYPE_NONE;
+	*((uint32_t*)(data + 12)) = url.length();
+	*((uint32_t*)(data + 16)) = 0;
+	*((uint64_t*)(data + 24)) = 0;
+	memcpy_s(data + 32, url.length(), url.c_str(), url.length());
+
+	while (Error_Code_Object_Not_Exist == ASIONode::send(wParam, data, bytes))
+	{
+		Sleep(10);
+	}
+	boost::checked_array_delete(data);
+
+	return 0;
 }
 
 void CdvshostdemoDlg::afterFetchOnlineStatusNotification(const bool online /* = false */)
@@ -311,7 +382,7 @@ void CdvshostdemoDlg::OnBnClickedDvsLogin()
 	HWND hwnd{ this->GetSafeHwnd() };
 	GetDlgItemTextA(hwnd, IDC_DVS_ADDRESS, ip, 256);
 	GetDlgItemTextA(hwnd, IDC_DVS_USER, user, 256);
-	GetDlgItemTextA(hwnd, IDC_DVS_PASSWORD, passwd, 256);
+	GetDlgItemTextA(hwnd, IDC_DVS_PASSWD, passwd, 256);
 
 	char url[1024]{ 0 };
 	sprintf_s(url, 1024, "config://dvs_host_server?command=add&ip=%s&port=%d&user=%s&passwd=%s&name=test_dvs", ip, port, user, passwd);
@@ -336,19 +407,7 @@ void CdvshostdemoDlg::OnBnClickedDvsLogout()
 {
 	// TODO: Add your control notification handler code here
 
-	ASIOModeConf conf;
-	conf.proto = ASIOProtoType::ASIO_PROTO_TYPE_TCP;
-	conf.port = 60820;
-	conf.tcp.mode = ASIOModeType::ASIO_MODE_TYPE_CONNECT;
-	char ip[256]{ 0 };
-	HWND hwnd{ this->GetSafeHwnd() };
-	GetDlgItemTextA(hwnd, IDC_XMQ_ADDRESS, ip, 256);
-	conf.tcp.ip = ip;
-	int ret{ ASIONode::addConf(conf) };
-
-	if (Error_Code_Success == ret)
-	{
-	}
+	ASIONode::removeConf(sid);
 }
 
 uint32_t CdvshostdemoDlg::afterFetchAcceptedEventNotification(
@@ -361,6 +420,7 @@ uint32_t CdvshostdemoDlg::afterFetchAcceptedEventNotification(
 
 uint32_t CdvshostdemoDlg::afterFetchConnectedEventNotification(const int32_t e /* = 0 */)
 {
+	PostMessage(WM_OPEN_REALPLAY, sid, 0);
 	return ++sid;
 }
 
@@ -373,57 +433,6 @@ void CdvshostdemoDlg::afterPolledReadDataNotification(
 	if (1 > id || !data || !bytes || e)
 	{
 		return;
-	}
-
-	static bool first{ true };
-
-	if (first)
-	{
-		AVModeConf conf{ id, (AVModeType)stream, GetDlgItem(IDC_REALPLAY_WND1)->GetSafeHwnd() };
-		if (1 == stream)
-		{
-			conf.callback = boost::bind(&CdvshostdemoDlg::avframeDataCallback, this, _1);
-		}
-		else
-		{
-			AVDrawArea area1;
-			area1.left = 300;
-			area1.top = 600;
-			area1.right = 800;
-			area1.bottom = 800;
-			area1.color[0] = 0xFF;
-			area1.color[1] = 0x00;
-			area1.color[2] = 0x00;
-			sprintf_s(area1.text, 256, "Target 1\r\nSpeed: 0 KM/H\r\nDirection: North");
-			areas.push_back(area1);
-
-			AVDrawArea area2;
-			area2.left = 200;
-			area2.top = 200;
-			area2.right = 1000;
-			area2.bottom = 1000;
-			area2.color[0] = 0x00;
-			area2.color[1] = 0x80;
-			area2.color[2] = 0x00;
-			sprintf_s(area2.text, 256, "Motion Detect Area\r\n");
-			areas.push_back(area2);
-
-			AVDrawArea area3;
-			area3.left = 1500;
-			area3.top = 800;
-			area3.right = 1900;
-			area3.bottom = 1000;
-			area3.color[0] = 0x00;
-			area3.color[1] = 0x80;
-			area3.color[2] = 0x00;
-			sprintf_s(area3.text, 256, "Target 2\r\nSpeed: 90 KM/H\r\nDirection: West");
-			areas.push_back(area3);
-
-			conf.areas = (void*)&areas;
-		}
-
-		AVNode::addConf(conf);
-		first = false;
 	}
 
 	AVPkt avpkt;
@@ -444,20 +453,19 @@ void CdvshostdemoDlg::OnBnClickedRealplayTest()
 {
 	// TODO: Add your control notification handler code here
 
-	stream = 2;
-	const std::string url{ "realplay://1?command=1&channel=1&stream=0" };
-	const uint64_t bytes{ 32 + url.length() };
-	char* data{ new char[bytes] };
-	*((uint32_t*)data) = 0xFF050301;
-	*((uint32_t*)(data + 4)) = (uint32_t)AVMainType::AV_MAIN_TYPE_NONE;
-	*((uint32_t*)(data + 8)) = (uint32_t)AVSubType::AV_SUB_TYPE_NONE;
-	*((uint32_t*)(data + 12)) = url.length();
-	*((uint32_t*)(data + 16)) = 0;
-	*((uint64_t*)(data + 24)) = 0;
-	memcpy_s(data + 32, url.length(), url.c_str(), url.length());
+	ASIOModeConf conf;
+	conf.proto = ASIOProtoType::ASIO_PROTO_TYPE_TCP;
+	conf.port = 60820;
+	conf.tcp.mode = ASIOModeType::ASIO_MODE_TYPE_CONNECT;
+	char ip[256]{ 0 };
+	HWND hwnd{ this->GetSafeHwnd() };
+	GetDlgItemTextA(hwnd, IDC_XMQ_ADDRESS, ip, 256);
+	conf.tcp.ip = ip;
+	int ret{ ASIONode::addConf(conf) };
 
-	ASIONode::send(sid, data, bytes);
-	boost::checked_array_delete(data);
+	if (Error_Code_Success == ret)
+	{
+	}
 }
 
 void CdvshostdemoDlg::processDvsControlMessage(Url& requestUrl)
@@ -508,18 +516,20 @@ void CdvshostdemoDlg::OnBnClickedGrabTest()
 	boost::checked_array_delete(data);
 }
 
-void CdvshostdemoDlg::avframeDataCallback(const void* avpkt /* = nullptr */)
+void CdvshostdemoDlg::avframeDataCallback(
+	const uint32_t id /* = 0 */, 
+	const void* avpkt /* = nullptr */)
 {
 	AVPkt* pkt{(AVPkt*)avpkt};
 
 	if (pkt)
 	{
- 		static FILE* fd{ nullptr };
- 		if (!fd)
- 		{
- 			fopen_s(&fd, "d:\\test.bgr24", "wb+");
- 		}
- 		fwrite(pkt->data(), pkt->bytes(), 1, fd);
+//  		static FILE* fd{ nullptr };
+//  		if (!fd)
+//  		{
+//  			fopen_s(&fd, "d:\\test.bgr24", "wb+");
+//  		}
+//  		fwrite(pkt->data(), pkt->bytes(), 1, fd);
 	}
 }
 
@@ -530,7 +540,6 @@ void CdvshostdemoDlg::OnClose()
 
 	ASIONode::stop();
 	AVNode::removeConf(sid);
-	ASIONode::removeConf(sid);
 	XMQNode::removeConf(0xFFFF);
 	XMQNode::stop();
 	__super::OnClose();

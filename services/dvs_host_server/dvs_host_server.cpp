@@ -53,11 +53,6 @@ int DvsHostServer::stop()
     return ret;
 }
 
-void DvsHostServer::removeExpiredSession(const std::string sid)
-{
-//    sessions.remove(sid);
-}
-
 void DvsHostServer::afterFetchOnlineStatusNotification(const bool online)
 {
     fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch dvs host service online status = [ %d ].", online);
@@ -284,16 +279,20 @@ void DvsHostServer::processDvsControlMessage(const std::string from, Url& reques
             {
                 conf = DVSNode::queryConf(conf.id);
             }
+            else
+            {
+                DVSNode::removeConf(conf.id);
+            }
 
             const std::string url{
                 (boost::format("config://%s?command=add&error=%d&dvs=%s_%s_%d_%s") 
                 % from % ret % conf.id % ip % conf.channels % name).str()};
-            ret = XMQNode::send(0xB1, url.c_str(), url.length());
+            int send_ret{ XMQNode::send(0xB1, url.c_str(), url.length()) };
 
             fileLog.write(
                 SeverityLevel::SEVERITY_LEVEL_INFO, 
-                "Add new device successfully with id = [ %d ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ], result = [ %d ].", 
-                deviceNumber, name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str(), ret);
+                "Add new device with id = [ %d ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ] error = [ %d ], result = [ %d ].", 
+                deviceNumber, name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str(), ret, send_ret);
         }
         else
         {

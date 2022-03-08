@@ -34,7 +34,7 @@ int Session::createNew(
 
 int Session::destroy()
 {
-	int ret{so && buffer && 0 < sid ? Error_Code_Success : Error_Code_Operate_Failure};
+	int ret{ buffer && 0 < sid ? Error_Code_Success : Error_Code_Operate_Failure };
 
 	if (Error_Code_Success == ret)
 	{
@@ -44,4 +44,32 @@ int Session::destroy()
 	}
 	
 	return ret;
+}
+
+void Session::afterAsyncWriteSomeCallback(
+	const boost::system::error_code e, 
+	const std::size_t bytes_transferred)
+{
+	if (!e && 0 < bytes_transferred && sentDataEventCallback)
+	{
+		sentDataEventCallback(sid, bytes_transferred, e.value());
+	}
+}
+
+void Session::afterAsyncReadSomeCallback(const boost::system::error_code e, const std::size_t bytes_transferred)
+{
+	if (receivedDataEventCallback)
+	{
+		receivedDataEventCallback(sid, buffer, bytes_transferred, e.value());
+	}
+
+	if (!e)
+	{
+		receive();
+	}
+	else
+	{
+		int x{ 0 };
+		x++;
+	}
 }

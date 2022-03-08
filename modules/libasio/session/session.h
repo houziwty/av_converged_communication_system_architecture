@@ -13,6 +13,7 @@
 #ifndef MODULE_NETWORK_ASIO_SESSION_H
 #define MODULE_NETWORK_ASIO_SESSION_H
 
+#include "boost/system/error_code.hpp"
 #include "boost/function.hpp"
 
 namespace module
@@ -74,6 +75,18 @@ namespace module
 				//接收
 				//@Return : 错误码
 				virtual int receive(void) = 0;
+
+			protected:
+				//异步IO数据读写回调
+				//@e : socket错误码
+				//@bytes : 大小
+				//@Comment : 两个回调声明一样，为了清晰表达所以还是分开写
+				void afterAsyncWriteSomeCallback(
+					const boost::system::error_code e, 
+					const std::size_t bytes_transferred);
+				void afterAsyncReadSomeCallback(
+					const boost::system::error_code e,
+					const std::size_t bytes_transferred);
 
 			protected:
 				void* so;

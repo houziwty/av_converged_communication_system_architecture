@@ -1,7 +1,7 @@
 #ifndef _platform_atomic_h_
 #define _platform_atomic_h_
 
-#if defined(OS_WINDOWS)
+#if defined(_WINDOWS)
 #include <Windows.h>
 #if defined(_MSC_VER) && _MSC_VER < 1900
 typedef int		int32_t;
@@ -41,7 +41,7 @@ typedef __int64 int64_t;
 // int atomic_cas64(volatile int64_t *value, int64_t oldvalue, int64_t newvalue)
 //-------------------------------------------------------------------------------------
 
-#if defined(OS_WINDOWS)
+#if defined(_WINDOWS)
 static inline int32_t atomic_increment32(volatile int32_t *value)
 {
 	assert((intptr_t)value % 4 == 0);

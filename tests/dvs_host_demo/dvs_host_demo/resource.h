@@ -18,9 +18,15 @@
 #define IDC_DVS_LOGOUT                  1008
 #define IDC_DVS_USER                    1009
 #define IDC_DVS_PASSWORD                1010
+#define IDC_STREAM_URL                  1010
 #define IDC_REALPLAY_TEST               1011
-#define IDC_REALPLAY_WND1               1012
-#define IDC_GRAB_TEST                   1013
+#define IDC_GRAB_TEST                   1012
+#define IDC_REALPLAY_WND1               1013
+#define IDC_REALPLAY_WND2               1014
+#define IDC_REALPLAY_WND3               1015
+#define IDC_REALPLAY_WND4               1016
+#define IDC_DVS_USER2                   1017
+#define IDC_DVS_PASSWD                  1017
 
 // Next default values for new objects
 // 

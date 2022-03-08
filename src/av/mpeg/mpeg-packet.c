@@ -46,7 +46,7 @@ static int mpeg_packet_h264_h265_filter(uint16_t program, uint16_t stream, struc
         i = mpeg_h264_find_nalu(data + off, size - off, &leading);
         if (i < 0)
         {
-            assert(0);
+//            assert(0);
             return -1;
         }
 

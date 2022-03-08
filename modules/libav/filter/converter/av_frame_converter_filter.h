@@ -32,13 +32,20 @@ namespace module
 
 			public:
 				int createNew(const AVModeConf& conf) override;
-				int destroy(void) override;
-				int input(const AVPkt* avpkt = nullptr) override;
+				int destroy(const uint32_t id = 0) override;
+				int input(
+					const uint32_t id = 0,
+					const AVPkt* avpkt = nullptr) override;
 			
 			protected:
 				void afterCodecDataNotification(
 					const uint32_t id = 0, 
 					const AVPkt* avpkt = nullptr) override;
+
+			private:
+				//AVFrameConverterFilter和AVFrameDecodeFilter都使用AVCodecNode
+				//AVFrameConverterFilter的模块ID设置偏移量10000以免与AVFrameDecodeFilter的模块ID重复
+				const uint32_t offset;
 			};//class AVFrameConverterFilter
 		}//namespace stream
 	}//namespace av

@@ -24,9 +24,12 @@ namespace module
             class FFmpegPictureConvert : public AVcodec
             {
             public:
+                //@in [in] : 输入图片格式
+                //@in [in] : 输出图片格式
                 FFmpegPictureConvert(
                     AVCodecDataCallback callback, 
-					const uint32_t id = 0);
+					const uint32_t id = 0, 
+                    const AVCodecType type = AVCodecType::AV_CODEC_TYPE_YUV420P_2_BGR24);
                 virtual ~FFmpegPictureConvert(void);
 
             public:
@@ -44,6 +47,7 @@ namespace module
                 uint32_t obytes;
                 uint32_t width;
                 uint32_t height;
+                const AVCodecType codecType;
             };//class FFmpegPictureConvert
         }//namespace stream
 	}//namespace av

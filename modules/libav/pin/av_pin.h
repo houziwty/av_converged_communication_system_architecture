@@ -54,9 +54,12 @@ namespace module
 				virtual int connect(AVPinRef pin);
 
 				//输入数据
-				//@avpkt : 数据包
+				//@id [in] : 模块ID标识
+				//@avpkt [in] : 数据包
 				//@Return : 错误码
-				virtual int input(const AVPkt* avpkt = nullptr);
+				virtual int input(
+					const uint32_t id = 0,
+					const AVPkt* avpkt = nullptr);
 
 				//获取类型
 				//@Return : 类型

@@ -28,7 +28,9 @@ namespace module
 				virtual ~AVFrameEncoderFilter(void);
 
 			public:
-				int input(const AVPkt* avpkt = nullptr) override;
+				int input(
+					const uint32_t id = 0, 
+					const AVPkt* avpkt = nullptr) override;
 			};//class AVFrameEncoderFilter
 		}//namespace stream
 	}//namespace av

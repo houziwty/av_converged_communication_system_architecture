@@ -27,8 +27,9 @@
 #endif//_WINDOWS
 
 //帧数据回调函数
-//@_1 [out] : AVPkt帧实例
-typedef std::function<void(const void*)> AVFrameDataCallback;
+//@_1 [out] : 模块ID标识
+//@_2 [out] : AVPkt帧实例
+typedef std::function<void(const uint32_t, const void*)> AVFrameDataCallback;
 
 //AV流图类型
 typedef enum class tagAVModeType_t : uint32_t

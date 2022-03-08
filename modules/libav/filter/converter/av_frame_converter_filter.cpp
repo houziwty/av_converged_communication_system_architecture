@@ -4,8 +4,8 @@
 using namespace module::av::stream;
 
 AVFrameConverterFilter::AVFrameConverterFilter(
-	const AVFilterType type/* = AVFilterType::AV_FILTER_TYPE_NONE*/) 
-	: AVFilter(type), AVCodecNode()
+	const AVFilterType type /* = AVFilterType::AV_FILTER_TYPE_NONE */)
+	: AVFilter(type), AVCodecNode(), offset{ 10000 }
 {}
 
 AVFrameConverterFilter::~AVFrameConverterFilter()
@@ -13,21 +13,38 @@ AVFrameConverterFilter::~AVFrameConverterFilter()
 
 int AVFrameConverterFilter::createNew(const AVModeConf& conf)
 {
-	//杞崲鍣↖D榛樿2
-	AVCodecModeConf codecConf{ 2, AVCodecType::AV_CODEC_TYPE_YUV420P_2_BGR24 };
-	int ret{ AVCodecNode::addConf(codecConf) };
-	return Error_Code_Success == ret ? AVFilter::createNew(conf) : ret;
+	int ret{ 0 < conf.id ? Error_Code_Success : Error_Code_Invalid_Param };
+
+	if (Error_Code_Success == ret)
+	{
+		AVCodecType codec{ AVCodecType::AV_CODEC_TYPE_NONE };
+		if (AVModeType::AV_MODE_TYPE_GRAB_BRG24 == conf.type)
+		{
+			codec = AVCodecType::AV_CODEC_TYPE_YUV420P_2_BGR24;
+		}
+		AVCodecModeConf codecConf{ conf.id + offset, codec };
+		ret = AVCodecNode::addConf(codecConf);
+
+		if (Error_Code_Success == ret)
+		{
+			ret = AVFilter::createNew(conf);
+		}
+	}
+	
+	return ret;
 }
 
-int AVFrameConverterFilter::destroy()
+int AVFrameConverterFilter::destroy(const uint32_t id /* = 0 */)
 {
-	int ret{AVCodecNode::removeConf(2)};
+	int ret{AVCodecNode::removeConf(id + offset)};
 	return Error_Code_Success == ret ? AVFilter::destroy() : ret;
 }
 
-int AVFrameConverterFilter::input(const AVPkt* avpkt/* = nullptr*/)
+int AVFrameConverterFilter::input(
+	const uint32_t id /* = 0 */, 
+	const AVPkt* avpkt /* = nullptr */)
 {
-	return AVCodecNode::input(2, avpkt);
+	return AVCodecNode::input(id + offset, avpkt);
 }
 
 void AVFrameConverterFilter::afterCodecDataNotification(
@@ -36,6 +53,7 @@ void AVFrameConverterFilter::afterCodecDataNotification(
 {
 	if (0 < id && avpkt)
 	{
-		AVFilter::input(avpkt);
+		//数据传递要减去偏移量
+		AVFilter::input(id - offset, avpkt);
 	}
 }

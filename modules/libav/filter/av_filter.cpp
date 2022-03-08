@@ -58,13 +58,15 @@ int AVFilter::createNew(const AVModeConf& conf)
 	return 0 < avpins.values().size() ? Error_Code_Success : Error_Code_Bad_New_Object; 
 }
 
-int AVFilter::destroy()
+int AVFilter::destroy(const uint32_t/* id = 0 */)
 {
 	avpins.clear();
 	return Error_Code_Success;
 }
 
-int AVFilter::input(const AVPkt* avpkt/* = nullptr*/)
+int AVFilter::input(
+	const uint32_t id /* = 0 */, 
+	const AVPkt* avpkt /* = nullptr */)
 {
 	int ret{avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
 
@@ -72,7 +74,7 @@ int AVFilter::input(const AVPkt* avpkt/* = nullptr*/)
 	{
 		if (AVFilterType::AV_FILTER_TYPE_TARGET == filterType && avframeDataCallback)
 		{
-			avframeDataCallback(avpkt);
+			avframeDataCallback(id, avpkt);
 		}
 		else
 		{
@@ -80,7 +82,7 @@ int AVFilter::input(const AVPkt* avpkt/* = nullptr*/)
 
 			if (!out.expired())
 			{
-				ret = out.lock()->input(avpkt);
+				ret = out.lock()->input(id, avpkt);
 			}
 		}
 	}

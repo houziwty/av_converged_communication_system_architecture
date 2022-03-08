@@ -13,6 +13,7 @@
 #ifndef MODULE_NETWORK_ASIO_TCP_SESSION_H
 #define MODULE_NETWORK_ASIO_TCP_SESSION_H
 
+#include "boost/enable_shared_from_this.hpp"
 #include "session/session.h"
 
 namespace module
@@ -21,7 +22,9 @@ namespace module
 	{
 		namespace asio
 		{
-			class TcpSession : public Session
+			class TcpSession 
+				: public Session, 
+				public boost::enable_shared_from_this<TcpSession>
 			{
 			public:
 				TcpSession(

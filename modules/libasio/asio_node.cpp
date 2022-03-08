@@ -23,7 +23,9 @@ ASIONode::ASIONode()
 {}
 
 ASIONode::~ASIONode()
-{}
+{
+	stop();
+}
 
 int ASIONode::run()
 {
@@ -32,8 +34,8 @@ int ASIONode::run()
 
 int ASIONode::stop()
 {
-	int ret{ios.stop()};
-	return ret;
+	sessions.clear();
+	return ios.stop();
 }
 
 int ASIONode::addConf(const ASIOModeConf& conf)

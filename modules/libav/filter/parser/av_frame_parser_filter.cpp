@@ -5,7 +5,7 @@ using namespace module::av::stream;
 
 AVFrameParserFilter::AVFrameParserFilter(
 	const AVFilterType type/* = AVFilterType::AV_FILTER_TYPE_NONE*/) 
-	: AVFilter(type), AVParserNode()
+	: AVFilter(type), AVParserNode(), offset{10000}
 {}
 
 AVFrameParserFilter::~AVFrameParserFilter()
@@ -13,21 +13,33 @@ AVFrameParserFilter::~AVFrameParserFilter()
 
 int AVFrameParserFilter::createNew(const AVModeConf& conf)
 {
-	//Ëß£ÊûêIDÈªòËÆ§‰∏∫2
-	AVParserModeConf parserConf{2, AVParserType::AV_PARSER_TYPE_PS_PARSER};
-	int ret{ AVParserNode::addConf(parserConf) };
-	return Error_Code_Success == ret ? AVFilter::createNew(conf) : ret;
+	int ret{ 0 < conf.id ? Error_Code_Success : Error_Code_Invalid_Param };
+
+	if (Error_Code_Success == ret)
+	{
+		AVParserModeConf parserConf{ conf.id + offset, AVParserType::AV_PARSER_TYPE_PS_PARSER };
+		ret = AVParserNode::addConf(parserConf);
+
+		if (Error_Code_Success == ret)
+		{
+			ret = AVFilter::createNew(conf);
+		}
+	}
+	
+	return ret;
 }
 
-int AVFrameParserFilter::destroy()
+int AVFrameParserFilter::destroy(const uint32_t id /* = 0 */)
 {
-	int ret{AVParserNode::removeConf(2)};
+	int ret{AVParserNode::removeConf(id + offset)};
 	return Error_Code_Success == ret ? AVFilter::destroy() : ret;
 }
 
-int AVFrameParserFilter::input(const AVPkt* avpkt/* = nullptr*/)
+int AVFrameParserFilter::input(
+	const uint32_t id /* = 0 */, 
+	const AVPkt* avpkt /* = nullptr */)
 {
-	return AVParserNode::input(2, avpkt);
+	return AVParserNode::input(id + offset, avpkt);
 }
 
 void AVFrameParserFilter::afterParsedDataNotification(
@@ -36,6 +48,7 @@ void AVFrameParserFilter::afterParsedDataNotification(
 {
 	if (0 < id && avpkt)
 	{
-		AVFilter::input(avpkt);
+		// ˝æ›¥´µ›“™ºı»•∆´“∆¡ø
+		AVFilter::input(id - offset, avpkt);
 	}
 }

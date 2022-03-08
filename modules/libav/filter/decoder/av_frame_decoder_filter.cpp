@@ -13,21 +13,33 @@ AVFrameDecoderFilter::~AVFrameDecoderFilter()
 
 int AVFrameDecoderFilter::createNew(const AVModeConf& conf)
 {
-	//解码ID默认为1
-	AVCodecModeConf codecConf{1, AVCodecType::AV_CODEC_TYPE_DECODE_H264};
-	int ret{ AVCodecNode::addConf(codecConf) };
-	return Error_Code_Success == ret ? AVFilter::createNew(conf) : ret;
+	int ret{ 0 < conf.id ? Error_Code_Success : Error_Code_Invalid_Param };
+
+	if (Error_Code_Success == ret)
+	{
+		AVCodecModeConf codecConf{ conf.id, AVCodecType::AV_CODEC_TYPE_DECODE_H264 };
+		ret = AVCodecNode::addConf(codecConf);
+
+		if (Error_Code_Success == ret)
+		{
+			ret = AVFilter::createNew(conf);
+		}
+	}
+	
+	return ret;
 }
 
-int AVFrameDecoderFilter::destroy()
+int AVFrameDecoderFilter::destroy(const uint32_t id /* = 0 */)
 {
-	int ret{AVCodecNode::removeConf(1)};
+	int ret{AVCodecNode::removeConf(id)};
 	return Error_Code_Success == ret ? AVFilter::destroy() : ret;
 }
 
-int AVFrameDecoderFilter::input(const AVPkt* avpkt/* = nullptr*/)
+int AVFrameDecoderFilter::input(
+	const uint32_t id /* = 0 */, 
+	const AVPkt* avpkt /* = nullptr */)
 {
-	return AVCodecNode::input(1, avpkt);
+	return AVCodecNode::input(id, avpkt);
 }
 
 void AVFrameDecoderFilter::afterCodecDataNotification(
@@ -36,6 +48,6 @@ void AVFrameDecoderFilter::afterCodecDataNotification(
 {
 	if (0 < id && avpkt)
 	{
-		AVFilter::input(avpkt);
+		AVFilter::input(id, avpkt);
 	}
 }

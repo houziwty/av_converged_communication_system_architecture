@@ -21,16 +21,16 @@ int AVGraph::createNew(const AVModeConf& conf)
 	return connectPin(); 
 }
 
-int AVGraph::destroy()
+int AVGraph::destroy(const uint32_t id /* = 0 */)
 {
-	int ret{0 < avfilters.values().size() ? Error_Code_Success : Error_Code_Object_Not_Exist};
+	int ret{0 < id && 0 < avfilters.values().size() ? Error_Code_Success : Error_Code_Object_Not_Exist};
 
 	if (Error_Code_Success == ret)
 	{
 		std::vector<AVFilterPtr> filters{avfilters.values()};
 		for (int i = 0; i != filters.size(); ++i)
 		{
-			filters[i]->destroy();
+			filters[i]->destroy(id);
 		}
 		avfilters.clear();
 	}

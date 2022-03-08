@@ -12,7 +12,7 @@
 #include "http/base64.h"
 #include "http/atomic.h"
 
-#if defined(/*OS*/_WINDOWS)
+#if defined(_WINDOWS)
 #define iov_base	buf
 #define iov_len		len
 #define strcasecmp	_stricmp

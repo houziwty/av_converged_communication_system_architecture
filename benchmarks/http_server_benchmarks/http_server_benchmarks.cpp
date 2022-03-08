@@ -27,15 +27,15 @@ protected:
     const uint16_t port = 0, 
     const int32_t e = 0) override
   {
-    int ret{!e ? ++sid : 0};
+    int ret{!e ? (int)++sid : 0};
 
     if (!e)
     {
       HTTPModeConf conf;
       conf.id = sid;
-      const std::string addr{ip};
-      XMem().copy(ip, addr.length(), conf.ip, 32);
-      conf.port = port;
+      // const std::string addr{ip};
+      // XMem().copy(ip, addr.length(), conf.ip, 32);
+      // conf.port = port;
       ret = HttpNode::addConf(conf);
 
       if (Error_Code_Success == ret)

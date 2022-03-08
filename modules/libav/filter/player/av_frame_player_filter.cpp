@@ -1,4 +1,5 @@
 #ifdef _WINDOWS
+
 #include "av_pkt.h"
 #include "error_code.h"
 #include "pin/av_pin.h"
@@ -20,20 +21,15 @@ int AVFramePlayerFilter::createNew(const AVModeConf& conf)
 	return AVFilter::createNew(conf);
 }
 
-int AVFramePlayerFilter::destroy()
+int AVFramePlayerFilter::destroy(const uint32_t id /* = 0 */)
 {
-	int ret{AVFilter::destroy()};
-
-	if (Error_Code_Success == ret)
-	{
-		AVPlayerNode::removeConf(1);
-		AVPlayerNode::removeConf(2);
-	}
-	
-	return ret;
+	int ret{ AVPlayerNode::removeConf(id) };
+	return Error_Code_Success == ret ? AVFilter::destroy() : ret;
 }
 
-int AVFramePlayerFilter::input(const AVPkt* avpkt/* = nullptr*/)
+int AVFramePlayerFilter::input(
+	const uint32_t id /* = 0 */, 
+	const AVPkt* avpkt /* = nullptr */)
 {
 	int ret{avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
 
@@ -44,7 +40,7 @@ int AVFramePlayerFilter::input(const AVPkt* avpkt/* = nullptr*/)
 
 		if (!flag && AVMainType::AV_MAIN_TYPE_VIDEO == maintype)
 		{
-			conf.id = 1;
+			conf.id = id;
 			conf.type = AVPlayerType::AV_PLAYER_TYPE_D3D;
 			conf.video.hwnd = modeconf.hwnd;
 			conf.video.areas = modeconf.areas;
@@ -53,7 +49,7 @@ int AVFramePlayerFilter::input(const AVPkt* avpkt/* = nullptr*/)
 		}
 		else if (!flag && AVMainType::AV_MAIN_TYPE_AUDIO == maintype)
 		{
-			conf.id = 2;
+			conf.id = id;
 			conf.type = AVPlayerType::AV_PLAYER_TYPE_AAC;
 			flag = true;
 			ret = AVPlayerNode::addConf(conf);
@@ -63,11 +59,11 @@ int AVFramePlayerFilter::input(const AVPkt* avpkt/* = nullptr*/)
 		{
 			if (AVMainType::AV_MAIN_TYPE_VIDEO == maintype)
 			{
-				ret = AVPlayerNode::input(1, avpkt);
+				ret = AVPlayerNode::input(id, avpkt);
 			}
 			else if (AVMainType::AV_MAIN_TYPE_AUDIO == maintype)
 			{
-				ret = AVPlayerNode::input(2, avpkt);
+				ret = AVPlayerNode::input(id, avpkt);
 			}
 		}
 	}

@@ -39,7 +39,7 @@ int AVCodecNode::addConf(const AVCodecModeConf& conf)
 		{
 			codec = boost::make_shared<FFmpegPictureConvert>(
 				boost::bind(&AVCodecNode::afterCodecDataNotification, this, _1, _2), 
-				conf.id);
+				conf.id, conf.type);
 		}
 		else
 		{

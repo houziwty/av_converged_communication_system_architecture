@@ -27,7 +27,9 @@ int AVPin::connect(AVPinRef pin)
 	return inputPin.expired() ? Error_Code_Operate_Failure : Error_Code_Success;
 }
 
-int AVPin::input(const AVPkt* avpkt/* = nullptr*/)
+int AVPin::input(
+	const uint32_t id /* = 0 */, 
+	const AVPkt* avpkt /* = nullptr */)
 {
 	int ret{ avpkt ? Error_Code_Success : Error_Code_Invalid_Param };
 
@@ -35,11 +37,11 @@ int AVPin::input(const AVPkt* avpkt/* = nullptr*/)
 	{
 		if (AVPinType::PIN_TYPE_INPUT == pinType)
 		{
-			ret = avfilter.input(avpkt);
+			ret = avfilter.input(id, avpkt);
 		} 
 		else if (AVPinType::PIN_TYPE_OUTPUT == pinType && !inputPin.expired())
 		{
-			ret = inputPin.lock()->input(avpkt);
+			ret = inputPin.lock()->input(id, avpkt);
 		}
 		else
 		{
