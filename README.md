@@ -1318,7 +1318,11 @@
    >>> + cmake -S . -B build -G "Unix Makefiles"
    >>> + apt install libgoogle-glog-dev
 
-   ### 10.1.4 ffmpeg
+   ### 10.1.4 hiredis
+
+   ### 10.1.5 redis-plus-plus
+
+   ### 10.1.6 ffmpeg
    >>> + apt install ubuntu-restricted-addons
 
    >>> + apt install va-driver-all vdpau-driver-all
