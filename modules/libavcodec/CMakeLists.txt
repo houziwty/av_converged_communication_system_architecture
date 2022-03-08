@@ -16,6 +16,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 		libavformat.a 
 		libavutil.a 
 		libswscale.a
+		libswresample.a
 		avpkt)
 	add_definitions(-D__STDC_CONSTANT_MACROS)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
