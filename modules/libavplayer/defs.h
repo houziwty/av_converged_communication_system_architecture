@@ -32,17 +32,6 @@ typedef enum tagAVPlayerType_t : uint32_t
 	AV_PLAYER_TYPE_AAC
 }AVPlayerType;
 
-//区域框绘制参数
-typedef struct tagAVDrawArea_t
-{
-	uint32_t left;
-	uint32_t top;
-	uint32_t right;
-	uint32_t bottom;
-	uint8_t color[3];                   //RGB颜色值，0-R,1-G,2-B
-	char text[256];
-}AVDrawArea;
-
 typedef struct tagAVPlayerModeConf_t
 {
 	uint32_t id;                   		//>0，由调用者分配

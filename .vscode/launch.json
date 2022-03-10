@@ -192,6 +192,27 @@
             ],
             "preLaunchTask": "Build",
             "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "log_host_server",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/services/log_host_server/log_host_server",
+            "args": ["--xmq_addr", "127.0.0.1", "--xmq_port", "60531", "--name", "log_host_server_log"],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build",
+            "miDebuggerPath": "/usr/bin/gdb"
         }
     ]
 }

@@ -43,7 +43,7 @@ int AVFramePlayerFilter::input(
 			conf.id = id;
 			conf.type = AVPlayerType::AV_PLAYER_TYPE_D3D;
 			conf.video.hwnd = modeconf.hwnd;
-			conf.video.areas = modeconf.areas;
+			conf.video.areas = modeconf.infos;
 			flag = true;
 			ret = AVPlayerNode::addConf(conf);
 		}

@@ -23,13 +23,32 @@ namespace module
 	{
 		namespace stream
 		{
+			//绘制参数
+			typedef struct tagAVDrawParam_t
+			{
+				uint32_t left;
+				uint32_t top;
+				uint32_t right;
+				uint32_t bottom;
+				uint8_t color[3];                   //RGB颜色值，0-R,1-G,2-B
+				char text[256];
+			}AVDrawParam;
+
+			//用户绘制参数
+			typedef struct tagExtendDrawInfo_t
+			{
+				bool enable;
+				uint32_t number;
+				AVDrawParam* areas;
+			}ExtendDrawInfo;
+
 			class D3D : public AVPlayer
 			{
 			public:
 				D3D(
 					const uint32_t id = 0, 
 					void* hwnd = nullptr, 
-					void* areas = nullptr);
+					ExtendDrawInfo* areas = nullptr);
 				~D3D(void);
 
 			public:
@@ -42,7 +61,7 @@ namespace module
 
 			private:
 				const void* displayHwnd;
-				void* drawAreaParam;
+				ExtendDrawInfo* extendDrawInfo;
 				IDirect3D9* d3d9;
 				IDirect3DDevice9* d3d9Device;
 				IDirect3DPixelShader9* d3d9PixelShader;

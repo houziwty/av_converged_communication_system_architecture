@@ -5,6 +5,7 @@ project(avparser VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 set(
 	AVPKT_ROOT_DIR 
 	${ROOT_DIR}/modules/libavpkt)
+
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	link_directories(${AVPKT_ROOT_DIR})
 	set(

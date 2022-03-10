@@ -17,19 +17,23 @@ int FileLog::createNew(const char* path /* = nullptr*/)
 
 	if (Error_Code_Success == ret)
 	{
+		std::size_t slashPos{ 0 };
+		std::string dir;
 		const std::string pathname{ path };
+
 #ifdef _WINDOWS
-		std::size_t pos{pathname.rfind('\\')};
-		const std::string dir{pathname.substr(0, pos) + "\\log"};
+		slashPos = pathname.rfind('\\');
+		dir = pathname.substr(0, slashPos) + "\\log";
 #else
-		std::size_t pos{pathname.rfind('/')};
-		const std::string dir{pathname.substr(0, pos) + "/log"};
+		slashPos = pathname.rfind('/');
+		dir = pathname.substr(0, slashPos) + "/log";
 #endif//_WINDOWS
 		
 		FLAGS_stderrthreshold = google::GLOG_INFO;
-		FLAGS_colorlogtostderr = 1;
+		FLAGS_colorlogtostderr = true;
+		FLAGS_log_dir = dir;
 		google::InitGoogleLogging(path);
-		google::SetLogDestination(google::GLOG_INFO, dir.c_str());
+//		google::SetLogDestination(google::GLOG_INFO, dir.c_str());
 	}
 	
 	return ret;

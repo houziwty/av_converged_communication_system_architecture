@@ -39,13 +39,32 @@ typedef enum class tagAVModeType_t : uint32_t
     AV_MODE_TYPE_STREAM_PLAY
 }AVModeType;
 
+//绘制参数
+typedef struct tagAVDrawParam_t
+{
+	uint32_t left;
+	uint32_t top;
+	uint32_t right;
+	uint32_t bottom;
+	uint8_t color[3];                   //RGB颜色值，0-R,1-G,2-B
+	char text[256];
+}AVDrawParam;
+
+//用户绘制参数
+typedef struct tagExtendDrawInfo_t
+{
+    bool enable;
+    uint32_t number;
+    AVDrawParam* areas;
+}ExtendDrawInfo;
+
 //AV流图角色配置
 typedef struct tagAVModeConf_t
 {
     uint32_t id;                      //>0，由调用者分配
     AVModeType type;
     void* hwnd;                       //视频播放窗口
-    void* areas;                      //仅当AV_MODE_TYPE_STREAM_PLAY == type时有效
+    ExtendDrawInfo* infos;            //仅当AV_MODE_TYPE_STREAM_PLAY == type时有效
     AVFrameDataCallback callback;     //仅当AV_MODE_TYPE_GRAB_BRG24 == type时有效
 }AVModeConf;
 
