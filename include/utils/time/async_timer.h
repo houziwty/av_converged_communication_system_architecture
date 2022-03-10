@@ -10,8 +10,8 @@
 //					1. 2021-11-23 由王科威创建
 //
 
-#ifndef FRAMEWORK_UTILS_ASYNC_TIMER_H
-#define FRAMEWORK_UTILS_ASYNC_TIMER_H
+#ifndef FRAMEWORK_UTILS_TIME_ASYNC_TIMER_H
+#define FRAMEWORK_UTILS_TIME_ASYNC_TIMER_H
 
 #include "boost/asio.hpp"
 #include "boost/enable_shared_from_this.hpp"
@@ -23,6 +23,8 @@ namespace framework
 	{
 		namespace time
 		{
+			class Service;
+
 			//超时事件回调
 			//@_1 : 错误码
 			typedef boost::function<void(const int)> AsyncExpireEventCallback;
@@ -31,24 +33,25 @@ namespace framework
 				: public boost::enable_shared_from_this<AsyncTimer>
 			{
 			public:
-				AsyncTimer(void);
+				AsyncTimer(
+					AsyncExpireEventCallback callback);
 				~AsyncTimer(void);
 
 			public:
-				//设置定时器
-				//@s : socket
-				//@callback : 回调函数
-				//@expire : 超时时间，单位：秒
+				//运行
+				//@ios [in] : IO服务
+				//@callback [in] : 监听回调
+				//@expire : 超时时间，单位：毫秒
 				//@Return : 错误码
-				int setTimer(
-					boost::asio::ip::tcp::socket& s, 
-					AsyncExpireEventCallback callback, 
-					const int expire = 5);
-			};//class AsyncTimer
+				int run(
+					boost::asio::io_context* ctx = nullptr, 
+					const int expire = 5000);
 
-			using AsyncTimerPtr = boost::shared_ptr<AsyncTimer>;
+			private:
+				AsyncExpireEventCallback asyncExpireEventCallback;
+			};//class AsyncTimer
 		}//namespace time
 	}//namespace utils
 }//namespace framework
 
-#endif//FRAMEWORK_UTILS_ASYNC_TIMER_H
+#endif//FRAMEWORK_UTILS_TIME_ASYNC_TIMER_H

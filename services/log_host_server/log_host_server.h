@@ -13,20 +13,26 @@
 #ifndef SERVICE_LOG_HOST_SERVER_H
 #define SERVICE_LOG_HOST_SERVER_H
 
-#include "boost/shared_ptr.hpp"
 #include "log.h"
 using namespace module::file::log;
-#include "utils/url/url.h"
-using namespace framework::utils::url;
 #include "xmq_node.h"
 using namespace module::network::xmq;
+#include "utils/thread/thread_pool.h"
+using namespace framework::utils::thread;
 
 class LogHostServer final 
     : public XMQNode
 {
 public:
-    LogHostServer(FileLog& log);
+    LogHostServer(
+        FileLog& log, 
+        const uint32_t expire = 0, 
+        const char* dir = nullptr);
     ~LogHostServer(void);
+
+public:
+    int run(void) override;
+    int stop(void) override;
 
 protected:
 	void afterPolledDataNotification(
@@ -40,7 +46,16 @@ protected:
 		const uint32_t number = 0) override;
 
 private:
+    //文件超时处理线程
+    void checkFileExpiredThread(void);
+
+private:
     FileLog& fileLog;
+    const uint32_t expireDays;
+    bool stopped;
+    ThreadPool tp;
+    void* thread;
+    const char* fileDir;
 };//class LogHostServer
 
 #endif//SERVICE_LOG_HOST_SERVER_H

@@ -23,6 +23,7 @@ int ThreadPool::destroy(thread_t* t /* = nullptr */)
 
 		if (pool.is_thread_in(pthread))
 		{
+			//Thread will remove from pool after stopping running.		
 			pool.remove_thread(pthread);
 			ret = Error_Code_Success;
 		}

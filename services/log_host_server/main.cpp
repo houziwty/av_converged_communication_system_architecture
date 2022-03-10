@@ -14,15 +14,17 @@ int main(int argc, char* argv[])
     parser.setOption("xmq_addr", "");
     parser.setOption("xmq_port", "");
     parser.setOption("name", "");
+    parser.setOption("expire", "");
 
     if (Error_Code_Success == parser.parse(argc, argv))
     {
         const std::string xmq_addr{parser.getParameter("xmq_addr")};
         const std::string xmq_port{parser.getParameter("xmq_port")};
         const std::string app_name{parser.getParameter("name")};
+        const std::string expire_days{parser.getParameter("expire")};
 
         boost::shared_ptr<XMQNode> node{
-            boost::make_shared<LogHostServer>(fileLog)};
+            boost::make_shared<LogHostServer>(fileLog, atoi(expire_days.c_str()), argv[0])};
         if(node)
         {
             XMQModeConf conf{0};
@@ -32,11 +34,6 @@ int main(int argc, char* argv[])
             XMem().copy(app_name.c_str(), app_name.length(), conf.name, 128);
             XMem().copy(xmq_addr.c_str(), xmq_addr.length(), conf.ip, 32);
 
-            fileLog.write(
-                SeverityLevel::SEVERITY_LEVEL_INFO, 
-                "Run log host server name = [ %s ], xmq_addr = [ %s ], xmq_port = [ %d ], type = [ %d ].",
-                conf.name, conf.ip, conf.port, static_cast<int>(conf.type));
-
             if (Error_Code_Success == node->addConf(conf))
             {
                 node->run();
@@ -45,10 +42,6 @@ int main(int argc, char* argv[])
                 node->removeConf(conf.id);
             }
         }
-    }
-    else
-    {
-        fileLog.write(SeverityLevel::SEVERITY_LEVEL_ERROR, "Parse command line failed.");
     }
 
     fileLog.destroy();

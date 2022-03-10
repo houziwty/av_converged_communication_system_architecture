@@ -3,18 +3,18 @@
 #include "utils/time/async_timer.h"
 using namespace framework::utils::time;
 
-AsyncTimer::AsyncTimer()
+AsyncTimer::AsyncTimer(AsyncExpireEventCallback callback) 
+	: asyncExpireEventCallback{callback}
 {}
 
 AsyncTimer::~AsyncTimer()
 {}
 
-int AsyncTimer::setTimer(
-	boost::asio::ip::tcp::socket& s, 
-	AsyncExpireEventCallback callback, 
-	const int expire /* = 5 */)
+int AsyncTimer::run(
+	boost::asio::io_context* ctx/* = nullptr*/, 
+	const int expire /* = 5000 */)
 {
-	int ret{0 < expire ? Error_Code_Success : Error_Code_Invalid_Param};
+	int ret{ctx && 0 < expire ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
@@ -23,17 +23,17 @@ int AsyncTimer::setTimer(
 		using TimerPtr = boost::shared_ptr<boost::asio::deadline_timer>;
 		TimerPtr ptr{
 			boost::make_shared<boost::asio::deadline_timer>(
-				s.get_executor(), 
+				*ctx, 
 				boost::posix_time::seconds(expire)) };
 
 		if (ptr)
 		{
 			ptr->async_wait(
-				[&](boost::system::error_code e)
+				[&, self](boost::system::error_code e)
 				{
-					if (callback)
+					if (asyncExpireEventCallback)
 					{
-						callback(e.value());
+						asyncExpireEventCallback(e.value());
 					}
 				});
 		}
