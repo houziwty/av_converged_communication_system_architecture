@@ -39,7 +39,12 @@ public:
     //@data [out] : 会话ID
     //@did [out] : 设备ID
     //@cid [out] : 通道ID
-	void getIDs(uint32_t& sid, uint32_t& did, uint32_t& cid);
+    //@fid [out] : 帧ID
+	void getIDs(
+        uint32_t& sid, 
+        uint32_t& did, 
+        uint32_t& cid, 
+        uint64_t& fid);
 
 private:
     //解析单帧数据回调
@@ -54,6 +59,7 @@ private:
     const uint32_t sid;
     uint32_t did;
     uint32_t cid;
+    uint64_t fid;
 };//class DvsStreamSession
 
 #endif//SERVICE_DVS_STREAM_SESSION_H

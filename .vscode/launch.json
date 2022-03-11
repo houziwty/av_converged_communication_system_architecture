@@ -198,7 +198,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/services/log_host_server/log_host_server",
-            "args": ["--xmq_addr", "127.0.0.1", "--xmq_port", "60531", "--name", "log_host_server_log", "--expire", "0"],
+            "args": ["--xmq_addr", "127.0.0.1", "--xmq_port", "60531", "--file_dir", "${workspaceFolder}/build/services/log_host_server/", "--expire", "0"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

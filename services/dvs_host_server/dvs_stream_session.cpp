@@ -8,7 +8,7 @@ using namespace framework::utils::url;
 #include "dvs_stream_session.h"
 
 DvsStreamSession::DvsStreamSession(FileLog& log, const uint32_t id/* = 0*/)
-    : AVParserNode(), sid{id}, cid{0}, did{0}, fileLog{log}
+    : AVParserNode(), sid{ id }, cid{ 0 }, did{ 0 }, fid{0}, fileLog{ log }
 {
     AVParserModeConf conf{sid, AVParserType::AV_PARSER_TYPE_BUFFER_PARSER};
     AVParserNode::addConf(conf);
@@ -35,11 +35,12 @@ int DvsStreamSession::recv(
     return ret;
 }
 
-void DvsStreamSession::getIDs(uint32_t& sid, uint32_t& did, uint32_t& cid)
+void DvsStreamSession::getIDs(uint32_t& sid, uint32_t& did, uint32_t& cid, uint64_t& fid)
 {
     sid = this->sid;
     did = this->did;
     cid = this->cid;
+    fid = ++(this->fid);
 }
 
 void DvsStreamSession::afterParsedDataNotification(

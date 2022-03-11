@@ -48,4 +48,10 @@ static const int Error_Code_Stream_Close_Failure = -2005;
 static const int Error_Code_Invalid_Flag = -3000;
 static const int Error_Code_Out_Of_Range = -3001;
 
+//文件
+static const int Error_Code_File_Open_Failure = -4000;
+static const int Error_Code_File_Existed = -4001;
+static const int Error_Code_File_Not_Exist = -4002;
+static const int Error_Code_Directory_Not_Exist = -4003;
+
 #endif//GLOBAL_ERROR_CODE_H

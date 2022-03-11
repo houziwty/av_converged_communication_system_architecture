@@ -339,11 +339,15 @@ void DvsHostServer::afterPolledRealplayDataNotification(
     const uint32_t bytes/* = 0*/)
 {
     const std::vector<DVSStreamSessionPtr> ss{sessions.values()};
+    const std::string fidkey{ (boost::format("%u_%d") % id % channel).str() };
+    uint64_t fid{ fids.at(fidkey) };
+    fids.replace(fidkey, ++fid);
 
     for (int i = 0; i != ss.size(); ++i)
     {
-        uint32_t sid{0}, did{0}, cid{0};
-        ss[i]->getIDs(sid, did, cid);
+        uint32_t sid{ 0 }, did{ 0 }, cid{ 0 };
+        uint64_t _fid{ 0 };
+        ss[i]->getIDs(sid, did, cid, _fid);
 
         if(0 < sid && did == id && cid == channel)
         {
@@ -353,7 +357,7 @@ void DvsHostServer::afterPolledRealplayDataNotification(
             *((uint32_t*)(frameData + 4)) = (uint32_t)AVMainType::AV_MAIN_TYPE_VIDEO;
             *((uint32_t*)(frameData + 8)) = (uint32_t)AVSubType::AV_SUB_TYPE_PS;
             *((uint32_t*)(frameData + 12)) = bytes;
-            *((uint64_t*)(frameData + 16)) = 0;
+            *((uint64_t*)(frameData + 16)) = fid;
             *((uint64_t*)(frameData + 24)) = 0;
             XMem().copy(data, bytes, frameData + 32, bytes);
             ASIONode::send(sid, frameData, totalBytes);

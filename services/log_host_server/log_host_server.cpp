@@ -1,4 +1,3 @@
-#include <iostream>
 #include "boost/bind/bind.hpp"
 using namespace boost::placeholders;
 #include "boost/filesystem.hpp"
@@ -10,11 +9,9 @@ using namespace framework::utils::time;
 #include "log_host_server.h"
 
 LogHostServer::LogHostServer(
-    FileLog& log, 
-    const uint32_t expire/* = 0*/, 
-    const char* dir/* = nullptr*/)
-    : XMQNode(), fileLog{log}, expireDays{expire}, 
-    thread{nullptr}, stopped{false}, fileDir{dir}
+    const std::string& dir, 
+    const uint32_t expire/* = 0*/)
+    : XMQNode(), fileDir{dir}, expireDays{expire}, thread{nullptr}, stopped{false}
 {}
 
 LogHostServer::~LogHostServer()
@@ -22,11 +19,13 @@ LogHostServer::~LogHostServer()
 
 int LogHostServer::run()
 {
-    int ret{XMQNode::run()};
+    //The dirctory must exist before starting XMQ connection.
+    int ret{createDir()};
 
     if (Error_Code_Success == ret)
     {
         thread = tp.createNew(boost::bind(&LogHostServer::checkFileExpiredThread, this));
+        ret = XMQNode::run();
     }
     
     return ret;
@@ -86,13 +85,27 @@ void LogHostServer::afterPolledDataNotification(
     }
 }
 
+int LogHostServer::createDir()
+{
+    int ret{Error_Code_Directory_Not_Exist};
+
+    if (boost::filesystem::exists(""))
+    {
+        boost::filesystem::create_directory(fileDir);
+    }
+    else
+    {
+        const std::string dir{
+            boost::filesystem::initial_path<boost::filesystem::path>().string()};
+
+        printf("%s.\r\n", dir.c_str());
+    }
+
+    return ret;
+}
+
 void LogHostServer::checkFileExpiredThread()
 {
-    if (!fileDir)
-    {
-        return;
-    }
-    
     XTime xt;
     const std::string temp{fileDir};
 #ifdef _WINDOWS
@@ -110,14 +123,14 @@ void LogHostServer::checkFileExpiredThread()
             boost::filesystem::directory_iterator item_end;
             for (; item_begin != item_end; item_begin++)
             {
-                if (boost::filesystem::is_directory(*item_begin))
-                {
-                    std::cout << item_begin->path() << "\t[dir]" << std::endl;
-                }
-                else
-                {
-                    std::cout << item_begin->path() << std::endl;
-                }
+                // if (boost::filesystem::is_directory(*item_begin))
+                // {
+                //     std::cout << item_begin->path() << "\t[dir]" << std::endl;
+                // }
+                // else
+                // {
+                //     std::cout << item_begin->path() << std::endl;
+                // }
             }
         }
 

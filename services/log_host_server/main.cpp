@@ -8,23 +8,22 @@ using namespace framework::utils::memory;
 
 int main(int argc, char* argv[])
 {
-    FileLog fileLog;
-    fileLog.createNew(argv[0]);
     CommandLineParser parser;
     parser.setOption("xmq_addr", "");
     parser.setOption("xmq_port", "");
-    parser.setOption("name", "");
+    parser.setOption("file_dir", "");
     parser.setOption("expire", "");
 
     if (Error_Code_Success == parser.parse(argc, argv))
     {
         const std::string xmq_addr{parser.getParameter("xmq_addr")};
         const std::string xmq_port{parser.getParameter("xmq_port")};
-        const std::string app_name{parser.getParameter("name")};
+        const std::string file_dir{parser.getParameter("file_dir")};
         const std::string expire_days{parser.getParameter("expire")};
 
+        const std::string app_name{"log_host_server"};
         boost::shared_ptr<XMQNode> node{
-            boost::make_shared<LogHostServer>(fileLog, atoi(expire_days.c_str()), argv[0])};
+            boost::make_shared<LogHostServer>(file_dir, atoi(expire_days.c_str()))};
         if(node)
         {
             XMQModeConf conf{0};
@@ -44,6 +43,5 @@ int main(int argc, char* argv[])
         }
     }
 
-    fileLog.destroy();
     return 0;
 }

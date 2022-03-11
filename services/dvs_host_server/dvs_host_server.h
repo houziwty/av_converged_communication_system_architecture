@@ -31,6 +31,7 @@ using namespace module::device::dvs;
 
 using DVSStreamSessionPtr = boost::shared_ptr<DvsStreamSession>;
 using DVSStreamSessionPtrs = UnorderedMap<const uint32_t, DVSStreamSessionPtr>;
+using AVFrameIDs = UnorderedMap<const std::string, uint64_t>;
 
 class DvsHostServer final 
     : public XMQNode, protected ASIONode, protected DVSNode
@@ -86,6 +87,7 @@ private:
     uint32_t streamNumber;
     SharedMutex mtx;
     DVSStreamSessionPtrs sessions;
+    AVFrameIDs fids;
 };//class DvsHostServer
 
 #endif//SERVICE_DVS_HOST_SERVER_H

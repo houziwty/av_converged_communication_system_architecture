@@ -25,9 +25,8 @@ class LogHostServer final
 {
 public:
     LogHostServer(
-        FileLog& log, 
-        const uint32_t expire = 0, 
-        const char* dir = nullptr);
+        const std::string& dir, 
+        const uint32_t expire = 0);
     ~LogHostServer(void);
 
 public:
@@ -46,16 +45,21 @@ protected:
 		const uint32_t number = 0) override;
 
 private:
+    //创建日志文件目录
+    //@Return : 错误码
+    //@Commnet : 如果fileDir路径存在则按照该路径存储日志文件，
+    //           如果fileDir路径不存在则在程序当前执行路径下创建存储目录
+    int createDir(void);
     //文件超时处理线程
     void checkFileExpiredThread(void);
 
 private:
-    FileLog& fileLog;
+    const std::string& fileDir;
     const uint32_t expireDays;
+    FileLog fileLog;
     bool stopped;
     ThreadPool tp;
     void* thread;
-    const char* fileDir;
 };//class LogHostServer
 
 #endif//SERVICE_LOG_HOST_SERVER_H
