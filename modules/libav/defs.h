@@ -35,8 +35,11 @@ typedef std::function<void(const uint32_t, const void*)> AVFrameDataCallback;
 typedef enum class tagAVModeType_t : uint32_t
 {
     AV_MODE_TYPE_NONE = 0, 
+    AV_MODE_TYPE_GRAB_PS, 
     AV_MODE_TYPE_GRAB_BRG24, 
-    AV_MODE_TYPE_STREAM_PLAY
+    AV_MODE_TYPE_REALPLAY, 
+    AV_MODE_TYPE_PLAYBACK, 
+    AV_MODE_TYPE_DOWNLOAD
 }AVModeType;
 
 //绘制参数

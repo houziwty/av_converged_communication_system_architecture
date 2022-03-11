@@ -6,17 +6,17 @@
 #include "filter/parser/av_frame_parser_filter.h"
 #include "filter/decoder/av_frame_decoder_filter.h"
 #include "filter/player/av_frame_player_filter.h"
-#include "realplay_stream_play_graph.h"
+#include "av_realplay_graph.h"
 using namespace module::av::stream;
 
-RealplayStreamPlayGraph::RealplayStreamPlayGraph()
+AVRealplayGraph::AVRealplayGraph()
 	: AVGraph()
 {}
 
-RealplayStreamPlayGraph::~RealplayStreamPlayGraph()
+AVRealplayGraph::~AVRealplayGraph()
 {}
 
-int RealplayStreamPlayGraph::createNew(const AVModeConf& conf)
+int AVRealplayGraph::createNew(const AVModeConf& conf)
 {
 	AVFilterPtr bufferParserPtr{
 		boost::make_shared<AVBufferParserFilter>(AVFilterType::AV_FILTER_TYPE_SOURCE)};
@@ -41,7 +41,7 @@ int RealplayStreamPlayGraph::createNew(const AVModeConf& conf)
 	return 0 < avfilters.values().size() ? AVGraph::createNew(conf) : Error_Code_Bad_New_Object;
 }
 
-int RealplayStreamPlayGraph::connectPin()
+int AVRealplayGraph::connectPin()
 {
 	int ret{0 < avfilters.values().size() ? Error_Code_Success : Error_Code_Object_Not_Exist};
 

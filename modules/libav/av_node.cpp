@@ -2,9 +2,10 @@
 #include "error_code.h"
 #include "utils/map/unordered_map.h"
 #ifdef _WINDOWS
-#include "graph/realplay_stream_play_graph.h"
+#include "graph/av_realplay_graph.h"
 #endif//_WINDOWS
-#include "graph/realplay_stream_grab_bgr24_graph.h"
+#include "graph/av_grab_bgr24_graph.h"
+#include "graph/av_grab_ps_graph.h"
 #include "filter/av_filter.h"
 #include "av_node.h"
 using namespace module::av::stream;
@@ -30,12 +31,16 @@ int AVNode::addConf(const AVModeConf& conf)
 
 		if (AVModeType::AV_MODE_TYPE_GRAB_BRG24 == conf.type)
 		{
-			graph = boost::make_shared<RealplayStreamGrabBGR24Graph>();
+			graph = boost::make_shared<AVGrabBGR24Graph>();
+		}
+		else if (AVModeType::AV_MODE_TYPE_GRAB_PS == conf.type)
+		{
+			graph = boost::make_shared<AVGrabPSGraph>();
 		}
 #ifdef _WINDOWS
-		else if (AVModeType::AV_MODE_TYPE_STREAM_PLAY == conf.type)
+		else if (AVModeType::AV_MODE_TYPE_REALPLAY == conf.type)
 		{
-			graph = boost::make_shared<RealplayStreamPlayGraph>();
+			graph = boost::make_shared<AVRealplayGraph>();
 		}
 #endif//_WINDOWS
 
