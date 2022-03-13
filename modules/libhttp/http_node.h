@@ -49,6 +49,16 @@ namespace module
 					const int32_t error = 0, 
 					const void* data = nullptr, 
 					const uint64_t bytes = 0);
+
+				//接收数据通知
+				//@id [out] : 会话ID
+				//@data [out] : 数据 
+				//@bytes [out] : 大小
+				//@e [out] : 错误码
+				virtual void afterPolledReadDataNotification(
+					const uint32_t id = 0, 
+					const char* method = nullptr, 
+					const char* path = 0) = 0;
 			};//class HttpNode
 		}//namespace http
 	}//namespace network

@@ -97,6 +97,16 @@ protected:
         "Sent UDP data len = [ %llu ] from session = [ %u ].", bytes, id);
   }
 
+  void afterPolledReadDataNotification(
+    const uint32_t id = 0, 
+    const char* method = nullptr, 
+    const char* path = 0) override
+  {
+    fileLog.write(
+      SeverityLevel::SEVERITY_LEVEL_INFO, 
+      "%s\r\n%s", method, path);
+  }
+
 private:
   uint32_t sid;
 };

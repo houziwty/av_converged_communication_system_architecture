@@ -4,11 +4,29 @@
 #include "http_node.h"
 using namespace module::network::http;
 
+static struct http_server_t gHttpServer{nullptr};
 using Sessions = UnorderedMap<const uint32_t, struct http_session_t*>;
 static Sessions httpSessions;
 
+int on_http_server_handler(void* param, http_session_t* session, const char* method, const char* path)
+{
+    int ret{param && session && method && path ? Error_Code_Success : Error_Code_Invalid_Param};
+
+    if (Error_Code_Success == ret)
+    {
+        HttpNode* node{reinterpret_cast<HttpNode*>(param)};
+        node->afterPolledReadDataNotification(session->id, method, path);
+        http_server_set_status_code(session, 200, "OK");
+    }
+    
+    return ret;
+}
+
 HttpNode::HttpNode()
-{}
+{
+    http_server_set_handler(&gHttpServer, on_http_server_handler, this);
+//    http_server_websocket_sethandler(&gHttpServer, nullptr, this);
+}
 
 HttpNode::~HttpNode()
 {
@@ -25,7 +43,7 @@ int HttpNode::addConf(const HTTPModeConf& conf)
 
     if (Error_Code_Success == ret)
     {
-        struct http_session_t* session{http_session_create(conf.id)};
+        struct http_session_t* session{http_session_create(conf.id, &gHttpServer)};
 
         if (session)
         {

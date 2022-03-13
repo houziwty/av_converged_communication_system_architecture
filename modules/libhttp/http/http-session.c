@@ -346,7 +346,7 @@ static void http_session_onhttp(void* param, const void* data, int len)
 	session->payload.ptr[session->payload.len] = 0; /*filling zero*/
 }
 
-struct http_session_t* http_session_create(const uint32_t id/*struct http_server_t *server, socket_t socket, const struct sockaddr* sa, socklen_t salen*/)
+struct http_session_t* http_session_create(const uint32_t id, struct http_server_t *server)
 {
 	struct http_session_t *session;
 	// struct aio_transport_handler_t handler;
@@ -370,7 +370,7 @@ struct http_session_t* http_session_create(const uint32_t id/*struct http_server
 	// assert(salen <= sizeof(session->addr));
 	// memcpy(&session->addr, sa, salen);
 	session->rlocker = session;
-	// session->server = server; // fixme: server->addref()
+	session->server = server; // fixme: server->addref()
 	// session->addrlen = salen;
 	// session->socket = socket;
 	// session->transport = aio_transport_create(socket, &handler, session);

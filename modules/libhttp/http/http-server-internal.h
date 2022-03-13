@@ -87,9 +87,11 @@ struct http_session_t
 
 	int tryupgrade;
 	void* wsupgrade;
+
+	
 };
 
-struct http_session_t* http_session_create(const uint32_t id/*struct http_server_t *server, socket_t socket, const struct sockaddr* sa, socklen_t salen*/);
+struct http_session_t* http_session_create(const uint32_t id, struct http_server_t *server);
 int http_session_close(struct http_session_t* session);
 int http_session_recv(struct http_session_t* session, int code, const void* data, size_t bytes);
 
