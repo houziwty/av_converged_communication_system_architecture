@@ -6,10 +6,6 @@ using namespace framework::utils::memory;
 #include "error_code.h"
 #include "xmq_node.h"
 using namespace module::network::xmq;
-#include "log.h"
-using namespace module::file::log;
-
-FileLog fileLog;
 
 class TestXMQSub : public XMQNode
 {
@@ -36,34 +32,32 @@ protected:
     const char* from = nullptr)
   {
     const std::string msg{reinterpret_cast<const char*>(data), bytes};
-    fileLog.write(
-        SeverityLevel::SEVERITY_LEVEL_INFO, 
-        "Fetch forward data = [ %s ] from xmq sub service.", 
-        msg.c_str());
+    // fileLog.write(
+    //     SeverityLevel::SEVERITY_LEVEL_INFO, 
+    //     "Fetch forward data = [ %s ] from xmq sub service.", 
+    //     msg.c_str());
   }
 
 	void afterFetchOnlineStatusNotification(const bool online = false)
   {
-    fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch test sub service online status = [ %d ].", online);
+//    fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch test sub service online status = [ %d ].", online);
   }
 
 	void afterFetchServiceCapabilitiesNotification(
 		const ServiceInfo* infos = nullptr, 
 		const uint32_t number = 0)
   {
-    fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch xmq sub service capabilities size = [ %d ].", number);
+    // fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch xmq sub service capabilities size = [ %d ].", number);
 
-    for(int i = 0; i != number; ++i)
-    {
-        fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, " ****** Service name = [ %s ].", infos[i].name);
-    }
+    // for(int i = 0; i != number; ++i)
+    // {
+    //     fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, " ****** Service name = [ %s ].", infos[i].name);
+    // }
   }
 };
 
 int main(int argc, char* argv[])
 {
-  fileLog.createNew(argv[0]);
-
   const std::string xmq_addr{"192.168.2.72"};
   const std::string name{"test_xmq_sub"};
   boost::shared_ptr<XMQNode> node{

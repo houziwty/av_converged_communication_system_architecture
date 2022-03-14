@@ -14,8 +14,6 @@
 #define SERVICE_DVS_HOST_SERVER_H
 
 #include "boost/shared_ptr.hpp"
-#include "log.h"
-using namespace module::file::log;
 #include "utils/url/url.h"
 using namespace framework::utils::url;
 #include "utils/lock/rw_lock.h"
@@ -37,7 +35,7 @@ class DvsHostServer final
     : public XMQNode, protected ASIONode, protected DVSNode
 {
 public:
-    DvsHostServer(FileLog& log);
+    DvsHostServer(const XMQModeConf& conf);
     ~DvsHostServer(void);
 
 public:
@@ -81,8 +79,11 @@ private:
 	//@requestUrl [in] : 请求URL标识
 	void processDvsControlMessage(const std::string from, Url& requestUrl);
 
+public:
+    const XMQModeConf& modeconf;
+
 private:
-    FileLog& fileLog;
+    std::string logid;
     uint32_t deviceNumber;
     uint32_t streamNumber;
     SharedMutex mtx;

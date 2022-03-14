@@ -10,31 +10,34 @@ Url::Url()
 Url::~Url()
 {}
 
-int Url::parse(const std::string data)
+int Url::parse(const void* data/* = nullptr*/, const uint64_t bytes/* = 0*/)
 {
-    int ret{!data.empty() ? Error_Code_Success : Error_Code_Invalid_Param};
+    int ret{data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
 
     if (Error_Code_Success == ret)
     {
-        const int colonPos{static_cast<const int>(data.find_first_of(':'))};
-        const int questionPos{static_cast<const int>(data.find_first_of('?'))};
-        const int totalLength{static_cast<const int>(data.length())};
+        const std::string str((const char*)data, bytes);
+        const int colonPos{static_cast<const int>(str.find_first_of(':'))};
+        const int questionPos{static_cast<const int>(str.find_first_of('?'))};
+        const int totalLength{static_cast<const int>(str.length())};
 
-        protocol = data.substr(0, colonPos);
-
-        const std::string hostpath{ 
-            data.substr(colonPos + 3, -1 < questionPos ? questionPos - colonPos - 3 : totalLength - colonPos - 2) };
-        if (!hostpath.empty())
+        //协议
+        _proto = str.substr(0, colonPos);
+        //主机
+        const std::string host_path{ 
+            str.substr(colonPos + 3, -1 < questionPos ? questionPos - colonPos - 3 : totalLength - colonPos - 2) };
+        if (!host_path.empty())
         {
-            const int splashPos{static_cast<const int>(hostpath.find_first_of('/'))};
-            host = hostpath.substr(0, splashPos);
+            const int splashPos{static_cast<const int>(host_path.find_first_of('/'))};
+            _host = host_path.substr(0, splashPos);
+            //路径
             if (-1 < splashPos)
             {
-                path = hostpath.substr(splashPos, hostpath.length());
+                _path = host_path.substr(splashPos, host_path.length());
             }
         }
-
-        const std::string params{-1 < questionPos ? data.substr(questionPos + 1, totalLength - questionPos) : ""};
+        //参数项
+        const std::string params{-1 < questionPos ? str.substr(questionPos + 1, totalLength - questionPos) : ""};
         if (!params.empty())
         {
             std::vector<std::string> items;
@@ -84,24 +87,6 @@ const std::string Url::encode()
     }
 
     return url;
-}
-
-int Url::setProtocol(const std::string name)
-{
-    protocol = name;
-    return protocol.empty() ? Error_Code_Invalid_Param : Error_Code_Success;
-}
-
-int Url::setHost(const std::string host)
-{
-    this->host = host;
-    return this->host.empty() ? Error_Code_Invalid_Param : Error_Code_Success;
-}
-
-int Url::setPath(const std::string path)
-{
-    this->path = path;
-    return this->path.empty() ? Error_Code_Invalid_Param : Error_Code_Success;
 }
 
 int Url::addParameter(const std::string key, const std::string value)

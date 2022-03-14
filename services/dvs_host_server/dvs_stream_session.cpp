@@ -1,17 +1,22 @@
 #include "boost/bind/bind.hpp"
 using namespace boost::placeholders;
 #include "boost/make_shared.hpp"
+#include "boost/format.hpp"
 #include "av_pkt.h"
 #include "error_code.h"
 #include "utils/url/url.h"
 using namespace framework::utils::url;
+#include "dvs_host_server.h"
 #include "dvs_stream_session.h"
 
-DvsStreamSession::DvsStreamSession(FileLog& log, const uint32_t id/* = 0*/)
-    : AVParserNode(), sid{ id }, cid{ 0 }, did{ 0 }, fid{0}, fileLog{ log }
+DvsStreamSession::DvsStreamSession(
+    XMQNode& node, 
+    const XMQModeConf& conf, 
+    const uint32_t id/* = 0*/)
+    : AVParserNode(), sid{ id }, cid{ 0 }, did{ 0 }, fid{0}, xmqNode{node}, modeconf{conf}
 {
-    AVParserModeConf conf{sid, AVParserType::AV_PARSER_TYPE_BUFFER_PARSER};
-    AVParserNode::addConf(conf);
+    AVParserModeConf c{sid, AVParserType::AV_PARSER_TYPE_BUFFER_PARSER};
+    AVParserNode::addConf(c);
 }
 
 DvsStreamSession::~DvsStreamSession()
@@ -47,6 +52,7 @@ void DvsStreamSession::afterParsedDataNotification(
     const uint32_t id/* = 0*/, 
     const AVPkt* avpkt/* = nullptr*/)
 {
+    const std::string logid{std::string(XMQHostID) + "_log"};
     const std::string msg{(const char*)avpkt->data(), avpkt->bytes()};
     Url url;
     int ret{url.parse(msg)};
@@ -71,21 +77,18 @@ void DvsStreamSession::afterParsedDataNotification(
             }
         }
 
-        fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_INFO, 
-            "Parsed stream play command = [ %d ], device ID = [ %d ], channel ID = [ %d ] from session = [ %d ] successfully.",  
-            command, 
-            did, 
-            cid, 
-            sid);
+        const std::string log{
+            (boost::format(
+                "info://%s?command=add&severity=0&log=Parsed stream play command = [ %d ], device ID = [ %d ], channel ID = [ %d ] from session = [ %d ] successfully.") 
+                % logid % command % did % cid % sid).str()};
+        xmqNode.send(modeconf.id, log.c_str(), log.length(), logid.c_str());
     }
     else
     {
-        fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_ERROR, 
-            "Parsed stream play url = [ %s ] from session = [ %d ] failed, result = [ %d ].",  
-            msg.c_str(), 
-            sid, 
-            ret);
+        const std::string log{
+            (boost::format(
+                "info://%s?command=add&severity=1&log=Parsed stream play url = [ %s ] from session = [ %d ] failed, result = [ %d ].") 
+                % logid % msg % sid % ret).str()};
+        xmqNode.send(modeconf.id, log.c_str(), log.length(), logid.c_str());
     }
 }

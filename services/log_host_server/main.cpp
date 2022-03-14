@@ -11,6 +11,7 @@ int main(int argc, char* argv[])
     CommandLineParser parser;
     parser.setOption("xmq_addr", "");
     parser.setOption("xmq_port", "");
+    parser.setOption("name", "");
     parser.setOption("file_dir", "");
     parser.setOption("expire", "");
 
@@ -18,10 +19,10 @@ int main(int argc, char* argv[])
     {
         const std::string xmq_addr{parser.getParameter("xmq_addr")};
         const std::string xmq_port{parser.getParameter("xmq_port")};
+        const std::string log_name{parser.getParameter("name")};
         const std::string file_dir{parser.getParameter("file_dir")};
         const std::string expire_days{parser.getParameter("expire")};
 
-        const std::string app_name{"log_host_server"};
         boost::shared_ptr<XMQNode> node{
             boost::make_shared<LogHostServer>(file_dir, atoi(expire_days.c_str()))};
         if(node)
@@ -30,7 +31,7 @@ int main(int argc, char* argv[])
             conf.id = 0xB1;
             conf.port = 60531;
             conf.type = XMQModeType::XMQ_MODE_TYPE_DEALER;
-            XMem().copy(app_name.c_str(), app_name.length(), conf.name, 128);
+            XMem().copy(log_name.c_str(), log_name.length(), conf.name, 128);
             XMem().copy(xmq_addr.c_str(), xmq_addr.length(), conf.ip, 32);
 
             if (Error_Code_Success == node->addConf(conf))

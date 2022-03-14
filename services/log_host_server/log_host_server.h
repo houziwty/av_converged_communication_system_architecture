@@ -13,12 +13,10 @@
 #ifndef SERVICE_LOG_HOST_SERVER_H
 #define SERVICE_LOG_HOST_SERVER_H
 
-#include "log.h"
+#include "file_log.h"
 using namespace module::file::log;
 #include "xmq_node.h"
 using namespace module::network::xmq;
-#include "utils/thread/thread_pool.h"
-using namespace framework::utils::thread;
 
 class LogHostServer final 
     : public XMQNode
@@ -45,21 +43,9 @@ protected:
 		const uint32_t number = 0) override;
 
 private:
-    //创建日志文件目录
-    //@Return : 错误码
-    //@Commnet : 如果fileDir路径存在则按照该路径存储日志文件，
-    //           如果fileDir路径不存在则在程序当前执行路径下创建存储目录
-    int createDir(void);
-    //文件超时处理线程
-    void checkFileExpiredThread(void);
-
-private:
     const std::string& fileDir;
     const uint32_t expireDays;
     FileLog fileLog;
-    bool stopped;
-    ThreadPool tp;
-    void* thread;
 };//class LogHostServer
 
 #endif//SERVICE_LOG_HOST_SERVER_H

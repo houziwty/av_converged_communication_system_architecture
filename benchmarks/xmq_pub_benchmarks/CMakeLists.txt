@@ -5,9 +5,6 @@ project(xmq_pub_benchmarks VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 set(
 	XMQ_ROOT_DIR 
 	${ROOT_DIR}/modules/libxmq)
-set(
-	LOG_ROOT_DIR 
-	${ROOT_DIR}/modules/liblog)
 	
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	link_directories(${XMQ_ROOT_DIR} ${LOG_ROOT_DIR})
@@ -15,8 +12,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 		LINK_LIBS 
 		libboost_thread.a
 		pthread 
-		xmq 
-		log)
+		xmq)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(
 		BOOST_ROOT_DIR 
@@ -27,9 +23,6 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(
 		XMQ_LINK_DIR 
 		${ROOT_DIR}/build/x64/modules/libxmq/${CMAKE_BUILD_TYPE})
-	set(
-		LOG_LINK_DIR 
-		${ROOT_DIR}/build/x64/modules/liblog/${CMAKE_BUILD_TYPE})
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
 			LINK_LIBS 
@@ -37,8 +30,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-sgd-x64-1_78.lib 
 			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-sgd-x64-1_78.lib	
 			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-sgd-x64-1_78.lib 		
-			${XMQ_LINK_DIR}/xmq.lib 
-			${LOG_LINK_DIR}/log.lib)
+			${XMQ_LINK_DIR}/xmq.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(
 			LINK_LIBS 
@@ -46,8 +38,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-s-x64-1_78.lib 
 			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-s-x64-1_78.lib	
 			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-s-x64-1_78.lib 		
-			${XMQ_LINK_DIR}/xmq.lib 
-			${LOG_LINK_DIR}/log.lib)
+			${XMQ_LINK_DIR}/xmq.lib)
 	endif()
 	add_definitions(-DUSE_MODULE_FILE_LOG -DUSE_MODULE_NETWORK_XMQ)
 endif()
@@ -57,8 +48,7 @@ include_directories(
 	${INCLUDE_DIR} 
 	${TEST_XMQ_PUB_DIR} 
 	${BOOST_ROOT_DIR} 
-	${XMQ_ROOT_DIR} 
-	${LOG_ROOT_DIR})
+	${XMQ_ROOT_DIR})
 
 file(GLOB_RECURSE main "*.cpp")
 file(GLOB_RECURSE utils 

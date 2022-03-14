@@ -13,6 +13,7 @@
 #ifndef FRAMEWORK_UTILS_URL_URL_H
 #define FRAMEWORK_UTILS_URL_URL_H
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -22,11 +23,17 @@ namespace framework
     {
         namespace url
         {
-            typedef struct tagParamItem_t
+            typedef struct tagCChar_t
+            {
+                void* buffer;
+                uint64_t bytes;
+            }CChar;
+
+            typedef struct tagDataItem_t
             {
                 std::string key;
-                std::string value;
-            }ParamItem;
+                CChar value;
+            }DataItem;
 
             class Url
             {
@@ -36,74 +43,91 @@ namespace framework
 
             public:
                 //解析
-                //@data : 数据
+                //@data [in] : 数据
+                //@bytes [in] : 大小
                 //@Return : 错误码
-                int parse(const std::string data);
+                int parse(const void* data = nullptr, const uint64_t bytes = 0);
 
                 //封装
-                //@Return : URL
-                const std::string encode(void);
+                //@data [out] : 数据
+                //@bytes [out] : 大小
+                //@Return : 错误码
+                //@Comment : 数据内存由调用者释放
+                int encode(void*& data, uint64_t& bytes);
 
                 //获取协议名称
                 //@Return : 协议名称
-                inline const std::string getProtocol(void) const
+                inline const std::string proto(void) const
                 {
-                    return protocol;
+                    return _proto;
                 }
 
                 //设置协议名称
-                //@name : 协议名称
+                //@name [in] : 协议名称
                 //@Return ：错误码
-                int setProtocol(const std::string name);
+                inline void proto(const std::string name)
+                {
+                    _proto = name;
+                }
 
                 //获取主机名
                 //@Return : 主机名
                 //@Comment : 主机名为IP:Port
-                inline const std::string getHost(void) const
+                inline const std::string host(void) const
                 {
-                    return host;
+                    return _host;
                 }
 
                 //设置主机名
-                //@host : 主机名称或[IP:Port]
+                //@name [in] : 主机名称或[IP:Port]
                 //@Return : 错误码
-                int setHost(const std::string host);
+                inline void host(const std::string name)
+                {
+                    _host = name;
+                }
 
                 //获取路径
                 //@Return : 路径
-                inline const std::string getPath(void) const
+                inline const std::string path(void) const
                 {
-                    return path;
+                    return _path;
                 }
 
                 //设置路径
-                //@path : 路径，格式为/var1/var2
+                //@path [in] : 路径，格式为/var1/var2
                 //@Return : 错误码
-                int setPath(const std::string path);
+                inline void path(const std::string name)
+                {
+                    _path = name;
+                }
 
                 //获取参数集
                 //@Return : 参数集
-                inline const std::vector<ParamItem> getParameters(void) const
+                inline const std::vector<DataItem> items(void) const
                 {
-                    return parameters;
+                    return _items;
                 }
 
-                //添加参数
-                //@key : 键
-                //@value : 值
+                //添加参数项
+                //@key [in] : 键
+                //@data [in] : 数据
+                //@bytes [in] : 大小
                 //@Return : 错误码
-                int addParameter(const std::string key, const std::string value);
+                int addItem(
+                    const std::string key, 
+                    const void* data = nullptr, 
+                    const uint64_t bytes = 0);
 
-                //删除参数
-                //@key : 键
+                //删除参数项
+                //@key [in] : 键
                 //@Return : 错误码
-                int removeParameter(const std::string key);
+                int removeItem(const std::string key);
 
             private:
-                std::string protocol;
-                std::string host;
-                std::string path;
-                std::vector<ParamItem> parameters;
+                std::string _proto;
+                std::string _host;
+                std::string _path;
+                std::vector<DataItem> _items;
             };//class Url
         }//namespace url
     }//namespace utils

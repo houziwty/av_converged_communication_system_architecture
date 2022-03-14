@@ -13,8 +13,6 @@
 #ifndef SERVICE_XMQ_HOST_SERVER_H
 #define SERVICE_XMQ_HOST_SERVER_H
 
-#include "log.h"
-using namespace module::file::log;
 #include "xmq_node.h"
 using namespace module::network::xmq;
 #include "utils/map/unordered_map.h"
@@ -25,7 +23,7 @@ class XmqHostServer final
 	: public XMQNode
 {
 public:
-	XmqHostServer(FileLog& log);
+	XmqHostServer(const XMQModeConf& conf);
 	~XmqHostServer(void);
 
 public:
@@ -68,7 +66,8 @@ private:
 		const std::string data);
 
 private:
-	FileLog& fileLog;
+	const XMQModeConf& modeconf;
+	std::string logid;
 	UnorderedMap<std::string, uint64_t> registeredServices;
 	bool stopped;
 	_thread_t expire;

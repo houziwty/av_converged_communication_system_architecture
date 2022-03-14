@@ -12,8 +12,8 @@ using namespace framework::utils::memory;
 using namespace framework::utils::url;
 #include "dvs_host_server.h"
 
-DvsHostServer::DvsHostServer(FileLog& log)
-    : XMQNode(), ASIONode(), DVSNode(), fileLog{log}, deviceNumber{0}, streamNumber{0}
+DvsHostServer::DvsHostServer(const XMQModeConf& conf)
+    : XMQNode(), ASIONode(), DVSNode(), modeconf{conf}, deviceNumber{0}, streamNumber{0}
 {}
 
 DvsHostServer::~DvsHostServer()
@@ -29,12 +29,18 @@ int DvsHostServer::run()
 
         if (Error_Code_Success == ret)
         {
+            logid.append(DVSHostID).append("_log");
             ASIOModeConf conf;
             conf.proto = ASIOProtoType::ASIO_PROTO_TYPE_TCP;
             conf.port = 60820;
             conf.tcp.mode = ASIOModeType::ASIO_MODE_TYPE_LISTEN;
+            ASIONode::addConf(conf);
 
-            ret = ASIONode::addConf(conf);
+            const std::string log{
+                (boost::format(
+                    "info://%s?command=add&severity=0&log=Run dvs host server name = [ %s ], xmq_addr = [ %s ], xmq_port = [ %d ], type = [ %d ].") 
+                    % logid % modeconf.name % modeconf.ip % modeconf.port % static_cast<int>(modeconf.type)).str()};
+            XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
         }
     }
     
@@ -55,19 +61,12 @@ int DvsHostServer::stop()
 
 void DvsHostServer::afterFetchOnlineStatusNotification(const bool online)
 {
-    fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch dvs host service online status = [ %d ].", online);
 }
 
 void DvsHostServer::afterFetchServiceCapabilitiesNotification(
     const ServiceInfo* infos/* = nullptr*/, 
     const uint32_t number/* = 0*/)
 {
-    fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch xmq host service capabilities size = [ %d ].", number);
-
-    for(int i = 0; i != number; ++i)
-    {
-        fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, " ****** Service name = [ %s ].", infos[i].name);
-    }
 }
 
 void DvsHostServer::afterPolledDataNotification(
@@ -77,12 +76,6 @@ void DvsHostServer::afterPolledDataNotification(
     const char* from/* = nullptr*/)
 {
     const std::string msg{reinterpret_cast<const char*>(data), bytes};
-    fileLog.write(
-        SeverityLevel::SEVERITY_LEVEL_INFO, 
-        "Polled forward data = [ %s ] from server = [ %s ].", 
-        msg.c_str(), 
-        from);
-
     Url requestUrl;
     int ret{requestUrl.parse(msg)};
 
@@ -94,21 +87,20 @@ void DvsHostServer::afterPolledDataNotification(
         }
         else
         {
-            fileLog.write(
-                SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                "Parsed unknown data = [ %s ] from server = [ %s ].",  
-                msg.c_str(), 
-                from);
+            const std::string log{
+                (boost::format(
+                    "info://%s?command=add&severity=1&log=Parsed unknown url = [ %s ] from server = [ %s ].") 
+                    % logid % msg % from).str()};
+            XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
         }
     }
     else
     {
-        fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_ERROR, 
-            "Parsed forward data = [ %s ] from server = [ %s ] failed, result = [ %d ].",  
-            msg.c_str(), 
-            from, 
-            ret);
+        const std::string log{
+            (boost::format(
+                "info://%s?command=add&severity=2&log=Parsed polled url = [ %s ] from server = [ %s ] failed, result = [ %d ].") 
+                % logid % msg % from % ret).str()};
+        XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
     }
 }
 
@@ -125,17 +117,19 @@ uint32_t DvsHostServer::afterFetchAcceptedEventNotification(
 
     if (!e && 0 < streamNumber)
     {
-        fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_INFO, 
-            "Fetch stream session id = [ %d ] connect from ip = [ %s ], port = [ %d ] successfully, result = [ %d ].",  
-            streamNumber, ip, port, e);
+        const std::string log{
+            (boost::format(
+                "info://%s?command=add&severity=0&log=Fetch stream session id = [ %d ] connect from ip = [ %s ], port = [ %d ] successfully, result = [ %d ].") 
+                % logid % streamNumber % ip % e).str()};
+        XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
     }
     else
     {
-        fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_WARNING, 
-            "Fetch stream session id = [ %d ] connect from ip = [ %s ], port = [ %d ] failed, result = [ %d ].",  
-            streamNumber, ip, port, e);
+        const std::string log{
+            (boost::format(
+                "info://%s?command=add&severity=1&log=Fetch stream session id = [ %d ] connect from ip = [ %s ], port = [ %d ] successfully, result = [ %d ].") 
+                % logid % streamNumber % ip % e).str()};
+        XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
     }
 
     return streamNumber;
@@ -157,7 +151,7 @@ void DvsHostServer::afterPolledReadDataNotification(
         DVSStreamSessionPtr sess{sessions.at(id)};
         if (!sess)
         {
-            sess = boost::make_shared<DvsStreamSession>(fileLog, id);
+            sess = boost::make_shared<DvsStreamSession>(*this, modeconf, id);
             if (sess)
             {
                 sessions.add(id, sess);
@@ -173,11 +167,11 @@ void DvsHostServer::afterPolledReadDataNotification(
     {
         //会话异常
         int ret{ASIONode::removeConf(id)};
-
-        fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_WARNING, 
-            "Fetch stream session id = [ %d ] exception code = [ %d ], and remove it result = [ %d ].",  
-            id, e, ret);
+        const std::string log{
+            (boost::format(
+                "info://%s?command=add&severity=1&log=Fetch stream session id = [ %d ] exception code = [ %d ], and remove it result = [ %d ].") 
+                % logid % id % e % ret).str()};
+        XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
     }
 }
 
@@ -241,23 +235,8 @@ void DvsHostServer::processDvsControlMessage(const std::string from, Url& reques
 				url.append(dvs);
 			}
         }
-
-       int ret{XMQNode::send(0xB1, url.c_str(), url.length())};
-
-       if (Error_Code_Success == ret)
-       {
-		   fileLog.write(
-			   SeverityLevel::SEVERITY_LEVEL_INFO,
-			   "Query device information successfully from service = [ %s ], result = [ %s ].",
-			   from.c_str(), url.c_str());
-       } 
-       else
-       {
-		   fileLog.write(
-			   SeverityLevel::SEVERITY_LEVEL_WARNING,
-			   "Query device information successfully from service = [ %s ], result = [ %d ].",
-			   from.c_str(), ret);
-       }
+        
+        XMQNode::send(modeconf.id, url.c_str(), url.length());
     }
     else if (!command.compare("add"))
     {
@@ -287,23 +266,25 @@ void DvsHostServer::processDvsControlMessage(const std::string from, Url& reques
             const std::string url{
                 (boost::format("config://%s?command=add&error=%d&dvs=%s_%s_%d_%s") 
                 % from % ret % conf.id % ip % conf.channels % name).str()};
-            int send_ret{ XMQNode::send(0xB1, url.c_str(), url.length()) };
+            int send_ret{ XMQNode::send(modeconf.id, url.c_str(), url.length()) };
 
-            fileLog.write(
-                SeverityLevel::SEVERITY_LEVEL_INFO, 
-                "Add new device with id = [ %d ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ] error = [ %d ], result = [ %d ].", 
-                deviceNumber, name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str(), ret, send_ret);
+            const std::string log{
+                (boost::format(
+                    "info://%s?command=add&severity=0&log=Add new device with id = [ %d ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ] error = [ %d ], result = [ %d ].") 
+                    % logid % deviceNumber % name % ip % port % user % passwd % ret % send_ret).str()};
+            XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
         }
         else
         {
             const std::string url{
                 (boost::format("config://%s?command=add&error=%d") % from % ret).str()};
-            XMQNode::send(0xB1, url.c_str(), url.length());
+            XMQNode::send(modeconf.id, url.c_str(), url.length());
 
-            fileLog.write(
-                SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                "Add new device failed with id = [ %d ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ], result = [ %d ].", 
-                deviceNumber, name.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str(), ret);
+            const std::string log{
+                (boost::format(
+                    "info://%s?command=add&severity=1&log=Add new device failed with id = [ %d ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ], result = [ %d ].") 
+                    % logid % deviceNumber % name % ip % port % user % passwd % ret).str()};
+            XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
         }
     }
     else if (!command.compare("remove"))
@@ -315,18 +296,19 @@ void DvsHostServer::processDvsControlMessage(const std::string from, Url& reques
 
         if (Error_Code_Success == ret)
         {
-            fileLog.write(
-                SeverityLevel::SEVERITY_LEVEL_INFO, 
-                "Remove device successfully with id = [ %s ].", 
-                id.c_str());
+            const std::string log{
+                (boost::format(
+                    "info://%s?command=add&severity=0&log=Remove device successfully with id = [ %s ].") 
+                    % logid % id).str()};
+            XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
         }
         else
         {
-            fileLog.write(
-                SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                "Remove device failed with uuid = [ %s ] result = [ %d ].",
-                id.c_str(), 
-                ret);
+            const std::string log{
+                (boost::format(
+                    "info://%s?command=add&severity=0&log=Remove device failed with uuid = [ %s ] result = [ %d ].") 
+                    % logid % id % ret).str()};
+            XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
         }
     }
 }

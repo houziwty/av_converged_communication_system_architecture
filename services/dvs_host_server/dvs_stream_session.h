@@ -13,17 +13,20 @@
 #ifndef SERVICE_DVS_STREAM_SESSION_H
 #define SERVICE_DVS_STREAM_SESSION_H
 
-#include "boost/shared_ptr.hpp"
-#include "log.h"
-using namespace module::file::log;
+#include "xmq_node.h"
+using namespace module::network::xmq;
 #include "av_parser_node.h"
 using namespace module::av::stream;
+
+class DvsHostServer;
 
 class DvsStreamSession : protected AVParserNode
 {
 public:
-    //id [in] : 会话ID
-    DvsStreamSession(FileLog& log, const uint32_t id = 0);
+    DvsStreamSession(
+        XMQNode& node, 
+        const XMQModeConf& conf, 
+        const uint32_t id = 0);
     ~DvsStreamSession(void);
 
 public:
@@ -55,7 +58,8 @@ private:
         const AVPkt* avpkt = nullptr);
 
 private:
-    FileLog& fileLog;
+    XMQNode& xmqNode;
+    const XMQModeConf& modeconf;
     const uint32_t sid;
     uint32_t did;
     uint32_t cid;

@@ -63,9 +63,10 @@ static const char* XMQHostID = "xmq_host_server";
 static const char* DVSHostID = "dvs_host_server";
 static const char* LidarHostID = "lidar_host_server";
 static const char* SensorHostID = "sensor_host_server";
+static const char* VideoAnalysisHostID = "video_analysis_host_server";
 static const char* TrafficCooperateHostID = "traffic_cooperate_host_server";
 static const char* LidarPointCloudCacheID = "lidar_point_cloud_cache_server";
-static const char* TrafficBreakLawCacheID = "Traffic_break_law_cache_server";
+static const char* TrafficBreakLawCacheID = "traffic_break_law_cache_server";
 static const char* VehicleDriveWarningCacheID = "vehicle_drive_warning_cache_server";
 static const char* VehicleDriveTipCacheID = "vehicle_drive_tip_cache_server";
 

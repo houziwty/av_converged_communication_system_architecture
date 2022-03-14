@@ -1,5 +1,6 @@
 #include "boost/bind/bind.hpp"
 using namespace boost::placeholders;
+#include "boost/format.hpp"
 #include "error_code.h"
 #include "utils/thread/thread.h"
 #include "utils/thread/thread_pool.h"
@@ -8,8 +9,8 @@ using namespace framework::utils::thread;
 using namespace framework::utils::time;
 #include "xmq_host_server.h"
 
-XmqHostServer::XmqHostServer(FileLog& log) 
-    : XMQNode(), fileLog{log}, stopped{false}, expire{nullptr}
+XmqHostServer::XmqHostServer(const XMQModeConf& conf) 
+    : XMQNode(), modeconf{conf}, stopped{false}, expire{nullptr}
 {}
 
 XmqHostServer::~XmqHostServer()
@@ -21,8 +22,15 @@ int XmqHostServer::run()
 
     if (Error_Code_Success == ret)
     {
+        logid.append(XMQHostID).append("_log");
         expire = ThreadPool().get_mutable_instance().createNew(
             boost::bind(&XmqHostServer::checkRegisterExpiredOfServiceThread, this));
+
+//         const std::string log{
+//             (boost::format(
+//                 "info://%s?command=add&severity=0&log=Run xmq host server with name = [ %s ], local_port = [ %d ], id = [ %x ], type = [ %d ].") 
+//                 % logid % modeconf.name % modeconf.port % modeconf.id % static_cast<int>(modeconf.type)).str()};
+//         XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
     }
     
     return ret;
@@ -37,7 +45,7 @@ int XmqHostServer::stop()
         stopped = true;
         Thread().join(expire);
         ThreadPool().get_mutable_instance().destroy(expire);
-        XMQNode::removeConf(0xA1);
+        XMQNode::removeConf(modeconf.id);
     }
     
     return ret;
@@ -55,11 +63,6 @@ void XmqHostServer::afterPolledDataNotification(
     // 3. 在注册服务表中查找主机名称，如果存在，则执行转发消息，否则应答消息不可达错误。
     
     const std::string msg{(const char*)data, bytes};
-    // fileLog.write(
-    //     SeverityLevel::SEVERITY_LEVEL_INFO, 
-    //     "Polled message from serivce = [ %s ], data = [ %s ].",  
-    //     from, 
-    //     msg.c_str());
     Url requestUrl;
     int ret{requestUrl.parse(msg)};
 
@@ -84,21 +87,21 @@ void XmqHostServer::afterPolledDataNotification(
             }
             else
             {
-                fileLog.write(
-                    SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                    "Can not forward data from service = [ %s ] to service = [ %s ].",  
-                    from, 
-                    to.c_str());
+//                 const std::string log{
+//                     (boost::format(
+//                         "info://%s?command=add&severity=1&log=Can not forward data from service = [ %s ] to service = [ %s ] with url [ %s ].") 
+//                         % logid % from % to % msg).str()};
+//                 XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
             }
         }
     }
     else
     {
-        fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_ERROR, 
-            "Parsed data from service = [ %s ] failed, result = [ %d ].",  
-            from, 
-            ret);
+//         const std::string log{
+//             (boost::format(
+//                 "info://%s?command=add&severity=2&log=Parsed url from service = [ %s ] failed, result = [ %d ].") 
+//                 % logid % from % ret).str()};
+//         XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
     }
 }
 
@@ -126,10 +129,11 @@ void XmqHostServer::checkRegisterExpiredOfServiceThread()
             if (diff > 90000)
             {
                 registeredServices.remove(keies[i]);
-                fileLog.write(
-                    SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                    "Remove service name = [ %s ] with expired = [ %ld ].", 
-                    keies[i].c_str(), diff);
+//                 const std::string log{
+//                     (boost::format(
+//                         "info://%s?command=add&severity=1&log=Remove service name = [ %s ] while time has expired = [ %ld ].") 
+//                         % logid % keies[i] % diff).str()};
+//                 XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
             }
         }
         
@@ -157,26 +161,10 @@ void XmqHostServer::processRegisterMessage(const std::string from, Url& requestU
                 responseUrl.setHost(XMQHostID);
                 responseUrl.addParameter(items[i].key, items[i].value);
                 const std::string msg{responseUrl.encode()};
-                ret = XMQNode::send(0xA1, msg.c_str(), msg.length(), from.c_str());
+                ret = XMQNode::send(modeconf.id, msg.c_str(), msg.length(), from.c_str());
                 break;
             }
         }
-    }
-
-    if (Error_Code_Success == ret)
-    {
-        fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_INFO, 
-            "Process register message from serivce = [ %s ] successfully.",  
-            hostName.c_str());
-    }
-    else
-    {
-        fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_WARNING, 
-            "Process register message from serivce = [ %s ] failed, result = [ %d ].",  
-            hostName.c_str(),
-            ret);
     }
 }
 
@@ -196,30 +184,7 @@ void XmqHostServer::processRequestMessage(const std::string from, Url& requestUr
         }
 
         const std::string msg{responseUrl.encode()};
-        int ret{XMQNode::send(0xA1, msg.c_str(), msg.length(), from.c_str())};
-
-        if (Error_Code_Success == ret)
-        {
-            fileLog.write(
-                SeverityLevel::SEVERITY_LEVEL_INFO, 
-                "Process query message from serivce = [ %s ] successfully.",  
-                from.c_str());
-        }
-        else
-        {
-            fileLog.write(
-                SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                "Process query message with serivce = [ %s ] failed, result = [ %d ].",  
-                from.c_str(), 
-                ret);
-        }
-    }
-    else
-    {
-        fileLog.write(
-                SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                "Parsed unknown data from service = [ %s ].",  
-                from.c_str());
+        XMQNode::send(modeconf.id, msg.c_str(), msg.length(), from.c_str());
     }
 }
 
@@ -231,26 +196,5 @@ void XmqHostServer::forwardCustomMessage(
     //转发消息在XMQ服务端将源地址追加到数据尾部
     //数据目的端解析尾部from字段可获取源地址以回复消息
     const std::string msg{data + "&from=" + from};
-    int ret{
-        XMQNode::send(0xA1, msg.c_str(), msg.length(), to.c_str())};
-
-    if (Error_Code_Success == ret)
-    {
-        fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_INFO, 
-            "Forward message from serivce = [ %s ] to service = [ %s ] with data = [ %s ] successfully.",  
-            from.c_str(), 
-            to.c_str(), 
-            data.c_str());
-    }
-    else
-    {
-        fileLog.write(
-            SeverityLevel::SEVERITY_LEVEL_ERROR, 
-            "Forward message from serivce = [ %s ] to service = [ %s ] with data = [ %s ] failed, result = [ %d ].",  
-            from.c_str(), 
-            to.c_str(),  
-            data.c_str(), 
-            ret);
-    }
+    XMQNode::send(modeconf.id, msg.c_str(), msg.length(), to.c_str());
 }

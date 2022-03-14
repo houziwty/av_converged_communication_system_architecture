@@ -6,9 +6,6 @@ set(
 	XMQ_ROOT_DIR 
 	${ROOT_DIR}/modules/libxmq)
 set(
-	LOG_ROOT_DIR 
-	${ROOT_DIR}/modules/liblog)
-set(
 	ASIO_ROOT_DIR 
 	${ROOT_DIR}/modules/libasio)
 set(
@@ -22,7 +19,7 @@ set(
 	${ROOT_DIR}/modules/libavpkt)
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-	link_directories(${XMQ_ROOT_DIR} ${ASIO_ROOT_DIR} ${LOG_ROOT_DIR} ${DVS_ROOT_DIR} ${AVPARSER_ROOT_DIR} ${AVPKT_ROOT_DIR})
+	link_directories(${XMQ_ROOT_DIR} ${ASIO_ROOT_DIR} ${DVS_ROOT_DIR} ${AVPARSER_ROOT_DIR} ${AVPKT_ROOT_DIR})
 	set(
 		LINK_LIBS 
 		libboost_program_options.a 
@@ -31,8 +28,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 		asio 
 		avparser 
 		avpkt 
-		xmq 
-		log)
+		xmq)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(
 		BOOST_ROOT_DIR 
@@ -43,9 +39,6 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(
 		XMQ_LINK_DIR 
 		${ROOT_DIR}/build/x64/modules/libxmq/${CMAKE_BUILD_TYPE})
-	set(
-		LOG_LINK_DIR 
-		${ROOT_DIR}/build/x64/modules/liblog/${CMAKE_BUILD_TYPE})
 	set(
 		ASIO_LINK_DIR 
 		${ROOT_DIR}/build/x64/modules/libasio/${CMAKE_BUILD_TYPE})
@@ -66,7 +59,6 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-sgd-x64-1_78.lib	
 			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-sgd-x64-1_78.lib 		
 			${XMQ_LINK_DIR}/xmq.lib 
-			${LOG_LINK_DIR}/log.lib 
 			${ASIO_LINK_DIR}/asio.lib 
 			${AVPARSER_LINK_DIR}/avparser.lib 
 			${AVPKT_LINK_DIR}/avpkt.lib 
@@ -79,13 +71,12 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-s-x64-1_78.lib	
 			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-s-x64-1_78.lib 		
 			${XMQ_LINK_DIR}/xmq.lib 
-			${LOG_LINK_DIR}/log.lib 
 			${ASIO_LINK_DIR}/asio.lib 
 			${AVPARSER_LINK_DIR}/avparser.lib 
 			${AVPKT_LINK_DIR}/avpkt.lib 
 			${DVS_LINK_DIR}/dvs.lib)
 	endif()
-	add_definitions(-DUSE_MODULE_FILE_LOG -DUSE_MODULE_NETWORK_XMQ -DUSE_MODULE_NETWORK_ASIO -DUSE_MODULE_DEVICE_DVS -DUSE_MODULE_AV_PARSER -DUSE_MODULE_AV_PKT)
+	add_definitions(-DUSE_MODULE_NETWORK_XMQ -DUSE_MODULE_NETWORK_ASIO -DUSE_MODULE_DEVICE_DVS -DUSE_MODULE_AV_PARSER -DUSE_MODULE_AV_PKT)
 endif()
 
 set(SERVER_ROOT_DIR ${ROOT_DIR}/service/dvs_host_server)
@@ -94,7 +85,6 @@ include_directories(
 	${SERVER_ROOT_DIR} 
 	${BOOST_ROOT_DIR} 
 	${XMQ_ROOT_DIR} 
-	${LOG_ROOT_DIR} 
 	${ASIO_ROOT_DIR} 
 	${AVPARSER_ROOT_DIR} 
 	${AVPKT_ROOT_DIR} 

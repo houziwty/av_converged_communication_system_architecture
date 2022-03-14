@@ -14,9 +14,6 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(
 		LINK_LIBS 
 		libboost_program_options.a 
-		libboost_filesystem.a 
-		libboost_thread.a 
-		pthread 
 		xmq 
 		log)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
@@ -35,21 +32,13 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
 			LINK_LIBS 
-			${BOOST_LINK_DIR}/libboost_thread-vc143-mt-sgd-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-sgd-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-sgd-x64-1_78.lib	
-			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-sgd-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_filesystem-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-sgd-x64-1_78.lib 
 			${XMQ_LINK_DIR}/xmq.lib 
 			${LOG_LINK_DIR}/log.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(
 			LINK_LIBS 
-			${BOOST_LINK_DIR}/libboost_thread-vc143-mt-s-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-s-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-s-x64-1_78.lib	
-			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-s-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_filesystem-vc143-mt-sgd-x64-1_78.lib 			
+			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-s-x64-1_78.lib 		
 			${XMQ_LINK_DIR}/xmq.lib 
 			${LOG_LINK_DIR}/log.lib)
 	endif()
@@ -67,10 +56,8 @@ file(GLOB_RECURSE main "*.cpp")
 file(GLOB_RECURSE 
 	utils 
 	"${SOURCE_DIR}/utils/commandline/*.cpp" 
-	"${SOURCE_DIR}/utils/time/*.cpp" 
 	"${SOURCE_DIR}/utils/url/*.cpp" 
-	"${SOURCE_DIR}/utils/memory/*.cpp" 
-	"${SOURCE_DIR}/utils/thread/*.cpp")
+	"${SOURCE_DIR}/utils/memory/*.cpp")
 
 add_executable(
 	${PROJECT_NAME} 
