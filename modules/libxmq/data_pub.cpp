@@ -67,7 +67,7 @@ int DataPub::send(
 		if(Error_Code_Success == ret)
 		{
 			Msg msg;
-			msg.append(data, bytes);
+			msg.add(data, bytes);
 			ret = msg.send(so);
 		}
 	}

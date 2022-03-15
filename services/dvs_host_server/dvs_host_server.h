@@ -14,9 +14,9 @@
 #define SERVICE_DVS_HOST_SERVER_H
 
 #include "boost/shared_ptr.hpp"
-#include "utils/url/url.h"
-using namespace framework::utils::url;
-#include "utils/lock/rw_lock.h"
+#include "url/url.h"
+using namespace framework::utils::data;
+#include "lock/rw_lock.h"
 using namespace framework::utils::lock;
 #include "asio_node.h"
 using namespace module::network::asio;
@@ -25,7 +25,7 @@ using namespace module::network::xmq;
 #include "dvs_node.h"
 using namespace module::device::dvs;
 #include "dvs_stream_session.h"
-#include "utils/map/unordered_map.h"
+#include "map/unordered_map.h"
 
 using DVSStreamSessionPtr = boost::shared_ptr<DvsStreamSession>;
 using DVSStreamSessionPtrs = UnorderedMap<const uint32_t, DVSStreamSessionPtr>;

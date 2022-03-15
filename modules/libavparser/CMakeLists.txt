@@ -42,7 +42,7 @@ include_directories(${INCLUDE_DIR} ${LIB_ROOT_DIR} ${AVPKT_ROOT_DIR} ${BOOST_ROO
 file(GLOB_RECURSE main *.cpp)
 file(GLOB_RECURSE 
 	utils 
-	"${SOURCE_DIR}/utils/memory/*.cpp")
+	"${SOURCE_DIR}/memory/*.cpp")
 file(GLOB_RECURSE 
 	mpeg 
 	"${SOURCE_DIR}/av/mpeg/*.c")

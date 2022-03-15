@@ -68,9 +68,9 @@ int ServiceDiscover::send(
 		{
 			const std::string to{id};
 			Msg msg;
-			msg.append(to.c_str(), to.length());
-			msg.append("", 0);
-			msg.append(data, bytes);
+			msg.add(to.c_str(), to.length());
+			msg.add("", 0);
+			msg.add(data, bytes);
 			ret = msg.send(so);
 		}
 	}
@@ -93,14 +93,14 @@ void ServiceDiscover::pollDataThread()
 			if (Error_Code_Success == ret)
 			{
 				//读取第一段和第三段数据
- 				const Message* first{ msg.msg() };
-				const Message* third{ msg.msg(2) };
+ 				const Any* first{ msg.msg() };
+				const Any* third{ msg.msg(2) };
 
 				if (polledDataCallback)
 				{
 					//避免Windows下数据超界产生的错误
-					const std::string from{ (const char*)first->data, first->bytes };
-					polledDataCallback(modeconf.id, third->data, third->bytes, from.c_str());
+					const std::string from{(const char*)first->data(), first->bytes()};
+					polledDataCallback(modeconf.id, third->data(), third->bytes(), from.c_str());
 				}
 			}
 		}

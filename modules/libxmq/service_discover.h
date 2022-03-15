@@ -15,8 +15,8 @@
 #define MODULE_NETWORK_XMQ_SERVICE_DISCOVER_H
 
 #include "xmq_role.h"
-#include "utils/url/url.h"
-using namespace framework::utils::url;
+#include "url/url.h"
+using namespace framework::utils::data;
 
 namespace module
 {

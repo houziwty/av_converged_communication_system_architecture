@@ -76,11 +76,11 @@ void DataSub::pollDataThread()
 			if (Error_Code_Success == ret)
 			{
 				//只读第一段数据
-				const Message* first{msg.msg()};
+				const Any* first{msg.msg()};
 
 				if (polledDataCallback)
 				{
-					polledDataCallback(modeconf.id, first->data, first->bytes, nullptr);
+					polledDataCallback(modeconf.id, first->data(), first->bytes(), nullptr);
 				}
 			}
 		}

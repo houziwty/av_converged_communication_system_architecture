@@ -13,29 +13,38 @@ FileLog::~FileLog()
 {}
 
 int FileLog::createNew(
-	const char* dir /* = nullptr*/, 
-	const unsigned int expireDays/* = 0*/)
+	const char* dir /* = nullptr */, 
+	const bool enableFile /* = true */,
+	const unsigned int expireDays /* = 0 */)
 {
-	//The dirctory must be existed.
-	std::string logDir{dir ? dir : ""};
-	if (!boost::filesystem::exists(logDir))
+	if (enableFile)
 	{
-		logDir = boost::filesystem::initial_path<boost::filesystem::path>().string();
-	}
+		//The dirctory must be existed.
+		std::string logDir{ dir ? dir : "" };
+
+		if (!boost::filesystem::exists(logDir))
+		{
+			logDir = boost::filesystem::initial_path<boost::filesystem::path>().string();
+		}
 
 #ifdef _WINDOWS
-	logDir += "\\log";
-	
+		logDir += "\\log";
+
 #else
-	logDir += "/log";
+		logDir += "/log";
 #endif//_WINDOWS
 
-	boost::filesystem::create_directory(logDir);
+		boost::filesystem::create_directory(logDir);
+		FLAGS_log_dir = logDir;
+	}
+	else
+	{
+		FLAGS_logtostderr = true;
+	}
+
 	FLAGS_stderrthreshold = google::GLOG_INFO;
 	FLAGS_colorlogtostderr = true;
-	FLAGS_log_dir = logDir;
 	google::InitGoogleLogging("");
-//		google::SetLogDestination(google::GLOG_INFO, dir.c_str());
 	if (0 < expireDays)
 	{
 		google::EnableLogCleaner(expireDays);

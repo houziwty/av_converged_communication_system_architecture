@@ -14,8 +14,8 @@
 #define MODULE_NETWORK_XMQ_SERVICE_VENDOR_H
 
 #include "xmq_role.h"
-#include "utils/url/url.h"
-using namespace framework::utils::url;
+#include "url/url.h"
+using namespace framework::utils::data;
 
 namespace module
 {
@@ -63,10 +63,11 @@ namespace module
 				void processQueryResponseMessage(Url& url);
 
 				//转发业务处理
-				//@from [in] : 源ID
-				//@to [in] : 目的ID
-				//@data [in] : 源数据
-				void processForwardCustomMessage(const std::string data);
+				//@data [in] : 数据
+				//@bytes [in] : 大小
+				void processForwardCustomMessage(
+					const void* data = nullptr, 
+					const uint64_t bytes = 0);
 
 			private:
 				uint64_t registerResponseTimetamp;

@@ -6,10 +6,10 @@ using namespace boost::placeholders;
 #include "av_pkt.h"
 using namespace module::av::stream;
 #include "error_code.h"
-#include "utils/memory/xmem.h"
+#include "memory/xmem.h"
 using namespace framework::utils::memory;
-#include "utils/url/url.h"
-using namespace framework::utils::url;
+#include "url/url.h"
+using namespace framework::utils::data;
 #include "dvs_host_server.h"
 
 DvsHostServer::DvsHostServer(const XMQModeConf& conf)
@@ -77,11 +77,11 @@ void DvsHostServer::afterPolledDataNotification(
 {
     const std::string msg{reinterpret_cast<const char*>(data), bytes};
     Url requestUrl;
-    int ret{requestUrl.parse(msg)};
+    int ret{requestUrl.parse(data, bytes)};
 
     if(Error_Code_Success == ret)
     {
-        if (!requestUrl.getProtocol().compare("config"))
+        if (!requestUrl.proto().compare("config"))
         {
             processDvsControlMessage(from, requestUrl);
         }
@@ -183,8 +183,8 @@ void DvsHostServer::afterPolledSendDataNotification(
 
 void DvsHostServer::processDvsControlMessage(const std::string from, Url& requestUrl)
 {
-    const std::vector<ParamItem> parameters{requestUrl.getParameters()};
-    const std::string host{requestUrl.getHost()};
+    const std::vector<Parameter> parameters{requestUrl.parameters()};
+    const std::string host{requestUrl.host()};
     std::string command, ip, port, user, passwd, id, name;
 
     for(int i = 0; i != parameters.size(); ++i)

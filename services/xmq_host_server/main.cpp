@@ -1,13 +1,15 @@
 #include "boost/make_shared.hpp"
 #include "error_code.h"
-#include "utils/commandline/commandline.h"
+#include "commandline/commandline.h"
 using namespace framework::utils::parser;
-#include "utils/memory/xmem.h"
+#include "memory/xmem.h"
 using namespace framework::utils::memory;
 #include "xmq_host_server.h"
 
 int main(int argc, char* argv[])
 {
+    FileLog log;
+    log.createNew("", false);
     CommandLineParser parser;
     parser.setOption("local_port", "");
 
@@ -22,13 +24,24 @@ int main(int argc, char* argv[])
         XMem().copy(name.c_str(), name.length(), conf.name, 128);
 
         boost::shared_ptr<XMQNode> node{
-            boost::make_shared<XmqHostServer>(conf)};
+            boost::make_shared<XmqHostServer>(conf, log)};
         if (node && Error_Code_Success == node->addConf(conf))
         {
+            log.write(
+                SeverityLevel::SEVERITY_LEVEL_INFO,
+                "Run xmq host server with port [ %u ] and name [ %s ] successfully.",
+                conf.port, conf.name);
             node->run();
             getchar();
             node->stop();
             node->removeConf(conf.id);
+        }
+        else
+        {
+			log.write(
+				SeverityLevel::SEVERITY_LEVEL_ERROR,
+				"Run xmq host server with port [ %u ] and name [ %s ] failed, object [ %x ].",
+				conf.port, conf.name, node);
         }
     }
 

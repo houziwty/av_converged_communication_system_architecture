@@ -4,8 +4,8 @@ using namespace boost::placeholders;
 #include "boost/format.hpp"
 #include "av_pkt.h"
 #include "error_code.h"
-#include "utils/url/url.h"
-using namespace framework::utils::url;
+#include "url/url.h"
+using namespace framework::utils::data;
 #include "dvs_host_server.h"
 #include "dvs_stream_session.h"
 
@@ -55,15 +55,15 @@ void DvsStreamSession::afterParsedDataNotification(
     const std::string logid{std::string(XMQHostID) + "_log"};
     const std::string msg{(const char*)avpkt->data(), avpkt->bytes()};
     Url url;
-    int ret{url.parse(msg)};
+    int ret{url.parse(avpkt->data(), avpkt->bytes())};
 
     if(Error_Code_Success == ret)
     {
         //realplay://1?command=1&channel=1&stream=0
 
         int command{-1};
-        did = atoi(url.getHost().c_str());
-        const std::vector<ParamItem> params{url.getParameters()};
+        did = atoi(url.host().c_str());
+        const std::vector<Parameter> params{url.parameters()};
 
         for(int i  = 0; i != params.size(); ++i)
         {

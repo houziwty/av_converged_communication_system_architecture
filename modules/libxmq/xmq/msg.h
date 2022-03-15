@@ -15,6 +15,8 @@
 
 #include <vector>
 #include "defs.h"
+#include "any/any.h"
+using namespace framework::utils::data;
 
 namespace module
 {
@@ -22,13 +24,7 @@ namespace module
 	{
 		namespace xmq
 		{
-			typedef struct tagMessage_t
-			{
-				void* data;
-				uint64_t bytes;
-			}Message;
-
-			class NETWORK_XMQ_EXPORT Msg
+			class Msg
 			{
 			public:
 				Msg(void);
@@ -39,21 +35,17 @@ namespace module
 				//@data [in] : 数据
 				//@bytes [in] : 大小
 				//@Return : 错误码
-				//@Comment : 1.数据深拷贝
-				//           2.可以添加空字节
-				int append(
+				int add(
 					const void* data = nullptr, 
 					const uint64_t bytes = 0);
 
 				//获取消息
+				//@index [in] : 索引号
 				//@Return : 消息
-				inline const Message* msg(const int32_t index = 0) const
+				inline const Any* msg(const int32_t index = 0) const
 				{
-					return -1 < index && index < messages.size() ? &messages[index] : nullptr;
+					return -1 < index && index < messages.size() ? messages[index] : nullptr;
 				}
-
-				//清除
-				void clear(void);
 
 				//接收
 				//@s : socket
@@ -66,7 +58,7 @@ namespace module
 				int send(socket_t s = nullptr);
 
 			private:
-				std::vector<Message> messages;
+				std::vector<Any*> messages;
 			};//class Msg
 		}//namespace xmq
 	}//namespace network

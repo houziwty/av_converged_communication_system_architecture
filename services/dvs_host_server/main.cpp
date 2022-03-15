@@ -1,8 +1,8 @@
 #include "boost/make_shared.hpp"
 #include "error_code.h"
-#include "utils/commandline/commandline.h"
+#include "commandline/commandline.h"
 using namespace framework::utils::parser;
-#include "utils/memory/xmem.h"
+#include "memory/xmem.h"
 using namespace framework::utils::memory;
 #include "dvs_host_server.h"
 

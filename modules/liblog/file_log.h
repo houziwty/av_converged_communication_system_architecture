@@ -45,12 +45,14 @@ namespace module
             public:
                 //创建
                 //@dir [in] : 日志目录路径
+                //@enbaleFile [in] : 写日志文件标识
                 //@expireDays [in] : 日志超时删除时间，单位：天，如果0 == expireDays则不删除
                 //@Return : 错误码
                 //@Commnet : 如果路径存在则按照该路径存储日志文件，
                 //           如果路径不存在则在程序当前执行路径下创建存储目录
                 int createNew(
                     const char* dir = nullptr, 
+                    const bool enableFile = true, 
                     const unsigned int expireDays = 0);
 
                 //销毁

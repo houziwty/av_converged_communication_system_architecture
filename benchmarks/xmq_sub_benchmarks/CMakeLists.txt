@@ -52,9 +52,9 @@ include_directories(
 
 file(GLOB_RECURSE main "*.cpp")
 file(GLOB_RECURSE utils 
-	"${SOURCE_DIR}/utils/time/*.cpp" 
-	"${SOURCE_DIR}/utils/url/*.cpp" 
-	"${SOURCE_DIR}/utils/memory/*.cpp")
+	"${SOURCE_DIR}/time/*.cpp" 
+	"${SOURCE_DIR}/url/*.cpp" 
+	"${SOURCE_DIR}/memory/*.cpp")
 
 add_executable(
 	${PROJECT_NAME} 

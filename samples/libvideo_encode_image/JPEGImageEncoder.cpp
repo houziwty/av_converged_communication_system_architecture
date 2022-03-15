@@ -3,7 +3,7 @@ extern "C"
 #include "libavformat/avformat.h"
 #include "libavutil/imgutils.h"
 }
-#include "utils/memory/xmemcpy.h"
+#include "memory/xmemcpy.h"
 using namespace framework::utils::memory;
 #include "error_code.h"
 #include "JPEGImageEncoder.h"

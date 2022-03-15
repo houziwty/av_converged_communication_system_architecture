@@ -23,13 +23,10 @@ class LogHostServer final
 {
 public:
     LogHostServer(
+        FileLog& flog, 
         const std::string& dir, 
         const uint32_t expire = 0);
     ~LogHostServer(void);
-
-public:
-    int run(void) override;
-    int stop(void) override;
 
 protected:
 	void afterPolledDataNotification(
@@ -43,9 +40,9 @@ protected:
 		const uint32_t number = 0) override;
 
 private:
+    FileLog& log;
     const std::string& fileDir;
     const uint32_t expireDays;
-    FileLog fileLog;
 };//class LogHostServer
 
 #endif//SERVICE_LOG_HOST_SERVER_H

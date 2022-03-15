@@ -50,11 +50,12 @@ add_definitions(-DZMQ_STATIC)
 file(GLOB_RECURSE main "*.cpp")
 file(GLOB_RECURSE 
 	utils 
-	"${SOURCE_DIR}/utils/hardware/cpu.cpp" 
-	"${SOURCE_DIR}/utils/url/url.cpp" 
-	"${SOURCE_DIR}/utils/time/xtime.cpp"
-	"${SOURCE_DIR}/utils/thread/*.cpp" 
-	"${SOURCE_DIR}/utils/memory/*.cpp")
+	"${SOURCE_DIR}/hardware/cpu.cpp" 
+	"${SOURCE_DIR}/url/url.cpp" 
+	"${SOURCE_DIR}/time/xtime.cpp"
+	"${SOURCE_DIR}/thread/*.cpp" 
+	"${SOURCE_DIR}/memory/*.cpp"
+	"${SOURCE_DIR}/any/*.cpp")
 
 add_library(
 	${PROJECT_NAME} 

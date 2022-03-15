@@ -11,7 +11,7 @@ include_directories(${3RDPART_DIR}/sdk/hikvision/include/linux)
 link_directories(${3RDPART_DIR}/sdk/hikvision/lib/linux)
 
 file(GLOB_RECURSE src "*.cpp")
-file(GLOB_RECURSE framework_utils_src "${SOURCE_DIR}/utils/memory/*.cpp")
+file(GLOB_RECURSE framework_utils_src "${SOURCE_DIR}/memory/*.cpp")
 
 add_library(
 	${PROJECT_NAME} 

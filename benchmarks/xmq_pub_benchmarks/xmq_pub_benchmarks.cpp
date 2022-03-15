@@ -1,8 +1,8 @@
 #include <cstring>
 #include "boost/make_shared.hpp"
-#include "utils/time/xtime.h"
+#include "time/xtime.h"
 using namespace framework::utils::time;
-#include "utils/memory/xmem.h"
+#include "memory/xmem.h"
 using namespace framework::utils::memory;
 #include "error_code.h"
 #include "xmq_node.h"

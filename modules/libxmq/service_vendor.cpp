@@ -7,9 +7,9 @@ extern "C" {
 #endif
 #include "boost/format.hpp"
 #include "error_code.h"
-#include "utils/time/xtime.h"
+#include "time/xtime.h"
 using namespace framework::utils::time;
-#include "utils/memory/xmem.h"
+#include "memory/xmem.h"
 using namespace framework::utils::memory;
 #include "xmq/dealer.h"
 #include "xmq/msg.h"
@@ -76,8 +76,8 @@ int ServiceVendor::send(
 		if(Error_Code_Success == ret)
 		{
 			Msg msg;
-			msg.append("", 0);
-			msg.append(data, bytes);
+			msg.add("", 0);
+			msg.add(data, bytes);
 			ret = msg.send(so);
 		}
 	}
@@ -100,15 +100,12 @@ void ServiceVendor::pollDataThread()
 			if (Error_Code_Success == ret)
 			{
 				//读取第二段数据
-				const Message* second{ msg.msg(1) };
-				const std::string data{
-					(const char*)second->data, 
-					static_cast<unsigned int>(second->bytes)};
+				const Any* second{ msg.msg(1) };
 				Url url;
 
-				if (Error_Code_Success == url.parse(data))
+				if (Error_Code_Success == url.parse(second->data(), second->bytes()))
 				{
-					const std::string protocol{url.getProtocol()};
+					const std::string protocol{url.proto()};
 					if (!protocol.compare("register"))
 					{
 						processRegisterResponseMessage(url);
@@ -119,7 +116,7 @@ void ServiceVendor::pollDataThread()
 					}
 					else
 					{
-						processForwardCustomMessage(data);
+						processForwardCustomMessage(second->data(), second->bytes());
 					}
 				}
 			}
@@ -140,12 +137,13 @@ void ServiceVendor::checkServiceOnlineStatusThread()
 		if(currentTickCount - lastTickCout > 30000)
 		{
 			//Register and heartbeat
-			Url url;
-			url.setProtocol("register");
-			url.setHost(modeconf.name);
-			url.addParameter("timestamp", (boost::format("%ld") % currentTickCount).str());
-			url.addParameter("sequence", (boost::format("%d") % sequence++).str());
-			const std::string data{url.encode()};
+			// Url url;
+			// url.proto("register");
+			// url.host(modeconf.name);
+			// url.addParameter("timestamp", (boost::format("%ld") % currentTickCount).str());
+			// url.addParameter("sequence", (boost::format("%d") % sequence++).str());
+			const std::string data{
+				(boost::format("register://%s?timestamp=%lld&sequence=%lld") % modeconf.name % currentTickCount % sequence++).str()};
 
 			if(!data.empty())
 			{
@@ -167,7 +165,7 @@ void ServiceVendor::checkServiceOnlineStatusThread()
 
 void ServiceVendor::processRegisterResponseMessage(Url& url)
 {
-    const std::vector<ParamItem> items{url.getParameters()};
+    const std::vector<Parameter>& items{url.parameters()};
 
     for(int i = 0; i != items.size(); ++i)
     {
@@ -196,7 +194,7 @@ void ServiceVendor::processRegisterResponseMessage(Url& url)
 void ServiceVendor::processQueryResponseMessage(Url& url)
 {
     ServiceInfo* infos{nullptr};
-    const std::vector<ParamItem> items{url.getParameters()};
+    const std::vector<Parameter>& items{url.parameters()};
     const std::size_t number{items.size()};
 
     if (0 < number)
@@ -221,17 +219,24 @@ void ServiceVendor::processQueryResponseMessage(Url& url)
     boost::checked_array_delete(infos);
 }
 
-void ServiceVendor::processForwardCustomMessage(const std::string data)
+void ServiceVendor::processForwardCustomMessage(
+	const void* data/* = nullptr*/, 
+	const uint64_t bytes/* = 0*/)
 {
-	//解析经XMQ转发消息时追加的from字段
-	std::size_t pos{data.find_last_of('&')};
-	const std::string msg{data.substr(0, pos)};
-	const std::string appendix{data.substr(pos + 1, data.length())};
-	pos = appendix.find_last_of('=');
-	const std::string from{appendix.substr(pos + 1, appendix.length())};
-
-	if (polledDataCallback)
+	if (data && 0 < bytes)
 	{
-		polledDataCallback(modeconf.id, msg.c_str(), msg.length(), from.c_str());
+		const std::string str{(const char*)data, bytes};
+
+		//解析经XMQ转发消息时追加的from字段
+		std::size_t pos{str.find_last_of('&')};
+		const std::string msg{str.substr(0, pos)};
+		const std::string appendix{str.substr(pos + 1, str.length())};
+		pos = appendix.find_last_of('=');
+		const std::string from{appendix.substr(pos + 1, appendix.length())};
+
+		if (polledDataCallback)
+		{
+			polledDataCallback(modeconf.id, msg.c_str(), msg.length(), from.c_str());
+		}
 	}
 }

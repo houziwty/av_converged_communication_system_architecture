@@ -28,7 +28,7 @@ extern "C"
 }
 #include "libvideo_encode_image.h"
 #include "JPEGImageEncoder.h"
-#include "utils/fifo/fifo.h"
+#include "fifo/fifo.h"
 
 typedef struct tagH264Frame_t
 {

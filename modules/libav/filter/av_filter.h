@@ -15,7 +15,7 @@
 
 #include "boost/shared_ptr.hpp"
 #include "boost/weak_ptr.hpp"
-#include "utils/map/unordered_map.h"
+#include "map/unordered_map.h"
 #include "defs.h"
 
 namespace module

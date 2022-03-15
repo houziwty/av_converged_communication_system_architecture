@@ -1,8 +1,8 @@
 #include "boost/bind/bind.hpp"
 using namespace boost::placeholders;
 #include "error_code.h"
-#include "utils/thread/thread.h"
-#include "utils/thread/thread_pool.h"
+#include "thread/thread.h"
+#include "thread/thread_pool.h"
 using namespace framework::utils::thread;
 #include "xmq_role.h"
 using namespace module::network::xmq;

@@ -15,15 +15,19 @@
 
 #include "xmq_node.h"
 using namespace module::network::xmq;
-#include "utils/map/unordered_map.h"
-#include "utils/url/url.h"
-using namespace framework::utils::url;
+#include "file_log.h"
+using namespace module::file::log;
+#include "map/unordered_map.h"
+#include "url/url.h"
+using namespace framework::utils::data;
 
 class XmqHostServer final 
 	: public XMQNode
 {
 public:
-	XmqHostServer(const XMQModeConf& conf);
+	XmqHostServer(
+		const XMQModeConf& conf, 
+		FileLog& flog);
 	~XmqHostServer(void);
 
 public:
@@ -67,6 +71,7 @@ private:
 
 private:
 	const XMQModeConf& modeconf;
+	FileLog& log;
 	std::string logid;
 	UnorderedMap<std::string, uint64_t> registeredServices;
 	bool stopped;

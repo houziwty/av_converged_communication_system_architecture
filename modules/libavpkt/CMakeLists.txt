@@ -20,7 +20,7 @@ include_directories(${INCLUDE_DIR} ${LIB_ROOT_DIR} ${BOOST_ROOT_DIR})
 file(GLOB_RECURSE main "*.cpp")
 file(GLOB_RECURSE 
 	utils 
-	"${SOURCE_DIR}/utils/memory/*.cpp")
+	"${SOURCE_DIR}/memory/*.cpp")
 
 add_library(
 	${PROJECT_NAME} 

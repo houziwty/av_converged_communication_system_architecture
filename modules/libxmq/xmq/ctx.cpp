@@ -5,7 +5,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#include "utils/hardware/cpu.h"
+#include "hardware/cpu.h"
 using namespace framework::utils::hardware;
 #include "error_code.h"
 #include "ctx.h"

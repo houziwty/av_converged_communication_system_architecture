@@ -5,7 +5,7 @@ extern "C"
 #include "HCNetSDK.h"
 }
 #include "error_code.h"
-#include "utils/memory/xmem.h"
+#include "memory/xmem.h"
 using namespace framework::utils::memory;
 #include "hikvision_device.h"
 using namespace module::device::dvs;

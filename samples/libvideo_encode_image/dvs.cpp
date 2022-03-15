@@ -3,7 +3,7 @@
 #include <functional>
 #include <thread>
 #include <chrono>
-#include "utils/memory/xmemcpy.h"
+#include "memory/xmemcpy.h"
 using namespace framework::utils::memory;
 #include "dvs.h"
 

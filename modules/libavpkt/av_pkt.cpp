@@ -1,6 +1,6 @@
 #include "boost/checked_delete.hpp"
 #include "error_code.h"
-#include "utils/memory/xmem.h"
+#include "memory/xmem.h"
 using namespace framework::utils::memory;
 #include "av_pkt.h"
 using namespace module::av::stream;

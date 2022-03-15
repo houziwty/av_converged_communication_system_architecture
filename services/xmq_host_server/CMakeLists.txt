@@ -5,6 +5,9 @@ project(xmq_host_server VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 set(
 	XMQ_ROOT_DIR 
 	${ROOT_DIR}/modules/libxmq)
+set(
+	LOG_ROOT_DIR 
+	${ROOT_DIR}/modules/liblog)
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(
@@ -12,7 +15,8 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 		libboost_program_options.a 
 		libboost_thread.a 
 		pthread 
-		xmq)
+		xmq 
+		log)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(
 		BOOST_ROOT_DIR 
@@ -23,6 +27,10 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(
 		XMQ_LINK_DIR 
 		${ROOT_DIR}/build/x64/modules/libxmq/${CMAKE_BUILD_TYPE})
+	set(
+		LOG_LINK_DIR 
+		${ROOT_DIR}/build/x64/modules/liblog/${CMAKE_BUILD_TYPE})
+	
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(
 			LINK_LIBS 
@@ -30,7 +38,8 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-sgd-x64-1_78.lib 
 			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-sgd-x64-1_78.lib	
 			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-sgd-x64-1_78.lib 
-			${XMQ_LINK_DIR}/xmq.lib)
+			${XMQ_LINK_DIR}/xmq.lib 
+			${LOG_LINK_DIR}/log.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(
 			LINK_LIBS 
@@ -38,20 +47,21 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-s-x64-1_78.lib 
 			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-s-x64-1_78.lib	
 			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-s-x64-1_78.lib 
-			${XMQ_LINK_DIR}/xmq.lib)
+			${XMQ_LINK_DIR}/xmq.lib 
+			${LOG_LINK_DIR}/log.lib)
 	endif()
-	add_definitions(-DUSE_MODULE_NETWORK_XMQ)
+	add_definitions(-DUSE_MODULE_NETWORK_XMQ -DUSE_MODULE_FILE_LOG)
 endif()
 
-include_directories(${INCLUDE_DIR} ${BOOST_ROOT_DIR} ${XMQ_ROOT_DIR})
+include_directories(${INCLUDE_DIR} ${BOOST_ROOT_DIR} ${XMQ_ROOT_DIR} ${LOG_ROOT_DIR})
 file(GLOB_RECURSE main "*.cpp")
 file(GLOB_RECURSE 
 	utils 
-	"${SOURCE_DIR}/utils/url/*.cpp" 
-	"${SOURCE_DIR}/utils/thread/*.cpp" 
-	"${SOURCE_DIR}/utils/time/*.cpp" 
-	"${SOURCE_DIR}/utils/commandline/*.cpp"
-	"${SOURCE_DIR}/utils/memory/*.cpp")
+	"${SOURCE_DIR}/url/*.cpp" 
+	"${SOURCE_DIR}/thread/*.cpp" 
+	"${SOURCE_DIR}/time/*.cpp" 
+	"${SOURCE_DIR}/commandline/*.cpp"
+	"${SOURCE_DIR}/memory/*.cpp")
 
 add_executable(
 	${PROJECT_NAME} 

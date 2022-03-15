@@ -1,42 +1,47 @@
 #include "error_code.h"
-#include "utils/url/url.h"
-using namespace framework::utils::url;
+#include "url/url.h"
+using namespace framework::utils::data;
 #include "log_host_server.h"
 
 LogHostServer::LogHostServer(
+    FileLog& flog, 
     const std::string& dir, 
     const uint32_t expire/* = 0*/)
-    : XMQNode(), fileDir{dir}, expireDays{expire}
+    : XMQNode(), log{ flog }, fileDir{ dir }, expireDays{ expire }
 {}
 
 LogHostServer::~LogHostServer()
 {}
 
-int LogHostServer::run()
-{
-    int ret{fileLog.createNew()};
-    
-    if(Error_Code_Success == ret)
-    {
-        ret = XMQNode::run();
-    }
-
-    return ret;
-}
-
-int LogHostServer::stop()
-{
-    return XMQNode::stop();
-}
-
 void LogHostServer::afterFetchOnlineStatusNotification(const bool online)
 {
+    SeverityLevel sl{ SeverityLevel::SEVERITY_LEVEL_INFO };
+    if (!online)
+    {
+        sl = SeverityLevel::SEVERITY_LEVEL_WARNING;
+    }
+
+	log.write(
+		sl,
+		"Fetch message of online status [ %s ] notification.",
+		online ? "online" : "offline");
 }
 
 void LogHostServer::afterFetchServiceCapabilitiesNotification(
     const ServiceInfo* infos/* = nullptr*/, 
     const uint32_t number/* = 0*/)
 {
+    std::string text;
+
+    for (int i = 0; i != number; ++i)
+    {
+        text += ("[ " + std::string(infos[i].name) + " ]");
+    }
+
+	log.write(
+        SeverityLevel::SEVERITY_LEVEL_INFO,
+		"Fetch response message of service table [ %s ] notification.",
+        text.c_str());
 }
 
 void LogHostServer::afterPolledDataNotification(
@@ -45,16 +50,15 @@ void LogHostServer::afterPolledDataNotification(
     const uint64_t bytes/* = 0*/, 
     const char* from/* = nullptr*/)
 {
-    const std::string msg{reinterpret_cast<const char*>(data), bytes};
     Url requestUrl;
-    int ret{requestUrl.parse(msg)};
+    int ret{requestUrl.parse(data, bytes)};
 
     if(Error_Code_Success == ret)
     {
-        if (!requestUrl.getProtocol().compare("info"))
+        if (!requestUrl.proto().compare("info"))
         {
-            std::string command, severity, begin, end, log;
-            const std::vector<ParamItem> parameters{requestUrl.getParameters()};
+            std::string command, severity, begin, end, text;
+            const std::vector<Parameter> parameters{requestUrl.parameters()};
             for(int i = 0; i != parameters.size(); ++i)
             {
                 if (!parameters[i].key.compare("command"))
@@ -67,7 +71,7 @@ void LogHostServer::afterPolledDataNotification(
                 }
                 else if (!parameters[i].key.compare("log"))
                 {
-                    log = parameters[i].value;
+                    text = parameters[i].value;
                 }
                 else if (!parameters[i].key.compare("begin"))
                 {
@@ -81,13 +85,13 @@ void LogHostServer::afterPolledDataNotification(
 
             if(!command.compare("add"))
             {
-                const SeverityLevel log_severity{
-                    (const SeverityLevel)atoi(severity.c_str())};
+                SeverityLevel log_severity{
+                    (SeverityLevel)atoi(severity.c_str())};
                 if (SeverityLevel::SEVERITY_LEVEL_INFO == log_severity || 
                     SeverityLevel::SEVERITY_LEVEL_WARNING == log_severity || 
                     SeverityLevel::SEVERITY_LEVEL_ERROR == log_severity)
                 {
-                    fileLog.write(log_severity, log.c_str());
+                    log.write(log_severity, text.c_str());
                 }
             }
             else if(!command.compare("query"))
