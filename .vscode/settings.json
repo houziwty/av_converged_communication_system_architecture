@@ -89,6 +89,7 @@
         "stdlib.h": "c",
         "http-parser.h": "c",
         "http-server-internal.h": "c",
-        "http-websocket-internal.h": "c"
+        "http-websocket-internal.h": "c",
+        "netfwd": "cpp"
     }
 }

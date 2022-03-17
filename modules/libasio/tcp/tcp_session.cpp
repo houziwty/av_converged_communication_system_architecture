@@ -36,7 +36,7 @@ int TcpSession::send(
     const char* /* ip = nullptr*/, 
     const uint16_t/* port = 0*/)
 {
-	int ret{ so && data && 0 < bytes ? Error_Code_Success : Error_Code_Operate_Failure };
+	int ret{ !state() && so && data && 0 < bytes ? Error_Code_Success : Error_Code_Operate_Failure };
 
 	if (Error_Code_Success == ret)
 	{

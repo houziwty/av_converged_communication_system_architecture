@@ -14,7 +14,6 @@
 #ifndef MODULE_DEVICE_DVS_DVS_NODE_H
 #define MODULE_DEVICE_DVS_DVS_NODE_H
 
-#include <vector>
 #include "defs.h"
 
 namespace module

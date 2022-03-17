@@ -190,8 +190,8 @@ HCURSOR CdvshostdemoDlg::OnQueryDragIcon()
 LRESULT CdvshostdemoDlg::OnOpenRealplay(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd{ GetDlgItem(IDC_REALPLAY_WND1 + wParam)->GetSafeHwnd() };
-	AVModeConf conf{ ++wParam, AVModeType::AV_MODE_TYPE_GRAB_JPEG, /*hwnd*/ };
-	conf.callback = boost::bind(&CdvshostdemoDlg::avframeDataCallback, this, _1, _2);
+	AVModeConf conf{ ++wParam, AVModeType::AV_MODE_TYPE_REALPLAY, hwnd };
+//	conf.callback = boost::bind(&CdvshostdemoDlg::avframeDataCallback, this, _1, _2);
 //	conf.infos = &drawInfo;
 	int ret = AVNode::addConf(conf);
 
@@ -498,12 +498,12 @@ void CdvshostdemoDlg::avframeDataCallback(
 // 			(int)pkt->subtype() << " " << pkt->sequence() << " " 
 // 			<< pkt->timestamp() << " " << pkt->width() << " " 
 // 			<< pkt->height() << std::endl;
- 		static FILE* fd{ nullptr };
- 		if (!fd)
- 		{
- 			fopen_s(&fd, "d:\\test.bgr24", "wb+");
- 		}
- 		fwrite(pkt->data(), pkt->bytes(), 1, fd);
+//  		static FILE* fd{ nullptr };
+//  		if (!fd)
+//  		{
+//  			fopen_s(&fd, "d:\\test.bgr24", "wb+");
+//  		}
+//  		fwrite(pkt->data(), pkt->bytes(), 1, fd);
 	}
 }
 

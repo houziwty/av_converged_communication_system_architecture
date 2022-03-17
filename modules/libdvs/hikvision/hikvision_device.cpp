@@ -1,11 +1,5 @@
-#include <vector>
-#include "boost/make_shared.hpp"
-extern "C"
-{
-#include "HCNetSDK.h"
-}
 #include "error_code.h"
-#include "memory/xmem.h"
+#include "memory/xstr.h"
 using namespace framework::utils::memory;
 #include "hikvision_device.h"
 using namespace module::device::dvs;
@@ -34,13 +28,14 @@ int HikvisionDevice::run()
 			NET_DVR_Init();
 		}
 		
+		XStr xstr;
 		NET_DVR_DEVICEINFO_V40 devinfo{0};
 		NET_DVR_USER_LOGIN_INFO logininfo{0};
 		logininfo.bUseAsynLogin = 0;
-		XMem().copy(modeconf.ip, 128, logininfo.sDeviceAddress, NET_DVR_DEV_ADDRESS_MAX_LEN);
+		xstr.copy(modeconf.ip, sizeof(modeconf.ip), logininfo.sDeviceAddress, NET_DVR_DEV_ADDRESS_MAX_LEN);
 		logininfo.wPort = modeconf.port;
-		XMem().copy(modeconf.user, NET_DVR_LOGIN_USERNAME_MAX_LEN, logininfo.sUserName, NET_DVR_LOGIN_USERNAME_MAX_LEN);
-		XMem().copy(modeconf.passwd, NET_DVR_LOGIN_USERNAME_MAX_LEN, logininfo.sPassword, NET_DVR_LOGIN_PASSWD_MAX_LEN);
+		xstr.copy(modeconf.user, sizeof(modeconf.user), logininfo.sUserName, NET_DVR_LOGIN_USERNAME_MAX_LEN);
+		xstr.copy(modeconf.passwd, sizeof(modeconf.passwd), logininfo.sPassword, NET_DVR_LOGIN_PASSWD_MAX_LEN);
 
 		user = NET_DVR_Login_V40(&logininfo, &devinfo);
 		ret = (-1 < user ? openRealplayStream(&devinfo) : Error_Code_Device_Login_Failure);
@@ -143,23 +138,22 @@ int HikvisionDevice::closeRealplayStream()
 }
 
 void HikvisionDevice::livestreamDataCallback(
-	long sid, unsigned int type, unsigned char* data, unsigned int bytes, void* ctx)
+	LONG lRealHandle, DWORD dwDataType, BYTE *pBuffer, DWORD dwBufSize, void* pUser)
 {
-	HikvisionDevice* dvs{ reinterpret_cast<HikvisionDevice*>(ctx) };
-	const int32_t channelID{dvs->livestreamIds.at(sid)};
+	HikvisionDevice* dvs{ reinterpret_cast<HikvisionDevice*>(pUser) };
+	const int32_t channelID{dvs->livestreamIds.at(lRealHandle)};
 
 	if (dvs && 0 < channelID)
 	{
-		if (/*NET_DVR_SYSHEAD == dwDataType || */NET_DVR_STREAMDATA == type)
+		if (NET_DVR_STREAMDATA == dwDataType)
 		{
 			if (dvs->polledRealplayDataCallback)
 			{
-				dvs->polledRealplayDataCallback(dvs->modeconf.id, channelID, type, data, bytes);
+				dvs->polledRealplayDataCallback(dvs->modeconf.id, channelID, dwDataType, pBuffer, dwBufSize);
 			}
 		}
-		else if (NET_DVR_AUDIOSTREAMDATA == type)
+		else if (NET_DVR_AUDIOSTREAMDATA == dwDataType)
 		{
-//			livestream->captureAudioStreamProcess(streamData, dataBytes);
 		}
 	}
 }

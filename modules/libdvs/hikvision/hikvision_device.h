@@ -13,6 +13,10 @@
 #ifndef MODULE_DEVICE_DVS_HIKVISION_DEVICE_H
 #define MODULE_DEVICE_DVS_HIKVISION_DEVICE_H
 
+extern "C"
+{
+#include "HCNetSDK.h"
+}
 #include "device.h"
 
 namespace module
@@ -44,17 +48,17 @@ namespace module
 				int closeRealplayStream(void);
 
 				//设备数据流获取回调函数
-				//@sid [out] : 流ID
-				//@type [out] : 数据类型
-				//@data [out] : 数据 
-				//@bytes [out] : 大小
-				//@user [out] : 用户参数
+				//@lRealHandle [out] : 流ID
+				//@dwDataType [out] : 数据类型
+				//@pBuffer [out] : 数据 
+				//@dwBufSize [out] : 大小
+				//@pUser [out] : 用户参数
 				static void CALLBACK livestreamDataCallback(
-					long sid, unsigned int type, unsigned char* data, unsigned int bytes, void* user);
+					LONG lRealHandle, DWORD dwDataType, BYTE *pBuffer, DWORD dwBufSize, void* pUser);
 
 			private:
 				static uint32_t counter;
-				int32_t user;
+				LONG user;
 			};//class HikvisionDevice
 		}//namespace dvs
 	}//namespace device

@@ -33,6 +33,7 @@ int PSParser::input(const AVPkt* avpkt/* = nullptr*/)
 
         if (demuxer)
         {
+            sequence = avpkt->sequence();
             ret = 
                 (0 <= ps_demuxer_input(
                     reinterpret_cast<ps_demuxer_t*>(demuxer), 
@@ -86,12 +87,12 @@ int PSParser::parsedPSPacketCallback(
             if (0 < parser->width && 0 < parser->height)
             {
 				AVPkt avpkt{
-				maintype,
-				AVSubType::AV_SUB_TYPE_NONE,
-				++parser->sequence,
-				static_cast<uint64_t>(dts),
-				parser->width,
-				parser->height };
+				    maintype,
+				    AVSubType::AV_SUB_TYPE_NONE,
+				    parser->sequence,
+				    static_cast<uint64_t>(dts),
+				    parser->width,
+				    parser->height };
 
 				if (Error_Code_Success == avpkt.input(data, bytes) && parser->parsedDataCallback)
 				{

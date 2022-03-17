@@ -6,7 +6,7 @@ using namespace module::network::asio;
 Session::Session(
 	void* s/* = nullptr*/, 
 	const uint32_t id/* = 0*/)
-	: buffer{ nullptr }, bufBytes{0}, so{s}, sid{id}
+	: buffer{ nullptr }, bufBytes{0}, so{s}, sid{id}, stopped{false}
 {}
 
 Session::~Session()
@@ -50,14 +50,26 @@ void Session::afterAsyncWriteSomeCallback(
 	const boost::system::error_code e, 
 	const std::size_t bytes_transferred)
 {
-	if (!e && 0 < bytes_transferred && sentDataEventCallback)
+	if (e)
+	{
+		stopped = true;
+	}
+
+	if (sentDataEventCallback)
 	{
 		sentDataEventCallback(sid, bytes_transferred, e.value());
 	}
 }
 
-void Session::afterAsyncReadSomeCallback(const boost::system::error_code e, const std::size_t bytes_transferred)
+void Session::afterAsyncReadSomeCallback(
+	const boost::system::error_code e, 
+	const std::size_t bytes_transferred)
 {
+	if (e)
+	{
+		stopped = true;
+	}
+
 	if (receivedDataEventCallback)
 	{
 		receivedDataEventCallback(sid, buffer, bytes_transferred, e.value());
@@ -66,10 +78,5 @@ void Session::afterAsyncReadSomeCallback(const boost::system::error_code e, cons
 	if (!e)
 	{
 		receive();
-	}
-	else
-	{
-		int x{ 0 };
-		x++;
 	}
 }

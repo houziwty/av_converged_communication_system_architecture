@@ -76,6 +76,13 @@ namespace module
 				//@Return : 错误码
 				virtual int receive(void) = 0;
 
+				//获取会话状态
+				//@Return : 会话状态
+				inline const bool state(void) const
+				{
+					return stopped;
+				}
+
 			protected:
 				//异步IO数据读写回调
 				//@e : socket错误码
@@ -89,6 +96,7 @@ namespace module
 					const std::size_t bytes_transferred);
 
 			protected:
+				bool stopped;
 				void* so;
 				const uint32_t sid;
 				void* buffer;
