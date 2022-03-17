@@ -36,7 +36,8 @@ int FFmpegPictureConvert::input(const AVPkt* avpkt/* = nullptr*/)
 		AVFrame* output_frame{ reinterpret_cast<AVFrame*>(oframe) };
 
 		AVPixelFormat in{ AVPixelFormat::AV_PIX_FMT_NONE };
-		if (AVCodecType::AV_CODEC_TYPE_YUV420P_2_BGR24 == codecType)
+		if (AVCodecType::AV_CODEC_TYPE_YUV420P_2_BGR24 == codecType || 
+			AVCodecType::AV_CODEC_TYPE_YUV420P_2_RGB24 == codecType)
 		{
 			in = AVPixelFormat::AV_PIX_FMT_YUV420P;
 		}
@@ -53,6 +54,10 @@ int FFmpegPictureConvert::input(const AVPkt* avpkt/* = nullptr*/)
 			if (AVCodecType::AV_CODEC_TYPE_YUV420P_2_BGR24 == codecType)
 			{
 				subtype = AVSubType::AV_SUB_TYPE_BGR24;
+			}
+			else if (AVCodecType::AV_CODEC_TYPE_YUV420P_2_RGB24 == codecType)
+			{
+				subtype = AVSubType::AV_SUB_TYPE_RGB24;
 			}
 
 			AVPkt _avpkt_{ 
@@ -82,6 +87,11 @@ int FFmpegPictureConvert::init(const AVPkt* avpkt /* = nullptr */)
 		{
 			in = AVPixelFormat::AV_PIX_FMT_YUV420P;
 			out = AVPixelFormat::AV_PIX_FMT_BGR24;
+		}
+		else if (AVCodecType::AV_CODEC_TYPE_YUV420P_2_RGB24 == codecType)
+		{
+			in = AVPixelFormat::AV_PIX_FMT_YUV420P;
+			out = AVPixelFormat::AV_PIX_FMT_RGB24;
 		}
 
 		if (AVPixelFormat::AV_PIX_FMT_NONE == in || AVPixelFormat::AV_PIX_FMT_NONE == out)

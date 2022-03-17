@@ -23,8 +23,8 @@ class LogHostServer final
 {
 public:
     LogHostServer(
+        const XMQModeConf& conf, 
         FileLog& flog, 
-        const std::string& dir, 
         const uint32_t expire = 0);
     ~LogHostServer(void);
 
@@ -40,8 +40,8 @@ protected:
 		const uint32_t number = 0) override;
 
 private:
+    const XMQModeConf& modeconf;
     FileLog& log;
-    const std::string& fileDir;
     const uint32_t expireDays;
 };//class LogHostServer
 

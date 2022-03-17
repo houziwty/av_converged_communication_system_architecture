@@ -5,6 +5,7 @@ using namespace boost::placeholders;
 #include "map/unordered_map.h"
 #include "decode/ffmpeg_h264_decode.h"
 #include "convert/ffmpeg_picture_convert.h"
+#include "encode/ffmpeg_jpeg_encode.h"
 #include "av_codec.h"
 #include "av_codec_node.h"
 using namespace module::av::stream;
@@ -35,11 +36,18 @@ int AVCodecNode::addConf(const AVCodecModeConf& conf)
 				boost::bind(&AVCodecNode::afterCodecDataNotification, this, _1, _2), 
 				conf.id);
 		}
-		else if (AVCodecType::AV_CODEC_TYPE_YUV420P_2_BGR24 == conf.type)
+		else if (AVCodecType::AV_CODEC_TYPE_YUV420P_2_BGR24 == conf.type || 
+				 AVCodecType::AV_CODEC_TYPE_YUV420P_2_RGB24 == conf.type)
 		{
 			codec = boost::make_shared<FFmpegPictureConvert>(
 				boost::bind(&AVCodecNode::afterCodecDataNotification, this, _1, _2), 
 				conf.id, conf.type);
+		}
+		else if (AVCodecType::AV_CODEC_TYPE_ENCODE_JPEG == conf.type)
+		{
+			codec = boost::make_shared<FFmpegJPEGEncode>(
+				boost::bind(&AVCodecNode::afterCodecDataNotification, this, _1, _2), 
+				conf.id);
 		}
 		else
 		{

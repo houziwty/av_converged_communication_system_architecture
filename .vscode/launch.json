@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/services/dvs_host_server/dvs_host_server",
-            "args": ["--xmq_addr", "127.0.0.1", "--xmq_port", "60531", "--xms_port", "60820"],
+            "args": ["--xmq_addr", "192.168.2.53", "--xmq_port", "60531"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

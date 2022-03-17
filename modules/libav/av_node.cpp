@@ -4,8 +4,9 @@
 #ifdef _WINDOWS
 #include "graph/av_realplay_graph.h"
 #endif//_WINDOWS
-#include "graph/av_grab_bgr24_graph.h"
+#include "graph/av_grab_rgb_image_graph.h"
 #include "graph/av_grab_ps_graph.h"
+#include "graph/av_grab_jpeg_image_graph.h"
 #include "filter/av_filter.h"
 #include "av_node.h"
 using namespace module::av::stream;
@@ -29,13 +30,18 @@ int AVNode::addConf(const AVModeConf& conf)
 	{
 		AVGraphPtr graph;
 
-		if (AVModeType::AV_MODE_TYPE_GRAB_BRG24 == conf.type)
+		if (AVModeType::AV_MODE_TYPE_GRAB_BRG24 == conf.type || 
+			AVModeType::AV_MODE_TYPE_GRAB_RGB24 == conf.type)
 		{
-			graph = boost::make_shared<AVGrabBGR24Graph>();
+			graph = boost::make_shared<AVGrabRGBImageGraph>();
 		}
 		else if (AVModeType::AV_MODE_TYPE_GRAB_PS == conf.type)
 		{
 			graph = boost::make_shared<AVGrabPSGraph>();
+		}
+		else if (AVModeType::AV_MODE_TYPE_GRAB_JPEG == conf.type)
+		{
+			graph = boost::make_shared<AVGrabJPEGImageGraph>();
 		}
 #ifdef _WINDOWS
 		else if (AVModeType::AV_MODE_TYPE_REALPLAY == conf.type)

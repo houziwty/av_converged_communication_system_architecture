@@ -59,6 +59,10 @@ namespace module
                 //@Return : 错误码
                 int destroy(void);
 
+                //获取日志文件目录
+                //@Return : 目录
+                const char* dir(void) const;
+
                 //写入
                 //@level : 等级
                 //@fmt : 格式

@@ -52,7 +52,7 @@ void DvsStreamSession::afterParsedDataNotification(
     const uint32_t id/* = 0*/, 
     const AVPkt* avpkt/* = nullptr*/)
 {
-    const std::string logid{std::string(XMQHostID) + "_log"};
+    const std::string logid{std::string(DVSHostID) + "_log"};
     const std::string msg{(const char*)avpkt->data(), avpkt->bytes()};
     Url url;
     int ret{url.parse(avpkt->data(), avpkt->bytes())};
@@ -76,19 +76,11 @@ void DvsStreamSession::afterParsedDataNotification(
                 cid = atoi(params[i].value.c_str());
             }
         }
+    }
 
-        const std::string log{
-            (boost::format(
-                "info://%s?command=add&severity=0&log=Parsed stream play command = [ %d ], device ID = [ %d ], channel ID = [ %d ] from session = [ %d ] successfully.") 
-                % logid % command % did % cid % sid).str()};
-        xmqNode.send(modeconf.id, log.c_str(), log.length(), logid.c_str());
-    }
-    else
-    {
-        const std::string log{
-            (boost::format(
-                "info://%s?command=add&severity=1&log=Parsed stream play url = [ %s ] from session = [ %d ] failed, result = [ %d ].") 
-                % logid % msg % sid % ret).str()};
-        xmqNode.send(modeconf.id, log.c_str(), log.length(), logid.c_str());
-    }
+    const std::string log{
+        (boost::format(
+            "info://%s?command=add&severity=%d&log=Play live stream [ %u_%u ], result [ %d ].") 
+            % logid % (ret ? 1 : 0) % did % cid % ret).str()};
+    xmqNode.send(modeconf.id, log.c_str(), log.length(), logid.c_str());
 }

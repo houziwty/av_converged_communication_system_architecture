@@ -31,7 +31,9 @@ typedef enum class tagAVCodecType_t : uint32_t
     AV_CODEC_TYPE_NONE = 0,
     AV_CODEC_TYPE_DECODE_H264, 
     AV_CODEC_TYPE_DECODE_H265, 
-    AV_CODEC_TYPE_YUV420P_2_BGR24
+    AV_CODEC_TYPE_YUV420P_2_BGR24, 
+    AV_CODEC_TYPE_YUV420P_2_RGB24, 
+    AV_CODEC_TYPE_ENCODE_JPEG
 }AVCodecType;
 
 typedef struct tagAVCodecModeConf_t

@@ -8,7 +8,7 @@ include_directories(${SAMPLE_DIR}/libvideo_encode_image)
 link_directories(${3RDPART_DIR}/sdk/hikvision/lib/linux)
 
 file(GLOB_RECURSE src "*.cpp")
-file(GLOB_RECURSE framework_utils_src "${SOURCE_DIR}/utils/thread/*.cpp" "${SOURCE_DIR}/utils/time/*.cpp")
+file(GLOB_RECURSE framework_utils_src "${SOURCE_DIR}/thread/*.cpp" "${SOURCE_DIR}/time/*.cpp")
 
 add_executable(${PROJECT_NAME} ${src} ${framework_utils_src})
 target_link_libraries(${PROJECT_NAME} PRIVATE libboost_thread.a video_encode_image)

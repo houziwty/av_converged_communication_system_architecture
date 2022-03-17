@@ -1,13 +1,16 @@
+#include "boost/checked_delete.hpp"
+#include "boost/filesystem.hpp"
+#include "boost/format.hpp"
 #include "error_code.h"
 #include "url/url.h"
 using namespace framework::utils::data;
 #include "log_host_server.h"
 
 LogHostServer::LogHostServer(
+    const XMQModeConf& conf, 
     FileLog& flog, 
-    const std::string& dir, 
     const uint32_t expire/* = 0*/)
-    : XMQNode(), log{ flog }, fileDir{ dir }, expireDays{ expire }
+    : XMQNode(), modeconf{conf}, log{ flog }, expireDays{ expire }
 {}
 
 LogHostServer::~LogHostServer()
@@ -57,7 +60,7 @@ void LogHostServer::afterPolledDataNotification(
     {
         if (!requestUrl.proto().compare("info"))
         {
-            std::string command, severity, begin, end, text;
+            std::string command, severity, begin, end, text, date, timestamp;
             const std::vector<Parameter> parameters{requestUrl.parameters()};
             for(int i = 0; i != parameters.size(); ++i)
             {
@@ -81,6 +84,14 @@ void LogHostServer::afterPolledDataNotification(
                 {
                     end = parameters[i].value;
                 }
+				else if (!parameters[i].key.compare("date"))
+				{
+					date = parameters[i].value;
+				}
+				else if (!parameters[i].key.compare("timestamp"))
+				{
+                    timestamp = parameters[i].value;
+				}
             }
 
             if(!command.compare("add"))
@@ -96,11 +107,68 @@ void LogHostServer::afterPolledDataNotification(
             }
             else if(!command.compare("query"))
             {
+                std::string filenames;
+                const uint32_t start_time{ (uint32_t)atoi(begin.c_str()) }, stop_time{ (uint32_t)atoi(end.c_str()) };
+				boost::filesystem::path path(log.dir());
+				boost::filesystem::directory_iterator last;
 
+				for (boost::filesystem::directory_iterator it(path); it != last; ++it)
+                {
+					if (!boost::filesystem::is_directory(*it))
+                    {
+                        const std::string filename{ it->path().filename().string() };
+                        const uint32_t current_time{ (uint32_t)atoi(filename.c_str())};
+
+                        if (start_time <= current_time && stop_time >= current_time)
+                        {
+                            filenames += ("&date=" + filename);
+                        }
+					}
+				}
+
+				const std::string msg{
+                    (boost::format("info://%s?command=query&timestamp=%s%s") % from % timestamp % filenames).str() };
+				XMQNode::send(modeconf.id, msg.c_str(), msg.length());
             }
             else if(!command.compare("fetch"))
             {
-                
+                FILE* fd{ nullptr };
+                uint64_t fdbytes{0};
+                char* text{ nullptr };
+                std::string msg;
+
+#ifdef _WINDOWS
+                const std::string filename{ std::string(log.dir()) + "\\" + date};
+                fopen_s(&fd, filename.c_str(), "rb+");
+#else
+                const std::string filename{ std::string(log.dir()) + "/" + date };
+                fd = fopen(filename.c_str(), "rb+");
+#endif//_WINDOWS
+
+                if (fd)
+                {
+                    fseek(fd, 0, SEEK_END);
+                    fdbytes = ftell(fd);
+                    text = new(std::nothrow) char[fdbytes];
+                    if (text)
+                    {
+#ifdef _WINDOWS
+                        fread_s(text, fdbytes, fdbytes, 1, fd);
+#else
+                        fread(text, fdbytes, 1, fd);
+#endif//_WINDOWS
+                        msg = (boost::format("info://%s?command=fetch&timestamp=%s%s") % from % timestamp % text).str();
+                    }
+                    else
+                    {
+                        msg = (boost::format("info://%s?command=fetch&timestamp=%s") % from % timestamp).str();
+                    }
+
+                    fclose(fd);
+                    boost::checked_array_delete(text);
+                }
+
+				XMQNode::send(modeconf.id, msg.c_str(), msg.length());
             }
         }
     }

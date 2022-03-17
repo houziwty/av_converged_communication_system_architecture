@@ -195,7 +195,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\utils\url\url.cpp" />
+    <ClCompile Include="..\..\..\src\url\url.cpp" />
     <ClCompile Include="dvs_host_demo.cpp" />
     <ClCompile Include="dvs_host_demoDlg.cpp" />
     <ClCompile Include="pch.cpp">

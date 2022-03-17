@@ -1,8 +1,8 @@
 #include "boost/bind/bind.hpp"
 using namespace boost::placeholders;
-#include "utils/thread/thread_pool.h"
+#include "thread/thread_pool.h"
 using namespace framework::utils::thread;
-#include "utils/time/xtime.h"
+#include "time/xtime.h"
 using namespace framework::utils::time;
 #include "libvideo_encode_image.h"
 

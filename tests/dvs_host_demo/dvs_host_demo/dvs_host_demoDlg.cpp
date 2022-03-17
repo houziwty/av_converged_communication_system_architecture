@@ -2,6 +2,7 @@
 // dvs_host_demoDlg.cpp : implementation file
 //
 
+#include <iostream>
 #include "pch.h"
 #include "framework.h"
 #include "dvs_host_demo.h"
@@ -64,6 +65,9 @@ CdvshostdemoDlg::CdvshostdemoDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_DVS_HOST_DEMO_DIALOG, pParent), XMQNode(), ASIONode(), sid{0}, stream{0}
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	drawInfo.number = 0;
+	drawInfo.areas = NULL;
+	drawInfo.enable = false;
 }
 
 void CdvshostdemoDlg::DoDataExchange(CDataExchange* pDX)
@@ -185,45 +189,10 @@ HCURSOR CdvshostdemoDlg::OnQueryDragIcon()
 
 LRESULT CdvshostdemoDlg::OnOpenRealplay(WPARAM wParam, LPARAM lParam)
 {
-//	HWND hwnd{ GetDlgItem(IDC_REALPLAY_WND1 + wParam)->GetSafeHwnd() };
-	AVModeConf conf{ ++wParam, AVModeType::AV_MODE_TYPE_GRAB_BRG24, /*hwnd*/nullptr };
+	HWND hwnd{ GetDlgItem(IDC_REALPLAY_WND1 + wParam)->GetSafeHwnd() };
+	AVModeConf conf{ ++wParam, AVModeType::AV_MODE_TYPE_GRAB_JPEG, /*hwnd*/ };
 	conf.callback = boost::bind(&CdvshostdemoDlg::avframeDataCallback, this, _1, _2);
-	conf.areas = nullptr;
-// 	AVDrawArea area1;
-// 	area1.left = 300;
-// 	area1.top = 600;
-// 	area1.right = 800;
-// 	area1.bottom = 800;
-// 	area1.color[0] = 0xFF;
-// 	area1.color[1] = 0x00;
-// 	area1.color[2] = 0x00;
-// 	sprintf_s(area1.text, 256, "Target 1\r\nSpeed: 0 KM/H\r\nDirection: North");
-// 	areas.push_back(area1);
-// 
-// 	AVDrawArea area2;
-// 	area2.left = 200;
-// 	area2.top = 200;
-// 	area2.right = 1000;
-// 	area2.bottom = 1000;
-// 	area2.color[0] = 0x00;
-// 	area2.color[1] = 0x80;
-// 	area2.color[2] = 0x00;
-// 	sprintf_s(area2.text, 256, "Motion Detect Area\r\n");
-// 	areas.push_back(area2);
-// 
-// 	AVDrawArea area3;
-// 	area3.left = 1500;
-// 	area3.top = 800;
-// 	area3.right = 1900;
-// 	area3.bottom = 1000;
-// 	area3.color[0] = 0x00;
-// 	area3.color[1] = 0x80;
-// 	area3.color[2] = 0x00;
-// 	sprintf_s(area3.text, 256, "Target 2\r\nSpeed: 90 KM/H\r\nDirection: West");
-// 	areas.push_back(area3);
-// 
-// 	conf.areas = (void*)&areas;
-
+//	conf.infos = &drawInfo;
 	int ret = AVNode::addConf(conf);
 
 	char temp[256]{ 0 };
@@ -246,6 +215,8 @@ LRESULT CdvshostdemoDlg::OnOpenRealplay(WPARAM wParam, LPARAM lParam)
 		Sleep(10);
 	}
 	boost::checked_array_delete(data);
+	DWORD id;
+	CreateThread(NULL, 0, &CdvshostdemoDlg::ThreadFunc, this, 0, &id);
 
 	return 0;
 }
@@ -312,13 +283,12 @@ void CdvshostdemoDlg::afterPolledDataNotification(
 // 		"Fetch test dvs host client received data = [ %s ].", 
 // 		data);
 
-	const std::string msg{ (const char*)data, (const unsigned int)bytes };
 	Url url;
-	int ret{ url.parse(msg) };
+	int ret{ url.parse(data, bytes) };
 
 	if (Error_Code_Success == ret)
 	{
-		if (!url.getProtocol().compare("config"))
+		if (!url.proto().compare("config"))
 		{
 			processDvsControlMessage(url);
 		}
@@ -470,7 +440,7 @@ void CdvshostdemoDlg::OnBnClickedRealplayTest()
 
 void CdvshostdemoDlg::processDvsControlMessage(Url& requestUrl)
 {
-	const std::vector<ParamItem> parameters{ requestUrl.getParameters() };
+	const std::vector<Parameter> parameters{ requestUrl.parameters() };
 	std::string command, error;
 
 	for (int i = 0; i != parameters.size(); ++i)
@@ -524,12 +494,16 @@ void CdvshostdemoDlg::avframeDataCallback(
 
 	if (pkt)
 	{
-//  		static FILE* fd{ nullptr };
-//  		if (!fd)
-//  		{
-//  			fopen_s(&fd, "d:\\test.bgr24", "wb+");
-//  		}
-//  		fwrite(pkt->data(), pkt->bytes(), 1, fd);
+// 		std::cout << (int)pkt->maintype() << " " << 
+// 			(int)pkt->subtype() << " " << pkt->sequence() << " " 
+// 			<< pkt->timestamp() << " " << pkt->width() << " " 
+// 			<< pkt->height() << std::endl;
+ 		static FILE* fd{ nullptr };
+ 		if (!fd)
+ 		{
+ 			fopen_s(&fd, "d:\\test.bgr24", "wb+");
+ 		}
+ 		fwrite(pkt->data(), pkt->bytes(), 1, fd);
 	}
 }
 
@@ -543,4 +517,30 @@ void CdvshostdemoDlg::OnClose()
 	XMQNode::removeConf(0xFFFF);
 	XMQNode::stop();
 	__super::OnClose();
+}
+
+DWORD WINAPI CdvshostdemoDlg::ThreadFunc(LPVOID c)
+{
+	CdvshostdemoDlg* demo{ (CdvshostdemoDlg*)c };
+
+	while (1)
+	{
+		Sleep(40);
+		demo->drawInfo.enable = false;
+		boost::checked_array_delete(demo->drawInfo.areas);
+		demo->drawInfo.number = 1000;
+		demo->drawInfo.areas = new AVDrawParam[demo->drawInfo.number];
+		for (int i = 0; i != demo->drawInfo.number; ++i)
+		{
+			demo->drawInfo.areas[i].left = i * 10;
+			demo->drawInfo.areas[i].top = i * 10;
+			demo->drawInfo.areas[i].right = demo->drawInfo.areas[i].left + 400;
+			demo->drawInfo.areas[i].bottom = demo->drawInfo.areas[i].top + 300;
+			demo->drawInfo.areas[i].color[0] = 0x00;
+			demo->drawInfo.areas[i].color[1] = 0x80;
+			demo->drawInfo.areas[i].color[2] = 0x00;
+			sprintf_s(demo->drawInfo.areas[i].text, 256, "Target 2\r\nSpeed: 90 KM/H\r\nDirection: West");
+		}
+		demo->drawInfo.enable = true;
+	}
 }

@@ -6,17 +6,17 @@
 #include "filter/parser/av_frame_parser_filter.h"
 #include "filter/decoder/av_frame_decoder_filter.h"
 #include "filter/converter/av_frame_converter_filter.h"
-#include "av_grab_bgr24_graph.h"
+#include "av_grab_rgb_image_graph.h"
 using namespace module::av::stream;
 
-AVGrabBGR24Graph::AVGrabBGR24Graph()
+AVGrabRGBImageGraph::AVGrabRGBImageGraph()
 	: AVGraph()
 {}
 
-AVGrabBGR24Graph::~AVGrabBGR24Graph()
+AVGrabRGBImageGraph::~AVGrabRGBImageGraph()
 {}
 
-int AVGrabBGR24Graph::createNew(const AVModeConf& conf)
+int AVGrabRGBImageGraph::createNew(const AVModeConf& conf)
 {
 	AVFilterPtr bufferParserPtr{
 		boost::make_shared<AVBufferParserFilter>(AVFilterType::AV_FILTER_TYPE_SOURCE)};
@@ -41,7 +41,7 @@ int AVGrabBGR24Graph::createNew(const AVModeConf& conf)
 	return 0 < avfilters.values().size() ? AVGraph::createNew(conf) : Error_Code_Bad_New_Object;
 }
 
-int AVGrabBGR24Graph::connectPin()
+int AVGrabRGBImageGraph::connectPin()
 {
 	int ret{0 < avfilters.values().size() ? Error_Code_Success : Error_Code_Object_Not_Exist};
 

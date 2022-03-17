@@ -13,7 +13,9 @@ using namespace framework::utils::data;
 #include "dvs_host_server.h"
 
 DvsHostServer::DvsHostServer(const XMQModeConf& conf)
-    : XMQNode(), ASIONode(), DVSNode(), modeconf{conf}, deviceNumber{0}, streamNumber{0}
+    : XMQNode(), ASIONode(), DVSNode(), 
+    modeconf{conf}, deviceNumber{0}, streamNumber{0}, 
+    logid{std::string(DVSHostID).append("_log")}
 {}
 
 DvsHostServer::~DvsHostServer()
@@ -29,18 +31,18 @@ int DvsHostServer::run()
 
         if (Error_Code_Success == ret)
         {
-            logid.append(DVSHostID).append("_log");
+            const std::string log{
+                (boost::format(
+                    "info://%s?command=add&severity=0&log=Run dvs host server name [ %s ], xmq_addr [ %s ], xmq_port [ %d ], type [ %d ].") 
+                    % logid % modeconf.name % modeconf.ip % modeconf.port % static_cast<int>(modeconf.type)).str()};
+            XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
+
+            //Open stream media server
             ASIOModeConf conf;
             conf.proto = ASIOProtoType::ASIO_PROTO_TYPE_TCP;
             conf.port = 60820;
             conf.tcp.mode = ASIOModeType::ASIO_MODE_TYPE_LISTEN;
             ASIONode::addConf(conf);
-
-            const std::string log{
-                (boost::format(
-                    "info://%s?command=add&severity=0&log=Run dvs host server name = [ %s ], xmq_addr = [ %s ], xmq_port = [ %d ], type = [ %d ].") 
-                    % logid % modeconf.name % modeconf.ip % modeconf.port % static_cast<int>(modeconf.type)).str()};
-            XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
         }
     }
     
@@ -61,12 +63,29 @@ int DvsHostServer::stop()
 
 void DvsHostServer::afterFetchOnlineStatusNotification(const bool online)
 {
+    const std::string log{
+        (boost::format(
+            "info://%s?command=add&severity=%d&log=Fetch message of online status [ %s ] notification.") 
+            % logid % (online ? 0 : 1) % (online ? "online" : "offline")).str()};
+    XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
 }
 
 void DvsHostServer::afterFetchServiceCapabilitiesNotification(
     const ServiceInfo* infos/* = nullptr*/, 
     const uint32_t number/* = 0*/)
 {
+    std::string text;
+
+    for (int i = 0; i != number; ++i)
+    {
+        text += ("[ " + std::string(infos[i].name) + " ]");
+    }
+
+    const std::string log{
+        (boost::format(
+            "info://%s?command=add&severity=0&log=Fetch response message of service table [ %s ] notification.") 
+            % logid % text.c_str()).str()};
+    XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
 }
 
 void DvsHostServer::afterPolledDataNotification(
@@ -89,8 +108,8 @@ void DvsHostServer::afterPolledDataNotification(
         {
             const std::string log{
                 (boost::format(
-                    "info://%s?command=add&severity=1&log=Parsed unknown url = [ %s ] from server = [ %s ].") 
-                    % logid % msg % from).str()};
+                    "info://%s?command=add&severity=1&log=Parsed request message with invalid url [ %s ] from [ %s ].") 
+                    % logid % msg.c_str() % from).str()};
             XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
         }
     }
@@ -98,8 +117,8 @@ void DvsHostServer::afterPolledDataNotification(
     {
         const std::string log{
             (boost::format(
-                "info://%s?command=add&severity=2&log=Parsed polled url = [ %s ] from server = [ %s ] failed, result = [ %d ].") 
-                % logid % msg % from % ret).str()};
+                "info://%s?command=add&severity=2&log=Parse request message [ %s ] from [ %s ] failed, result [ %d ].") 
+                % logid % msg.c_str() % from % ret).str()};
         XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
     }
 }
@@ -119,16 +138,16 @@ uint32_t DvsHostServer::afterFetchAcceptedEventNotification(
     {
         const std::string log{
             (boost::format(
-                "info://%s?command=add&severity=0&log=Fetch stream session id = [ %d ] connect from ip = [ %s ], port = [ %d ] successfully, result = [ %d ].") 
-                % logid % streamNumber % ip % e).str()};
+                "info://%s?command=add&severity=0&log=Connected stream session [ %u ] from [ %s : %u ] successfully.") 
+                % logid % streamNumber % ip % port).str()};
         XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
     }
     else
     {
         const std::string log{
             (boost::format(
-                "info://%s?command=add&severity=1&log=Fetch stream session id = [ %d ] connect from ip = [ %s ], port = [ %d ] successfully, result = [ %d ].") 
-                % logid % streamNumber % ip % e).str()};
+                "info://%s?command=add&severity=1&log=Connected stream session [ %u ] from [ %s : %u ] failed, result [ %d ].") 
+                % logid % streamNumber % ip % port % e).str()};
         XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
     }
 
@@ -166,11 +185,11 @@ void DvsHostServer::afterPolledReadDataNotification(
     else
     {
         //会话异常
-        int ret{ASIONode::removeConf(id)};
+        ASIONode::removeConf(id);
         const std::string log{
             (boost::format(
-                "info://%s?command=add&severity=1&log=Fetch stream session id = [ %d ] exception code = [ %d ], and remove it result = [ %d ].") 
-                % logid % id % e % ret).str()};
+                "info://%s?command=add&severity=1&log=Remove stream session [ %u ] while throw exception code [ %d ].") 
+                % logid % id % e).str()};
         XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
     }
 }
@@ -262,54 +281,31 @@ void DvsHostServer::processDvsControlMessage(const std::string from, Url& reques
             {
                 DVSNode::removeConf(conf.id);
             }
-
-            const std::string url{
-                (boost::format("config://%s?command=add&error=%d&dvs=%s_%s_%d_%s") 
-                % from % ret % conf.id % ip % conf.channels % name).str()};
-            int send_ret{ XMQNode::send(modeconf.id, url.c_str(), url.length()) };
-
-            const std::string log{
-                (boost::format(
-                    "info://%s?command=add&severity=0&log=Add new device with id = [ %d ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ] error = [ %d ], result = [ %d ].") 
-                    % logid % deviceNumber % name % ip % port % user % passwd % ret % send_ret).str()};
-            XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
         }
-        else
-        {
-            const std::string url{
-                (boost::format("config://%s?command=add&error=%d") % from % ret).str()};
-            XMQNode::send(modeconf.id, url.c_str(), url.length());
+        
+        const std::string url{
+            (boost::format("config://%s?command=add&error=%d&dvs=%s_%s_%d_%s") 
+            % from % ret % conf.id % ip % conf.channels % name).str()};
+        XMQNode::send(modeconf.id, url.c_str(), url.length());
 
-            const std::string log{
-                (boost::format(
-                    "info://%s?command=add&severity=1&log=Add new device failed with id = [ %d ] name = [ %s ] ip = [ %s ] port = [ %s ], user = [ %s ], passwd = [ %s ], result = [ %d ].") 
-                    % logid % deviceNumber % name % ip % port % user % passwd % ret).str()};
-            XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
-        }
+        const std::string log{
+            (boost::format(
+                "info://%s?command=add&severity=%d&log=Add new device [ %d_%s_%s_%u_%s_%s ] result [ %d ].") 
+                % logid % (ret ? 1 : 0) % conf.id % conf.name % conf.ip % conf.port % conf.user % conf.passwd % ret).str()};
+        XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
     }
     else if (!command.compare("remove"))
     {
         int ret{DVSNode::removeConf(atoi(id.c_str()))};
         const std::string msg{
                 (boost::format("config://%s?command=remove&error=%d&id=%s") % from % ret % id).str()};
-        XMQNode::send(0xB1, msg.c_str(), msg.length());
-
-        if (Error_Code_Success == ret)
-        {
-            const std::string log{
-                (boost::format(
-                    "info://%s?command=add&severity=0&log=Remove device successfully with id = [ %s ].") 
-                    % logid % id).str()};
-            XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
-        }
-        else
-        {
-            const std::string log{
-                (boost::format(
-                    "info://%s?command=add&severity=0&log=Remove device failed with uuid = [ %s ] result = [ %d ].") 
-                    % logid % id % ret).str()};
-            XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
-        }
+        XMQNode::send(modeconf.id, msg.c_str(), msg.length());
+        
+        const std::string log{
+            (boost::format(
+                "info://%s?command=add&severity=%d&log=Remove device [ %s ] result [ %d ].") 
+                % logid % (ret ? 1 : 0) % id.c_str() % ret).str()};
+        XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
     }
 }
 

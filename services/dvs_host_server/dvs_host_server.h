@@ -83,7 +83,7 @@ public:
     const XMQModeConf& modeconf;
 
 private:
-    std::string logid;
+    const std::string logid;
     uint32_t deviceNumber;
     uint32_t streamNumber;
     SharedMutex mtx;

@@ -17,12 +17,17 @@ int AVFrameConverterFilter::createNew(const AVModeConf& conf)
 
 	if (Error_Code_Success == ret)
 	{
-		AVCodecType codec{ AVCodecType::AV_CODEC_TYPE_NONE };
+		AVCodecType type{ AVCodecType::AV_CODEC_TYPE_NONE };
 		if (AVModeType::AV_MODE_TYPE_GRAB_BRG24 == conf.type)
 		{
-			codec = AVCodecType::AV_CODEC_TYPE_YUV420P_2_BGR24;
+			type = AVCodecType::AV_CODEC_TYPE_YUV420P_2_BGR24;
 		}
-		AVCodecModeConf codecConf{ conf.id + offset, codec };
+		else if (AVModeType::AV_MODE_TYPE_GRAB_RGB24 == conf.type)
+		{
+			type = AVCodecType::AV_CODEC_TYPE_YUV420P_2_RGB24;
+		}
+		
+		AVCodecModeConf codecConf{ conf.id + offset, type };
 		ret = AVCodecNode::addConf(codecConf);
 
 		if (Error_Code_Success == ret)
@@ -53,7 +58,7 @@ void AVFrameConverterFilter::afterCodecDataNotification(
 {
 	if (0 < id && avpkt)
 	{
-		//Êý¾Ý´«µÝÒª¼õÈ¥Æ«ÒÆÁ¿
+		//ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½Òªï¿½ï¿½È¥Æ«ï¿½ï¿½ï¿½ï¿½
 		AVFilter::input(id - offset, avpkt);
 	}
 }

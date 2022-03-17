@@ -6,6 +6,8 @@
 #include "file_log.h"
 using namespace module::file::log;
 
+static std::string logDir{""};
+
 FileLog::FileLog()
 {}
 
@@ -17,11 +19,11 @@ int FileLog::createNew(
 	const bool enableFile /* = true */,
 	const unsigned int expireDays /* = 0 */)
 {
+	//The dirctory must be existed.
+	logDir.append(dir ? dir : "");
+
 	if (enableFile)
 	{
-		//The dirctory must be existed.
-		std::string logDir{ dir ? dir : "" };
-
 		if (!boost::filesystem::exists(logDir))
 		{
 			logDir = boost::filesystem::initial_path<boost::filesystem::path>().string();
@@ -58,6 +60,11 @@ int FileLog::destroy()
 	google::DisableLogCleaner();
 	google::ShutdownGoogleLogging();
 	return Error_Code_Success;
+}
+
+const char* FileLog::dir() const
+{
+	return logDir.c_str();
 }
 
 int FileLog::write(const SeverityLevel severity, const char* fmt, ...)

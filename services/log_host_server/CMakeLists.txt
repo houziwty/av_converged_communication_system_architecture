@@ -14,6 +14,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(
 		LINK_LIBS 
 		libboost_program_options.a 
+		libboost_filesystem.a 
 		xmq 
 		log)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
@@ -33,12 +34,14 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		set(
 			LINK_LIBS 
 			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_filesystem-vc143-mt-sgd-x64-1_78.lib 
 			${XMQ_LINK_DIR}/xmq.lib 
 			${LOG_LINK_DIR}/log.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(
 			LINK_LIBS 
-			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-s-x64-1_78.lib 		
+			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-s-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_filesystem-vc143-mt-s-x64-1_78.lib 
 			${XMQ_LINK_DIR}/xmq.lib 
 			${LOG_LINK_DIR}/log.lib)
 	endif()

@@ -37,6 +37,8 @@ typedef enum class tagAVModeType_t : uint32_t
     AV_MODE_TYPE_NONE = 0, 
     AV_MODE_TYPE_GRAB_PS, 
     AV_MODE_TYPE_GRAB_BRG24, 
+    AV_MODE_TYPE_GRAB_RGB24, 
+    AV_MODE_TYPE_GRAB_JPEG, 
     AV_MODE_TYPE_REALPLAY, 
     AV_MODE_TYPE_PLAYBACK, 
     AV_MODE_TYPE_DOWNLOAD
@@ -75,6 +77,7 @@ typedef struct tagAVModeConf_t
 static const char* av_buffer_parser_filter_name = "av_buffer_parser_filter";
 static const char* av_frame_parser_filter_name = "av_frame_parser_filter";
 static const char* av_frame_decoder_filter_name = "av_frame_decoder_filter";
+static const char* av_frame_encoder_filter_name = "av_frame_encoder_filter";
 static const char* av_frame_converter_filter_name = "av_frame_converter_filter";
 static const char* av_frame_player_filter_name = "av_frame_player_filter";
 

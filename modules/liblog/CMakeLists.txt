@@ -27,7 +27,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		set(
 			LINK_LIBS 
 			${GLOG_ROOT_DIR}/${CMAKE_BUILD_TYPE}/glog.lib 
-			${BOOST_LINK_DIR}/libboost_filesystem-vc143-mt-sgd-x64-1_78.lib)
+			${BOOST_LINK_DIR}/libboost_filesystem-vc143-mt-s-x64-1_78.lib)
 	endif()
 	add_definitions(-DGLOG_NO_ABBREVIATED_SEVERITIES)
 endif()

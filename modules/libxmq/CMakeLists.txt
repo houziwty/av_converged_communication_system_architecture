@@ -37,8 +37,8 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			LINK_LIBS 
 			${ZMQ_LINK_DIR}/libzmq-v142-mt-s-4_3_5.lib
 			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-s-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_thread-vc143-mt-sgd-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_thread-vc143-mt-s-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-s-x64-1_78.lib 
 			ws2_32.lib 
 			Iphlpapi.lib)
 	endif()

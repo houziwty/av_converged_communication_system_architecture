@@ -11,10 +11,8 @@ using namespace module::network::asio;
 #include "av_node.h"
 #include "av_player.h"
 using namespace module::av::stream;
-#include "log.h"
-using namespace module::file::log;
-#include "utils/url/url.h"
-using namespace framework::utils::url;
+#include "url/url.h"
+using namespace framework::utils::data;
 
 // CdvshostdemoDlg dialog
 class CdvshostdemoDlg 
@@ -95,8 +93,9 @@ public:
 	afx_msg void OnBnClickedGrabTest();
 
 private:
-	std::vector<AVDrawArea> areas;
+	ExtendDrawInfo drawInfo;
 	static int WM_OPEN_REALPLAY;
 public:
 	afx_msg void OnClose();
+	static DWORD WINAPI ThreadFunc(LPVOID c);
 };
