@@ -31,13 +31,11 @@ namespace module
                 //连接数据库
 				//@ip [in] : IP地址
                 //@port [in] : 端口号
-                //@username [in] : 用户名
                 //@passwd [in] : 密码
 				//@Return : 错误码
 				virtual int connect(
                     const char* ip = nullptr, 
-                    const uint16_t port = 0, 
-                    const char* username = nullptr, 
+                    const uint16_t port = 0,  
                     const char* passwd = nullptr) = 0;
 
 				//断开数据库
@@ -54,11 +52,9 @@ namespace module
                     const char* value = nullptr) = 0;
 
                 //读取数据
-                //@id [in] : 数据库ID
                 //@key [in] : 字段标识
                 //@Return : 字段值
-                virtual const char* read(
-                    const uint32_t id = 0, 
+                virtual const char* read( 
                     const char* key = nullptr) = 0;
             };//class Database
         }//namespace database

@@ -7,7 +7,8 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(
 		LINK_LIBS 
 		libglog.a 
-		libboost_filesystem.a )
+		libboost_filesystem.a 
+		pthread)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(
 		BOOST_ROOT_DIR 

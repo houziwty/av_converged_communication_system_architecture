@@ -36,12 +36,16 @@ int DahuaDevice::run()
 		xstr.copy(modeconf.user, sizeof(modeconf.user), login.szUserName, 64);
 		login.nPort = modeconf.port;
 		login.emSpecCap = EM_LOGIN_SPEC_CAP_TCP;
-		NET_OUT_LOGIN_WITH_HIGHLEVEL_SECURITY out{0};
-		user = CLIENT_LoginWithHighLevelSecurity(&login, &out);
+// 		NET_OUT_LOGIN_WITH_HIGHLEVEL_SECURITY out{0};
+// 		user = CLIENT_LoginWithHighLevelSecurity(&login, &out);
+
+		int e{ 0 };
+		NET_DEVICEINFO info{ 0 };
+		user = CLIENT_Login(modeconf.ip, modeconf.port, modeconf.user, modeconf.passwd, &info, &e);
 
 		if (-1 < user)
 		{
-			modeconf.channels = out.stuDeviceInfo.nChanNum;
+			modeconf.channels = info.byChanNum;
 			for (int i = 0; i != modeconf.channels; ++i)
 			{
 				LLONG sid{

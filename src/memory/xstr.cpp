@@ -27,9 +27,9 @@ int XStr::copy(
         const uint64_t bytes{src_bytes > dest_bytes ? dest_bytes : src_bytes};
 
 #ifdef _WINDOWS
-	    strncpy_s(dest, bytes, src, bytes - 1);
+	    strncpy_s(dest, bytes + 1, src, bytes);
 #else
-        strncpy(dest, src, bytes - 1);
+        strncpy(dest, src, bytes);
 #endif//WINDOWS
     }
 

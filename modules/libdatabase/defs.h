@@ -25,23 +25,21 @@
 #define FILE_DATABASE_EXPORT
 #endif//_WINDOWS
 
-typedef enum tagDataBaseType_t : int
+typedef enum tagDatabaseType_t : int
 {
 	DATABASE_TYPE_NONE = 0,
 	DATABASE_TYPE_REDIS, 
 	DATABASE_TYPE_MYSQL
-}DataBaseType;
+}DatabaseType;
 
 //数据库配置
 typedef struct tagDBModeConf_t
 {
-	char name[128];
-    char user[128];
+	DatabaseType type;
 	char passwd[64];
     char ip[128];
     uint16_t port;
     uint32_t id;                    //数据库ID标识，0 < id，由调用者定义
-	DataBaseType type;
 }DBModeConf;
 
 #endif//MODULE_FILE_DATABASE_DATABASE_NODE_DEFS_H

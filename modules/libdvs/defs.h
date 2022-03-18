@@ -32,7 +32,8 @@ typedef void* _thread_t;
 typedef enum class tagDVSFactoryType_t : uint32_t
 {
 	DVS_FACTORY_TYPE_NONE = 0,
-	DVS_FACTORY_TYPE_HK
+	DVS_FACTORY_TYPE_HK, 
+	DVS_FACTORY_TYPE_DH
 }DVSFactoryType;
 
 typedef enum class tagDVSModelType_t : uint32_t
@@ -46,7 +47,7 @@ typedef struct tagDVSModeConf_t
 {
 	char name[128];
     char user[128];
-	char passwd[64];
+	char passwd[128];
     char ip[128];
     uint16_t port;
     uint32_t id;                    //物理设备ID标识，0 < id，由调用者定义

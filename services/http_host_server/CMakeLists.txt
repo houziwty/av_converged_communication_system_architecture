@@ -51,10 +51,8 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	add_definitions(-DUSE_MODULE_NETWORK_ASIO -DUSE_MODULE_HTTP)
 endif()
 
-set(SERVER_ROOT_DIR ${ROOT_DIR}/service/http_host_server)
 include_directories(
 	${INCLUDE_DIR} 
-	${SERVER_ROOT_DIR} 
 	${BOOST_ROOT_DIR} 
 	${ASIO_ROOT_DIR}  
 	${HTTP_ROOT_DIR})

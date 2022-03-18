@@ -2,7 +2,7 @@
 #include "error_code.h"
 #include "commandline/commandline.h"
 using namespace framework::utils::parser;
-#include "memory/xmem.h"
+#include "memory/xstr.h"
 using namespace framework::utils::memory;
 #include "dvs_host_server.h"
 
@@ -19,10 +19,11 @@ int main(int argc, char* argv[])
         const std::string name{DVSHostID};
         XMQModeConf conf{0};
         conf.id = 0xB1;
-        conf.port = 60531;
+        conf.port = atoi(xmq_port.c_str());
         conf.type = XMQModeType::XMQ_MODE_TYPE_DEALER;
-        XMem().copy(name.c_str(), name.length(), conf.name, 128);
-        XMem().copy(xmq_addr.c_str(), xmq_addr.length(), conf.ip, 32);
+        XStr xstr;
+		xstr.copy(name.c_str(), name.length(), conf.name, 128);
+		xstr.copy(xmq_addr.c_str(), xmq_addr.length(), conf.ip, 32);
 
         boost::shared_ptr<XMQNode> node{
             boost::make_shared<DvsHostServer>(conf)};
@@ -30,8 +31,8 @@ int main(int argc, char* argv[])
         {
             node->run();
             getchar();
+			node->removeConf(conf.id);
             node->stop();
-            node->removeConf(conf.id);
         }
     }
 

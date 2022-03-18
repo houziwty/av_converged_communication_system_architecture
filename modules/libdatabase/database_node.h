@@ -38,16 +38,6 @@ namespace module
                 //@Return : 错误码
                 int removeConf(const uint32_t id = 0);
 
-                //运行数据库
-				//@id [in] : 数据库ID
-				//@Return : 错误码
-				virtual int run(const uint32_t id = 0);
-
-				//停止数据库
-				//@id [in] : 数据库ID
-				//@Return : 错误码
-				virtual int stop(const uint32_t id = 0);
-
                 //写入数据
                 //@id [in] : 数据库ID
                 //@key [in] : 字段标识

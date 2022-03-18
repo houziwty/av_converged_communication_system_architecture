@@ -4,6 +4,7 @@ using namespace boost::placeholders;
 #include "boost/make_shared.hpp"
 #include "error_code.h"
 #include "hikvision/hikvision_device.h"
+#include "dahua/dahua_device.h"
 #include "map/unordered_map.h"
 #include "dvs_node.h"
 using namespace module::device::dvs;
@@ -33,6 +34,12 @@ int DVSNode::addConf(const DVSModeConf& conf)
 			{
 				device = boost::make_shared<HikvisionDevice>(
 					conf, 
+					boost::bind(&DVSNode::afterPolledRealplayDataNotification, this, _1, _2, _3, _4, _5));
+			}
+			else if (DVSFactoryType::DVS_FACTORY_TYPE_DH == conf.factory)
+			{
+				device = boost::make_shared<DahuaDevice>(
+					conf,
 					boost::bind(&DVSNode::afterPolledRealplayDataNotification, this, _1, _2, _3, _4, _5));
 			}
 			else
