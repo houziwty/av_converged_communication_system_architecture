@@ -4,9 +4,9 @@
 #include "http_node.h"
 using namespace module::network::http;
 
-static struct http_server_t gHttpServer{nullptr};
+static struct http_server_t* gHttpServer{nullptr};
 using Sessions = UnorderedMap<const uint32_t, struct http_session_t*>;
-static Sessions httpSessions;
+static Sessions sessions;
 
 int on_http_server_handler(void* param, http_session_t* session, const char* method, const char* path)
 {
@@ -16,38 +16,53 @@ int on_http_server_handler(void* param, http_session_t* session, const char* met
     {
         HttpNode* node{reinterpret_cast<HttpNode*>(param)};
         node->afterPolledReadDataNotification(session->id, method, path);
-        http_server_set_status_code(session, 200, "OK");
     }
     
     return ret;
 }
 
+int on_http_server_send(void* param, int code, size_t bytes)
+{
+
+}
+
 HttpNode::HttpNode()
 {
-    http_server_set_handler(&gHttpServer, on_http_server_handler, this);
+    gHttpServer = http_server_create(nullptr, 0);
+
+    if (gHttpServer)
+    {
+        http_server_set_handler(gHttpServer, on_http_server_handler, this);
+    }
+
 //    http_server_websocket_sethandler(&gHttpServer, nullptr, this);
 }
 
 HttpNode::~HttpNode()
 {
-    const std::vector<struct http_session_t*> sessions{httpSessions.values()};
-    for (int i = 0; i != sessions.size(); ++i)
+    std::vector<struct http_session_t*> items{sessions.values()};
+    for (int i = 0; i != items.size(); ++i)
     {
-        http_session_close(sessions[i]);
+        http_session_close(items[i]);
+    }
+
+    if (gHttpServer)
+    {
+        http_server_destroy(gHttpServer);
     }
 }
 
-int HttpNode::addConf(const HTTPModeConf& conf)
+int HttpNode::add(const uint32_t id/* = 0*/)
 {
-    int ret{0 < conf.id ? Error_Code_Success : Error_Code_Invalid_Param};
+    int ret{0 < id ? Error_Code_Success : Error_Code_Invalid_Param};
 
     if (Error_Code_Success == ret)
     {
-        struct http_session_t* session{http_session_create(conf.id, &gHttpServer)};
+        struct http_session_t* session{http_session_create(id, gHttpServer)};
 
         if (session)
         {
-            httpSessions.add(conf.id, session);
+            sessions.add(id, session);
         }
         else
         {
@@ -58,18 +73,18 @@ int HttpNode::addConf(const HTTPModeConf& conf)
     return ret;
 }
 
-int HttpNode::removeConf(const uint32_t id/* = 0*/)
+int HttpNode::remove(const uint32_t id/* = 0*/)
 {
     int ret{0 < id ? Error_Code_Success : Error_Code_Invalid_Param};
 
     if (Error_Code_Success == ret)
     {
-        struct http_session_t* session{httpSessions.at(id)};
+        struct http_session_t* session{sessions.at(id)};
 
         if (session)
         {
             http_session_close(session);
-            httpSessions.remove(id);
+            sessions.remove(id);
         }
         else
         {
@@ -80,7 +95,7 @@ int HttpNode::removeConf(const uint32_t id/* = 0*/)
     return ret;
 }
 
-int HttpNode::input(
+int HttpNode::request(
 	const uint32_t id/* = 0*/, 
     const int32_t error/* = 0*/, 
 	const void* data/* = nullptr*/, 
@@ -90,11 +105,52 @@ int HttpNode::input(
 
 	if(Error_Code_Success == ret)
 	{
-		struct http_session_t* session{httpSessions.at(id)};
+		struct http_session_t* session{sessions.at(id)};
 
 		if (session)
 		{
 			ret = http_session_recv(session, error, data, bytes);
+		}
+		else
+		{
+			ret = Error_Code_Object_Not_Exist;
+		}
+	}
+
+	return ret;
+}
+
+int HttpNode::response(
+    const uint32_t id/* = 0*/, 
+    const int32_t code/* = 0*/, 
+    const char* status/* = nullptr*/, 
+    const HttpResponseHeader* headers/* = nullptr*/, 
+    const uint32_t number/* = 0*/, 
+    const void* data/* = nullptr*/, 
+    const uint64_t bytes/* = 0*/)
+{
+    int ret{0 < id ? Error_Code_Success : Error_Code_Invalid_Param};
+
+	if(Error_Code_Success == ret)
+	{
+		struct http_session_t* session{sessions.at(id)};
+
+		if (session)
+		{
+            http_server_set_status_code(session, code, status);
+            for (int i = 0; i != number; ++i)
+            {
+                if (HttpValueType::HTTP_VALUE_TYPE_INTEGER == headers[i].type)
+                {
+                    http_server_set_header_int(session, headers[i].name, headers[i].i_value);
+                }
+                else if (HttpValueType::HTTP_VALUE_TYPE_INTEGER == headers[i].type)
+                {
+                    http_server_set_header(session, headers[i].name, headers[i].c_value);
+                }
+            }
+            
+			ret = http_server_send(session, data, bytes, on_http_server_send, this);
 		}
 		else
 		{

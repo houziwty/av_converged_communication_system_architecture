@@ -14,6 +14,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(
 		LINK_LIBS 
 		libboost_program_options.a 
+		pthread 
 		asio 
 		http)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")

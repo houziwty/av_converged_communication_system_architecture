@@ -73,6 +73,7 @@ struct http_server_t* http_server_create(const char* ip, int port)
 
 int http_server_destroy(struct http_server_t* http)
 {
+	http_server_ondestroy(http);
 	return 0;
 	// return aio_accept_stop(http->aio, http_server_ondestroy, http);
 }

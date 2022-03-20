@@ -25,10 +25,22 @@
 #define NETWORK_HTTP_EXPORT
 #endif//_WINDOWS
 
-//HTTP角色配置
-typedef struct tagHTTPModeConf_t
+typedef enum tagHttpValueType_t : uint32_t
 {
-    uint32_t id;                   //>0，由调用者分配
-}HTTPModeConf;
+    HTTP_VALUE_TYPE_NONE = 0,
+    HTTP_VALUE_TYPE_INTEGER, 
+    HTTP_VALUE_TYPE_STRING
+}HttpValueType;
+
+typedef struct tagHttpResponseHeader_t
+{
+    HttpValueType type;
+    const char* name;
+    union
+    {
+        const char* c_value;
+        int32_t i_value;
+    };
+}HttpResponseHeader;
 
 #endif//MODULE_NETWORK_HTTP_DEFS_H
