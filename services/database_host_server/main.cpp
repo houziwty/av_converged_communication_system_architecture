@@ -52,7 +52,8 @@ int main(int argc, char* argv[])
           return -1;
         }
 
-        downcast->run(type, db_addr.c_str(), db_auth.c_str(), db_port.c_str());
+        downcast->run(
+          type, db_addr.c_str(), db_auth.c_str(), (uint16_t)atoi(db_port.c_str()));
         getchar();
         node->removeConf(conf.id);
         node->stop();

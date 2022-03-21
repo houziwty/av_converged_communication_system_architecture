@@ -19,6 +19,8 @@ using namespace module::file::log;
 using namespace module::network::xmq;
 #include "database_node.h"
 using namespace module::file::database;
+#include "url/url.h"
+using namespace framework::utils::data;
 
 class DatabaseHostServer final 
     : public XMQNode, protected DatabaseNode
@@ -46,7 +48,14 @@ protected:
 		const ServiceInfo* infos = nullptr, 
 		const uint32_t number = 0) override;
 
+private:    
+    //数据库业务处理
+    //@from [in] : 源ID
+	//@url [in] : 请求URL
+	void processDatabaseRequest(const std::string from, Url& url);
+
 private:
+    const std::string logid;
     FileLog log;
     const XMQModeConf& modeconf;
     uint32_t id;

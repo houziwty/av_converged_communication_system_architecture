@@ -50,6 +50,12 @@ namespace framework
                 char* alloc(
                     const char* src = nullptr, 
                     const uint64_t bytes = 0);
+
+                //大小
+				//@src [in] : 源数据
+				//@Return : 大小
+                const uint64_t len(
+                    const char* src = nullptr);
             };//class XStr
         }//namespace memory
     }//namespace utils

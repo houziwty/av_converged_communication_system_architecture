@@ -266,7 +266,7 @@ void DvsHostServer::processDvsControlMessage(const std::string from, Url& reques
         XMem().copy(ip.c_str(), ip.length(), conf.ip, 128);
         conf.port = atoi(port.c_str());
         conf.id = ++deviceNumber;
-        conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_DH;
+        conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_HK;
         conf.model = DVSModelType::DVS_MODEL_TYPE_IPC;
         int ret{DVSNode::addConf(conf)};
 

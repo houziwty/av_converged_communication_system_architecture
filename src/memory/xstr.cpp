@@ -54,3 +54,15 @@ char* XStr::alloc(
     
     return dest;
 }
+
+const uint64_t XStr::len(const char* src/* = nullptr*/)
+{
+    uint64_t bytes{0};
+
+    if (src)
+    {
+        bytes = strlen(src);
+    }
+    
+    return bytes;
+}

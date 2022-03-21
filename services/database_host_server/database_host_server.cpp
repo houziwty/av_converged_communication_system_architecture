@@ -3,14 +3,14 @@ using namespace boost::placeholders;
 #include "boost/checked_delete.hpp"
 #include "boost/format.hpp"
 #include "error_code.h"
+#include "memory/xstr.h"
 #include "memory/xmem.h"
 using namespace framework::utils::memory;
-#include "url/url.h"
-using namespace framework::utils::data;
 #include "database_host_server.h"
 
 DatabaseHostServer::DatabaseHostServer(const XMQModeConf& conf)
-    : XMQNode(), DatabaseNode(), modeconf{conf}, id{0}
+    : XMQNode(), DatabaseNode(), modeconf{conf}, id{0}, 
+    logid{std::string(DatabaseHostID).append("_log")}
 {
     log.createNew("", false, 0);
 }
@@ -30,12 +30,14 @@ int DatabaseHostServer::run(
 
     if (Error_Code_Success == ret)
     {
+        XStr xstr;
         DBModeConf conf;
+        XMem().zero(&conf, sizeof(DBModeConf));
         conf.type = type;
         conf.id = ++id;
         conf.port = port;
-        memcpy(conf.ip, ip, sizeof(ip));
-        memcpy(conf.passwd, auth, sizeof(auth));
+		xstr.copy(ip, xstr.len(ip), conf.ip, 128);
+		xstr.copy(auth, xstr.len(auth), conf.passwd, 64);
         ret = DatabaseNode::addConf(conf);
 
         if (Error_Code_Success == ret)
@@ -103,7 +105,7 @@ void DatabaseHostServer::afterPolledDataNotification(
     {
         if (!requestUrl.proto().compare("config"))
         {
-            processDvsControlMessage(from, requestUrl);
+            processDatabaseRequest(from, requestUrl);
         }
         else
         {
@@ -121,5 +123,40 @@ void DatabaseHostServer::afterPolledDataNotification(
                 "info://%s?command=add&severity=2&log=Parse request message [ %s ] from [ %s ] failed, result [ %d ].") 
                 % logid % msg.c_str() % from % ret).str()};
         XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
+    }
+}
+
+void DatabaseHostServer::processDatabaseRequest(const std::string from, Url& url)
+{
+    std::string command, name, timestamp, data;
+    const std::vector<Parameter> params{url.parameters()};
+
+    for (int i = 0; i != params.size(); ++i)
+    {
+        if (!params[i].key.compare("command"))
+        {
+            command = params[i].value;
+        }
+        else if (!params[i].key.compare("name"))
+        {
+            name = params[i].value;
+        }
+        else if (!params[i].key.compare("timestamp"))
+        {
+            timestamp = params[i].value;
+        }
+        else if (!params[i].key.compare("data"))
+        {
+            data = params[i].value;
+        }
+    }
+
+    if (!command.compare("query"))
+    {
+        DatabaseNode::read(id, name.c_str());
+    }
+    else if (!command.compare("add"))
+    {
+        DatabaseNode::write(id, name.c_str(), data.c_str());
     }
 }

@@ -1,3 +1,4 @@
+#include <unordered_set>
 #include "boost/format.hpp"
 #include "boost/make_shared.hpp"
 #include "error_code.h"
@@ -59,11 +60,14 @@ int DBRedis::write(
     const char* key/* = nullptr*/, 
     const char* value/* = nullptr*/)
 {
+    redis->sadd(key, value);
     return Error_Code_Success;
 }
 
 const char* DBRedis::read(
     const char* key/* = nullptr*/)
 {
+    std::unordered_set<std::string> members;
+    redis->smembers(key, std::inserter(members, members.begin()));
     return nullptr;
 }

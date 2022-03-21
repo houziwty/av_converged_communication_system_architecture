@@ -69,3 +69,17 @@ int XMem::move(
     
     return ret;
 }
+
+int XMem::zero(
+    void* src/* = nullptr*/, 
+    const uint64_t bytes/* = 0*/)
+{
+    int ret{src && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
+
+    if (Error_Code_Success == ret)
+    {
+        memset(src, 0, bytes);
+    }
+    
+    return ret;
+}

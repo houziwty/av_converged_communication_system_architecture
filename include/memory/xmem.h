@@ -60,6 +60,14 @@ namespace framework
                     const void* src = nullptr, 
                     void* dest = nullptr, 
                     const uint64_t dest_bytes = 0);
+
+                //置空
+                //@src [in] : 源数据
+                //@bytes [in] : 大小
+                //@Return : 错误码
+                int zero(
+                    void* src = nullptr, 
+                    const uint64_t bytes = 0);
             };//class XMem
         }//namespace memory
     }//namespace utils

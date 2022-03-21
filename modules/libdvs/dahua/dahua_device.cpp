@@ -32,26 +32,34 @@ int DahuaDevice::run()
 		NET_IN_LOGIN_WITH_HIGHLEVEL_SECURITY login{0};
 		login.dwSize = sizeof(NET_IN_LOGIN_WITH_HIGHLEVEL_SECURITY);
 		xstr.copy(modeconf.ip, sizeof(modeconf.ip), login.szIP, 64);
-		xstr.copy(modeconf.passwd, sizeof(modeconf.passwd), login.szPassword, 64);
 		xstr.copy(modeconf.user, sizeof(modeconf.user), login.szUserName, 64);
+		xstr.copy(modeconf.passwd, sizeof(modeconf.passwd), login.szPassword, 64);
 		login.nPort = modeconf.port;
 		login.emSpecCap = EM_LOGIN_SPEC_CAP_TCP;
-// 		NET_OUT_LOGIN_WITH_HIGHLEVEL_SECURITY out{0};
-// 		user = CLIENT_LoginWithHighLevelSecurity(&login, &out);
-
-		int e{ 0 };
-		NET_DEVICEINFO info{ 0 };
-		user = CLIENT_Login(modeconf.ip, modeconf.port, modeconf.user, modeconf.passwd, &info, &e);
+		NET_OUT_LOGIN_WITH_HIGHLEVEL_SECURITY out{0};
+		out.dwSize = sizeof(NET_OUT_LOGIN_WITH_HIGHLEVEL_SECURITY);
+		user = CLIENT_LoginWithHighLevelSecurity(&login, &out);
 
 		if (-1 < user)
 		{
-			modeconf.channels = info.byChanNum;
+			modeconf.channels = out.stuDeviceInfo.nChanNum;
 			for (int i = 0; i != modeconf.channels; ++i)
 			{
-				LLONG sid{
-					CLIENT_RealPlayEx(user, i, NULL, DH_RType_Realplay)};
+				NET_IN_START_ASYN_REAL_PLAY in{ 0 };
+				NET_OUT_START_ASYN_REAL_PLAY out;
+				in.dwSize = sizeof(NET_IN_START_ASYN_REAL_PLAY);
+				in.nChannel = i;
+				in.emPlayType = DH_RType_Realplay;
+				in.emDataType = EM_REAL_DATA_TYPE_PRIVATE;
+				in.cbRealDataCallBack = (fRealDataCallBackEx2)&DahuaDevice::livestreamDataCallback;
+				in.dwUser = (LDWORD)this;
 
-				if (sid && CLIENT_SetRealDataCallBackEx(sid, (fRealDataCallBackEx)&DahuaDevice::livestreamDataCallback, (LDWORD)this, 0x00000002/* MPEG4/H264 */))
+				LLONG sid{ CLIENT_RealPlayEx(user, i, NULL, DH_RType_Realplay) };
+				DWORD flag{ REALDATA_FLAG_RAW_DATA | REALDATA_FLAG_DATA_WITH_FRAME_INFO };
+
+				if (sid && 
+					CLIENT_SetRealDataCallBackEx2(
+						sid, (fRealDataCallBackEx2)&DahuaDevice::livestreamDataCallback, (LDWORD)this, flag))
 				{
 					//通道号从0开始计数
 					livestreamIds.add(sid, i);
@@ -97,7 +105,7 @@ void DahuaDevice::livestreamDataCallback(
 	DahuaDevice* dvs{ reinterpret_cast<DahuaDevice*>(dwUser) };
 	const int32_t channelID{dvs->livestreamIds.at(lRealHandle)};
 
-	if (dvs && 0 < channelID)
+	if (dvs && -1 < channelID)
 	{
 		if (0 == dwDataType)
 		{
