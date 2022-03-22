@@ -204,7 +204,7 @@ void DvsHostServer::processDvsControlMessage(const std::string from, Url& reques
 {
     const std::vector<Parameter> parameters{requestUrl.parameters()};
     const std::string host{requestUrl.host()};
-    std::string command, ip, port, user, passwd, id, name;
+    std::string command, factory, ip, port, user, passwd, id, name;
 
     for(int i = 0; i != parameters.size(); ++i)
     {
@@ -212,6 +212,10 @@ void DvsHostServer::processDvsControlMessage(const std::string from, Url& reques
         {
             command = parameters[i].value;
         }
+		else if (!parameters[i].key.compare("factory"))
+		{
+            factory = parameters[i].value;
+		}
         else if (!parameters[i].key.compare("ip"))
         {
             ip = parameters[i].value;
@@ -266,7 +270,18 @@ void DvsHostServer::processDvsControlMessage(const std::string from, Url& reques
         XMem().copy(ip.c_str(), ip.length(), conf.ip, 128);
         conf.port = atoi(port.c_str());
         conf.id = ++deviceNumber;
-        conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_HK;
+        if (!factory.compare("0"))
+        {
+            conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_HK;
+        }
+		else if (!factory.compare("1"))
+		{
+			conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_DH;
+		}
+        else
+        {
+            conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_NONE;
+        }
         conf.model = DVSModelType::DVS_MODEL_TYPE_IPC;
         int ret{DVSNode::addConf(conf)};
 

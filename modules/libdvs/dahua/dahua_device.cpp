@@ -45,21 +45,23 @@ int DahuaDevice::run()
 			modeconf.channels = out.stuDeviceInfo.nChanNum;
 			for (int i = 0; i != modeconf.channels; ++i)
 			{
-				NET_IN_START_ASYN_REAL_PLAY in{ 0 };
-				NET_OUT_START_ASYN_REAL_PLAY out;
-				in.dwSize = sizeof(NET_IN_START_ASYN_REAL_PLAY);
-				in.nChannel = i;
-				in.emPlayType = DH_RType_Realplay;
-				in.emDataType = EM_REAL_DATA_TYPE_PRIVATE;
-				in.cbRealDataCallBack = (fRealDataCallBackEx2)&DahuaDevice::livestreamDataCallback;
+				NET_IN_REALPLAY_BY_DATA_TYPE in;
+				in.dwSize = sizeof(NET_IN_REALPLAY_BY_DATA_TYPE);
+				in.nChannelID = i;
+				in.hWnd = NULL;
+				in.rType = DH_RType_Realplay;
+				in.cbRealData = NULL;
+				in.emDataType = EM_REAL_DATA_TYPE_GBPS;
 				in.dwUser = (LDWORD)this;
+				in.szSaveFileName = NULL;
+				in.cbRealDataEx = (fRealDataCallBackEx2)&DahuaDevice::livestreamDataCallback;
+				in.emAudioType = EM_AUDIO_DATA_TYPE_DEFAULT;
+				NET_OUT_REALPLAY_BY_DATA_TYPE out;
+				out.dwSize = sizeof(NET_OUT_REALPLAY_BY_DATA_TYPE);
 
-				LLONG sid{ CLIENT_RealPlayEx(user, i, NULL, DH_RType_Realplay) };
-				DWORD flag{ REALDATA_FLAG_RAW_DATA | REALDATA_FLAG_DATA_WITH_FRAME_INFO };
+				LLONG sid{ CLIENT_RealPlayByDataType(user, &in, &out, 40) };
 
-				if (sid && 
-					CLIENT_SetRealDataCallBackEx2(
-						sid, (fRealDataCallBackEx2)&DahuaDevice::livestreamDataCallback, (LDWORD)this, flag))
+				if (sid)
 				{
 					//通道号从0开始计数
 					livestreamIds.add(sid, i);
@@ -107,11 +109,12 @@ void DahuaDevice::livestreamDataCallback(
 
 	if (dvs && -1 < channelID)
 	{
-		if (0 == dwDataType)
+		if ((NET_DATA_CALL_BACK_VALUE + EM_REAL_DATA_TYPE_GBPS) == dwDataType)
 		{
 			if (dvs->polledRealplayDataCallback)
 			{
-				dvs->polledRealplayDataCallback(dvs->modeconf.id, channelID, dwDataType, pBuffer, dwBufSize);
+				//平台的通道ID都从1开始
+				dvs->polledRealplayDataCallback(dvs->modeconf.id, channelID + 1, dwDataType, pBuffer, dwBufSize);
 			}
 		}
 	}

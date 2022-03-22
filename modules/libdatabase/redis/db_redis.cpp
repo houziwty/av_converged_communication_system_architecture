@@ -60,8 +60,14 @@ int DBRedis::write(
     const char* key/* = nullptr*/, 
     const char* value/* = nullptr*/)
 {
-    redis->sadd(key, value);
-    return Error_Code_Success;
+    int ret{key && value ? Error_Code_Success : Error_Code_Invalid_Param};
+
+    if (Error_Code_Success == ret)
+    {
+        ret = (0 == redis->sadd(key, value) ? Error_Code_Object_Existed : Error_Code_Success);
+    }
+
+    return ret;
 }
 
 const char* DBRedis::read(
