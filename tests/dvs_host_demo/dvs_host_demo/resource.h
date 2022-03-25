@@ -25,8 +25,9 @@
 #define IDC_REALPLAY_WND2               1014
 #define IDC_REALPLAY_WND3               1015
 #define IDC_REALPLAY_WND4               1016
-#define IDC_DVS_USER2                   1017
 #define IDC_DVS_PASSWD                  1017
+#define IDC_EDIT1                       1018
+#define IDC_DVS_FACTORY                 1018
 
 // Next default values for new objects
 // 
@@ -34,7 +35,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1013
+#define _APS_NEXT_CONTROL_VALUE         1019
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

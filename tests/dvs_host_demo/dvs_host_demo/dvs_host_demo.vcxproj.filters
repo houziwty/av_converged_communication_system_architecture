@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\boost">
+      <UniqueIdentifier>{facc4089-5466-4781-81d8-68938037e576}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\boost\json">
+      <UniqueIdentifier>{f2b61fc5-322a-4cb0-880c-9c558373585c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dvs_host_demo.h">
@@ -46,6 +52,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\url\url.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\json\json.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\3rd\boost_1_78_0\libs\json\src\src.cpp">
+      <Filter>Source Files\boost\json</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

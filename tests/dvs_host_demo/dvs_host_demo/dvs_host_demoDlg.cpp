@@ -14,6 +14,8 @@
 using namespace boost::placeholders;
 #include "boost/format.hpp"
 #include "error_code.h"
+#include "json/json.h"
+using namespace framework::utils::data;
 
 #include "av_pkt.h"
 
@@ -131,6 +133,7 @@ BOOL CdvshostdemoDlg::OnInitDialog()
 	SetDlgItemText(IDC_DVS_PORT, L"8000");
 	SetDlgItemText(IDC_DVS_USER, L"admin");
 	SetDlgItemText(IDC_DVS_PASSWD, L"Vrc123456");
+	SetDlgItemText(IDC_DVS_FACTORY, L"0");
 	SetDlgItemText(IDC_STREAM_URL, L"realplay://1?command=1&channel=1&stream=0");
 
 	ASIONode::run();
@@ -250,11 +253,11 @@ void CdvshostdemoDlg::afterFetchServiceCapabilitiesNotification(
 // 			infos[i]);
 
 		const std::string name{ infos[i].name };
-		if (!name.compare("dvs_host_server"))
+		if (!name.compare(DatabaseHostID))
 		{
 			char tick[256]{ 0 };
-			sprintf_s(tick, 128, "config://dvs_host_server?command=query&timestamp=%d", GetTickCount());
-			const std::string url{tick};
+			sprintf_s(tick, 128, "config://%s?command=query&name=%s.dvs.devices&timestamp=%d", DatabaseHostID, DVSHostID, GetTickCount());
+			const std::string url{"config://database_host_server?command=query&name=dvs_host_server.dvs.login"};
 			int ret{ XMQNode::send(0xFFFF, url.c_str(), url.length())};
 
 			if (Error_Code_Success == ret)
@@ -348,6 +351,8 @@ void CdvshostdemoDlg::OnBnClickedDvsLogin()
 	char user[256]{ 0 }, passwd[256]{0}, ip[256]{ 0 };
 	unsigned short port{
 		static_cast<unsigned short>(GetDlgItemInt(IDC_DVS_PORT)) };
+	unsigned short factory{
+		static_cast<unsigned short>(GetDlgItemInt(IDC_DVS_FACTORY)) };
 
 	HWND hwnd{ this->GetSafeHwnd() };
 	GetDlgItemTextA(hwnd, IDC_DVS_ADDRESS, ip, 256);
@@ -355,8 +360,22 @@ void CdvshostdemoDlg::OnBnClickedDvsLogin()
 	GetDlgItemTextA(hwnd, IDC_DVS_PASSWD, passwd, 256);
 
 	char url[1024]{ 0 };
-	sprintf_s(url, 1024, "config://dvs_host_server?command=add&ip=%s&port=%d&user=%s&passwd=%s&name=test_dvs", ip, port, user, passwd);
-	const std::string urlstr{ url };
+	sprintf_s(url, 1024, 
+		"config://dvs_host_server?command=add&factory=%d&ip=%s&port=%d&user=%s&passwd=%s&name=test_dvs", 
+		factory, ip, port, user, passwd);
+
+ 	Json json;
+// //	json.parse("{\"id\":\"0\",\"ip\":\"192.168.2.225\",\"port\":\"8000\",\"user\":\"admin\",\"passwd\":\"Vrc123456\",\"channels\":\"1\",\"timestam\":\"123456\"}");
+
+// 	json.add("pos", "30");
+// 	json.add("pos", "104");
+// 	Items items;
+// 	items.push_back(std::make_pair("addr", "192.168.2.2"));
+// 	items.push_back(std::make_pair("addr", "192.168.2.5"));
+// 	json.add("rsu", items);
+
+ 	const std::string urlstr{url};
+
 	int ret{ XMQNode::send(0xFFFF, urlstr.c_str(), urlstr.length()) };
 
 	if (Error_Code_Success == ret)
@@ -462,6 +481,11 @@ void CdvshostdemoDlg::processDvsControlMessage(Url& requestUrl)
 	if (!command.compare("add") && 0 == atoi(error.c_str()))
 	{
 		MessageBox(CString(dvs.c_str()), NULL, MB_ICONINFORMATION | MB_OK);
+
+		char url[1024]{ 0 };
+		sprintf_s(url, 1024, "config://%s?command=add&name=dvs_host_server.dvs.devices&data=%s", DatabaseHostID, dvs.c_str());
+		const std::string urlstr{ url };
+		int ret{ XMQNode::send(0xFFFF, urlstr.c_str(), urlstr.length()) };
 	}
 }
 
@@ -527,20 +551,20 @@ DWORD WINAPI CdvshostdemoDlg::ThreadFunc(LPVOID c)
 	{
 		Sleep(40);
 		demo->drawInfo.enable = false;
-		boost::checked_array_delete(demo->drawInfo.areas);
-		demo->drawInfo.number = 1000;
-		demo->drawInfo.areas = new AVDrawParam[demo->drawInfo.number];
-		for (int i = 0; i != demo->drawInfo.number; ++i)
-		{
-			demo->drawInfo.areas[i].left = i * 10;
-			demo->drawInfo.areas[i].top = i * 10;
-			demo->drawInfo.areas[i].right = demo->drawInfo.areas[i].left + 400;
-			demo->drawInfo.areas[i].bottom = demo->drawInfo.areas[i].top + 300;
-			demo->drawInfo.areas[i].color[0] = 0x00;
-			demo->drawInfo.areas[i].color[1] = 0x80;
-			demo->drawInfo.areas[i].color[2] = 0x00;
-			sprintf_s(demo->drawInfo.areas[i].text, 256, "Target 2\r\nSpeed: 90 KM/H\r\nDirection: West");
-		}
-		demo->drawInfo.enable = true;
+//		boost::checked_array_delete(demo->drawInfo.areas);
+//		demo->drawInfo.number = 1000;
+//		demo->drawInfo.areas = new AVDrawParam[demo->drawInfo.number];
+// 		for (int i = 0; i != demo->drawInfo.number; ++i)
+// 		{
+// 			demo->drawInfo.areas[i].left = i * 10;
+// 			demo->drawInfo.areas[i].top = i * 10;
+// 			demo->drawInfo.areas[i].right = demo->drawInfo.areas[i].left + 400;
+// 			demo->drawInfo.areas[i].bottom = demo->drawInfo.areas[i].top + 300;
+// 			demo->drawInfo.areas[i].color[0] = 0x00;
+// 			demo->drawInfo.areas[i].color[1] = 0x80;
+// 			demo->drawInfo.areas[i].color[2] = 0x00;
+// 			sprintf_s(demo->drawInfo.areas[i].text, 256, "Target 2\r\nSpeed: 90 KM/H\r\nDirection: West");
+// 		}
+// 		demo->drawInfo.enable = true;
 	}
 }

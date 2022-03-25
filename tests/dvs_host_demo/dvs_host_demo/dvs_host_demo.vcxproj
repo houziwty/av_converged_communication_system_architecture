@@ -113,7 +113,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;_DEBUG;USE_MODULE_NETWORK_XMQ;USE_MODULE_NETWORK_ASIO;USE_MODULE_FILE_LOG;USE_MODULE_AV_PKT;USE_MODULE_AV;USE_MODULE_AV_CODEC;USE_MODULE_VIDEO_RENDER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;_DEBUG;USE_MODULE_NETWORK_XMQ;USE_MODULE_NETWORK_ASIO;USE_MODULE_FILE_LOG;USE_MODULE_AV_PKT;USE_MODULE_AV;USE_MODULE_AV_CODEC;USE_MODULE_VIDEO_RENDER;BOOST_ALL_NO_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>D:\av_converged_communication_system_architecture\modules\libasio;D:\av_converged_communication_system_architecture\modules\libxmq;D:\av_converged_communication_system_architecture\modules\liblog;D:\av_converged_communication_system_architecture\modules\libav;D:\av_converged_communication_system_architecture\modules\libavpkt;D:\av_converged_communication_system_architecture\modules\libavparser;D:\av_converged_communication_system_architecture\include;D:\av_converged_communication_system_architecture\3rd\boost_1_78_0;D:\av_converged_communication_system_architecture\modules\libavcodec;D:\av_converged_communication_system_architecture\modules\libavplayer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -195,6 +195,8 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\3rd\boost_1_78_0\libs\json\src\src.cpp" />
+    <ClCompile Include="..\..\..\src\json\json.cpp" />
     <ClCompile Include="..\..\..\src\url\url.cpp" />
     <ClCompile Include="dvs_host_demo.cpp" />
     <ClCompile Include="dvs_host_demoDlg.cpp" />
