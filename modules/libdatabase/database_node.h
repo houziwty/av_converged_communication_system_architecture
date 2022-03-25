@@ -52,7 +52,8 @@ namespace module
                 //@id [in] : 数据库ID
                 //@key [in] : 字段标识
                 //@Return : 字段值
-                const char* read(
+                //@Comment : 返回的字符资源由调用者服务释放
+                char* read(
                     const uint32_t id = 0, 
                     const char* key = nullptr);
             };//class DatabaseHost

@@ -54,7 +54,7 @@ namespace module
                 //读取数据
                 //@key [in] : 字段标识
                 //@Return : 字段值
-                virtual const char* read( 
+                virtual char* read( 
                     const char* key = nullptr) = 0;
             };//class Database
         }//namespace database

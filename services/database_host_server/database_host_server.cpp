@@ -1,3 +1,4 @@
+#include "boost/checked_delete.hpp"
 #include "boost/bind/bind.hpp"
 using namespace boost::placeholders;
 #include "boost/checked_delete.hpp"
@@ -153,7 +154,12 @@ void DatabaseHostServer::processDatabaseRequest(const std::string from, Url& url
 
     if (!command.compare("query"))
     {
-        DatabaseNode::read(id, name.c_str());
+        char* buf{DatabaseNode::read(id, name.c_str())};
+
+        if (buf)
+        {
+            boost::checked_array_delete(buf);
+        }
     }
     else if (!command.compare("add"))
     {

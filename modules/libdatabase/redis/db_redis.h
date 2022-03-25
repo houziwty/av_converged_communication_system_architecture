@@ -40,7 +40,7 @@ namespace module
                 int write(
                     const char* key = nullptr, 
                     const char* value = nullptr) override;
-                const char* read( 
+                char* read( 
                     const char* key = nullptr) override;
 
             private:

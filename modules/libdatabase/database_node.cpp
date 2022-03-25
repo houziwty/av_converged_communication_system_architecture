@@ -84,17 +84,17 @@ int DatabaseNode::write(
 	return ret;
 }
 
-const char* DatabaseNode::read(
+char* DatabaseNode::read(
 	const uint32_t id/* = 0*/, 
 	const char* key/* = nullptr*/)
 {
 	int ret{0 < id && key ? Error_Code_Success : Error_Code_Invalid_Param};
-	const char* value{nullptr};
+	char* value{nullptr};
 
 	if (Error_Code_Success == ret)
 	{
 		DatabasePtr db{dbs.at(id)};
-		value = db ? db->read(key) : nullptr;
+		value = (db ? db->read(key) : nullptr);
 	}
 	
 	return value;

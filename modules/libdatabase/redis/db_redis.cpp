@@ -2,6 +2,8 @@
 #include "boost/format.hpp"
 #include "boost/make_shared.hpp"
 #include "error_code.h"
+#include "memory/xmem.h"
+using namespace framework::utils::memory;
 #include "db_redis.h"
 using namespace module::file::database;
 
@@ -64,16 +66,23 @@ int DBRedis::write(
 
     if (Error_Code_Success == ret)
     {
-        ret = (0 == redis->sadd(key, value) ? Error_Code_Object_Existed : Error_Code_Success);
+        ret = (0 == redis->set(key, value) ? Error_Code_Object_Existed : Error_Code_Success);
     }
 
     return ret;
 }
 
-const char* DBRedis::read(
+char* DBRedis::read(
     const char* key/* = nullptr*/)
 {
-    std::unordered_set<std::string> members;
-    redis->smembers(key, std::inserter(members, members.begin()));
-    return nullptr;
+    int ret{key ? Error_Code_Success : Error_Code_Invalid_Param};
+    char* buf{nullptr};
+
+    if (Error_Code_Success == ret)
+    {
+        sw::redis::OptionalString value{redis->get(key)};
+        buf = (char*)XMem().alloc(value->c_str(), value->length());
+    }
+
+    return buf;
 }
