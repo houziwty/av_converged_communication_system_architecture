@@ -30,7 +30,6 @@ struct http_server_t
 
 struct http_session_t
 {
-	uint32_t id;
 	int32_t ref;
 	http_parser_t* parser; // HTTP parser
 	// aio_transport_t* transport; // TCP transporot
@@ -73,7 +72,7 @@ struct http_session_t
 		size_t max;
 	} payload;
 
-	struct http_server_t* server;
+//	struct http_server_t* server;
 	struct http_websocket_t websocket;
 
 	struct
@@ -84,14 +83,17 @@ struct http_session_t
 
 	http_server_onsend onsend;
 	void* onsendparam;
+	//HTTP数据接收回调
+	http_server_handler handler;
+	void* param;
+	struct websocket_handler_t wshandler;
+	void* wsparam;
 
 	int tryupgrade;
 	void* wsupgrade;
-
-	
 };
 
-struct http_session_t* http_session_create(const uint32_t id, struct http_server_t *server);
+struct http_session_t* http_session_create(/*struct http_server_t *server*/);
 int http_session_close(struct http_session_t* session);
 int http_session_recv(struct http_session_t* session, int code, const void* data, size_t bytes);
 

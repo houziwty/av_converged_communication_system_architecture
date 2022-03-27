@@ -15,13 +15,13 @@
 
 #include "asio_node.h"
 using namespace module::network::asio;
-#include "http_node.h"
+#include "http_session_node.h"
 using namespace module::network::http;
 #include "lock/rw_lock.h"
 using namespace framework::utils::lock;
 
 class HttpHostServer final 
-    : public ASIONode, protected HttpNode
+    : public ASIONode, protected HttpSessionNode
 {
 public:
     HttpHostServer(void);
@@ -42,10 +42,10 @@ protected:
         const uint32_t id = 0, 
         const uint64_t bytes = 0, 
         const int32_t e = 0) override;
-    void afterPolledReadDataNotification(
+    int onresponse(
 		const uint32_t id = 0, 
-        const char* method = nullptr, 
-        const char* path = nullptr) override;
+        const void* data = nullptr, 
+        const uint64_t bytes = 0) override;
 
 private:
     SharedMutex mtx;

@@ -3,17 +3,18 @@
 //
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
-//		Date : 2021-12-04
-//		Description : HTTP服务端
+//		Date : 2022-03-27
+//		Description : HTTP会话
 //
 //		History:
-//					1. 2021-12-04 由王科威创建
+//					1. 2022-03-27 由王科威创建
 //
 
-#ifndef MODULE_NETWORK_HTTP_HTTP_NODE_H
-#define MODULE_NETWORK_HTTP_HTTP_NODE_H
+#ifndef MODULE_NETWORK_HTTP_HTTP_SESSION_H
+#define MODULE_NETWORK_HTTP_HTTP_SESSION_H
 
 #include "defs.h"
+#include "http/http-server-internal.h"
 
 namespace module
 {
@@ -21,38 +22,25 @@ namespace module
 	{
 		namespace http
 		{
-			class NETWORK_HTTP_EXPORT HttpNode
+			class HttpSessionNode;
+
+			class HttpSession
 			{
 			public:
-				HttpNode(void);
-				virtual ~HttpNode(void);
+				HttpSession(HttpSessionNode& node, const uint32_t id = 0);
+				virtual ~HttpSession(void);
 
 			public:
-				//添加节点
-				//@id [in] : 节点ID
-				//@Return : 错误码
-				int add(const uint32_t id = 0);
-
-				//删除节点
-				//@id [in] : 节点ID
-				//@Return : 错误码
-				int remove(const uint32_t id = 0);
-
 				//处理HTTP请求
-				//@id [in] : 配置ID
-				//@error [in] : socket错误码
 				//@data [in] : 请求消息
 				//@bytes [in] : 大小
 				//@Return : 错误码
-				//@Comment : 由afterPolledReadDataNotification接收的数据通过该方法分析HTTP请求
 				int request(
-					const uint32_t id = 0, 
-					const int32_t error_t = 0, 
 					const void* data = nullptr, 
 					const uint64_t bytes = 0);
 
 				//处理HTTP应答
-				//@id [in] : 配置ID
+				//@id [in] : 节点ID
 				//@code [in] : HTTP状态码
 				//@status [in] : HTTP状态描述
 				//@headers [in] : 应答头字段
@@ -70,18 +58,20 @@ namespace module
 					const void* data = nullptr, 
 					const uint64_t bytes = 0);
 
-				//接收数据通知
-				//@id [out] : 会话ID
-				//@data [out] : 数据 
-				//@bytes [out] : 大小
-				//@e [out] : 错误码
-				virtual void afterPolledReadDataNotification(
-					const uint32_t id = 0, 
+			private:
+				static int afterHttpReadDataNotification(
+					void* ctx = nullptr, 
+					http_session_t* session = nullptr, 
 					const char* method = nullptr, 
-					const char* path = nullptr) = 0;
-			};//class HttpNode
+					const char* path = nullptr);
+
+			private:
+				HttpSessionNode& httpnode;
+				const uint32_t sid;
+				struct http_session_t* session;
+			};//class HttpSession
 		}//namespace http
 	}//namespace network
 }//namespace module
 
-#endif//MODULE_NETWORK_HTTP_HTTP_NODE_H
+#endif//MODULE_NETWORK_HTTP_HTTP_SESSION_H

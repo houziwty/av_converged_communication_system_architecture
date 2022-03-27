@@ -2,7 +2,7 @@
 #include "http_host_server.h"
 
 HttpHostServer::HttpHostServer()
-    : ASIONode(), HttpNode(), sid{0}
+    : ASIONode(), HttpSessionNode(), sid{0}
 {}
 
 HttpHostServer::~HttpHostServer()
@@ -21,7 +21,7 @@ uint32_t HttpHostServer::afterFetchAcceptedEventNotification(
 
     if (!e)
     {
-        HttpNode::add(sid);
+        HttpSessionNode::add(sid);
     }
 
     return sid;
@@ -40,11 +40,11 @@ void HttpHostServer::afterPolledReadDataNotification(
 {
     if (!e)
     {
-        HttpNode::request(id, e, data, bytes);
+        HttpSessionNode::request(id, data, bytes);
     }
     else
     {
-        HttpNode::remove(id);
+        HttpSessionNode::remove(id);
     }
 }
 
@@ -56,10 +56,10 @@ void HttpHostServer::afterPolledSendDataNotification(
 
 }
 
-void HttpHostServer::afterPolledReadDataNotification(
+int HttpHostServer::onresponse(
     const uint32_t id/* = 0*/, 
-    const char* method/* = nullptr*/, 
-    const char* path/* = nullptr*/)
+    const void* data/* = nullptr*/, 
+    const uint64_t bytes/* = 0*/)
 {
-    HttpNode::response(id, 200, "OK");
+    ASIONode::send(id, data, bytes);
 }

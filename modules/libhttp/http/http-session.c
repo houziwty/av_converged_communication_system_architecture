@@ -78,8 +78,8 @@ static void http_session_ondestroy(void* param)
 	
 	if (session->streaming.handler.ondestroy)
 		session->streaming.handler.ondestroy(session->streaming.param);
-	else if (session->wsupgrade && session->server->wshandler.ondestroy)
-		session->server->wshandler.ondestroy(session->wsupgrade);
+	else if (session->wsupgrade && session/*->server*/->wshandler.ondestroy)
+		session/*->server*/->wshandler.ondestroy(session->wsupgrade);
 
 	http_session_release(session);
 }
@@ -162,7 +162,7 @@ static void http_session_onrecv(void* param, int code, size_t bytes)
 	// websocket
 	if (session->wsupgrade)
 	{
-		code = websocket_parser_input(&session->websocket.parser, (uint8_t*)session->data, bytes, session->server->wshandler.ondata, session->wsupgrade);
+		code = websocket_parser_input(&session->websocket.parser, (uint8_t*)session->data, bytes, session/*->server*/->wshandler.ondata, session->wsupgrade);
 		if (0 == code)
 		{
 			// recv more data
@@ -204,11 +204,11 @@ static void http_session_onrecv(void* param, int code, size_t bytes)
 			{
 				// call
 				// user must reply(send/send_vec/send_file) in handle
-				if (session->server->handler)
+				if (session/*->server*/->handler)
 				{
 					const char* uri = http_get_request_uri(session->parser);
 					const char* method = http_get_request_method(session->parser);
-					session->server->handler(session->server->param, session, method, uri);
+					session/*->server*/->handler(session/*->server*/->param, session, method, uri);
 				}
 			}
 		}
@@ -226,11 +226,11 @@ static void http_session_onrecv(void* param, int code, size_t bytes)
 
 				// call
 				// user must reply(send/send_vec/send_file) in handle
-				if (session->server->handler)
+				if (session/*->server*/->handler)
 				{
 					const char* uri = http_get_request_uri(session->parser);
 					const char* method = http_get_request_method(session->parser);
-					session->server->handler(session->server->param, session, method, uri);
+					session/*->server*/->handler(session/*->server*/->param, session, method, uri);
 				}
 
 				if (!session->streaming.handler.onrecv)
@@ -271,7 +271,7 @@ static void http_session_onsend(void* param, int code, size_t bytes)
 
 	if (session->wsupgrade)
 	{
-		session->server->wshandler.onsend(session->wsupgrade, code, bytes);
+		session/*->server*/->wshandler.onsend(session->wsupgrade, code, bytes);
 		return;
 	}
 	
@@ -282,7 +282,7 @@ static void http_session_onsend(void* param, int code, size_t bytes)
 		const char* protocols = http_server_get_header(session, "Sec-WebSocket-Protocol");
 
 		session->tryupgrade = 0; // clear flags
-		code = session->server->wshandler.onupgrade(session->server->wsparam, &session->websocket, path, protocols, &session->wsupgrade);
+		code = session/*->server*/->wshandler.onupgrade(session/*->server*/->wsparam, &session->websocket, path, protocols, &session->wsupgrade);
 		if (0 == code)
 		{
 			// start recv websocket data
@@ -346,7 +346,7 @@ static void http_session_onhttp(void* param, const void* data, int len)
 	session->payload.ptr[session->payload.len] = 0; /*filling zero*/
 }
 
-struct http_session_t* http_session_create(const uint32_t id, struct http_server_t *server)
+struct http_session_t* http_session_create(/*struct http_server_t *server*/)
 {
 	struct http_session_t *session;
 	// struct aio_transport_handler_t handler;
@@ -359,7 +359,6 @@ struct http_session_t* http_session_create(const uint32_t id, struct http_server
 	if (!session) return NULL;
 
 	memset(session, 0, sizeof(*session));
-	session->id = id;
 	session->ref = 1;
 	session->header.ptr = (char*)(session + 1);
 	session->header.cap = HTTP_HEADER_CAPACITY;
@@ -370,7 +369,7 @@ struct http_session_t* http_session_create(const uint32_t id, struct http_server
 	// assert(salen <= sizeof(session->addr));
 	// memcpy(&session->addr, sa, salen);
 	session->rlocker = session;
-	session->server = server; // fixme: server->addref()
+//	session->server = server; // fixme: server->addref()
 	// session->addrlen = salen;
 	// session->socket = socket;
 	// session->transport = aio_transport_create(socket, &handler, session);
