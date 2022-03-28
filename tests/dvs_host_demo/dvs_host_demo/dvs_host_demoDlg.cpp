@@ -75,20 +75,15 @@ CdvshostdemoDlg::CdvshostdemoDlg(CWnd* pParent /*=nullptr*/)
 void CdvshostdemoDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_DEVICE_TREE, deviceTree);
 }
 
 BEGIN_MESSAGE_MAP(CdvshostdemoDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_XMQ_CONNECT, &CdvshostdemoDlg::OnBnClickedXmqConnect)
-	ON_BN_CLICKED(IDC_XMQ_DISCONNECT, &CdvshostdemoDlg::OnBnClickedXmqDisconnect)
-	ON_BN_CLICKED(IDC_DVS_LOGIN, &CdvshostdemoDlg::OnBnClickedDvsLogin)
-	ON_BN_CLICKED(IDC_DVS_LOGOUT, &CdvshostdemoDlg::OnBnClickedDvsLogout)
-	ON_BN_CLICKED(IDC_REALPLAY_TEST, &CdvshostdemoDlg::OnBnClickedRealplayTest)
-	ON_BN_CLICKED(IDC_GRAB_TEST, &CdvshostdemoDlg::OnBnClickedGrabTest)
-	ON_MESSAGE(WM_OPEN_REALPLAY, &CdvshostdemoDlg::OnOpenRealplay)
 	ON_WM_CLOSE()
+	ON_NOTIFY(NM_RCLICK, IDC_DEVICE_TREE, &CdvshostdemoDlg::OnNMRClickDeviceTree)
 END_MESSAGE_MAP()
 
 
@@ -129,12 +124,16 @@ BOOL CdvshostdemoDlg::OnInitDialog()
 	SetDlgItemText(IDC_XMQ_PORT, L"60531");
 	SetDlgItemText(IDC_DEMO_NAME, L"test_demo_name");
 
-	SetDlgItemText(IDC_DVS_ADDRESS, L"192.168.2.225");
-	SetDlgItemText(IDC_DVS_PORT, L"8000");
-	SetDlgItemText(IDC_DVS_USER, L"admin");
-	SetDlgItemText(IDC_DVS_PASSWD, L"Vrc123456");
-	SetDlgItemText(IDC_DVS_FACTORY, L"0");
-	SetDlgItemText(IDC_STREAM_URL, L"realplay://1?command=1&channel=1&stream=0");
+// 	SetDlgItemText(IDC_DVS_ADDRESS, L"192.168.2.225");
+// 	SetDlgItemText(IDC_DVS_PORT, L"8000");
+// 	SetDlgItemText(IDC_DVS_USER, L"admin");
+// 	SetDlgItemText(IDC_DVS_PASSWD, L"Vrc123456");
+// 	SetDlgItemText(IDC_DVS_FACTORY, L"0");
+// 	SetDlgItemText(IDC_STREAM_URL, L"realplay://1?command=1&channel=1&stream=0");
+// 	SetDlgItemText(IDC_DVS_NAME, L"Test_hk");
+
+	videoRoot = deviceTree.InsertItem(L"video", TVI_ROOT, NULL);
+	deviceTree.InsertItem(L"192.168.2.225", videoRoot);
 
 	ASIONode::run();
 
@@ -348,47 +347,48 @@ void CdvshostdemoDlg::OnBnClickedDvsLogin()
 {
 	// TODO: Add your control notification handler code here
 
-	char user[256]{ 0 }, passwd[256]{0}, ip[256]{ 0 };
-	unsigned short port{
-		static_cast<unsigned short>(GetDlgItemInt(IDC_DVS_PORT)) };
-	unsigned short factory{
-		static_cast<unsigned short>(GetDlgItemInt(IDC_DVS_FACTORY)) };
-
-	HWND hwnd{ this->GetSafeHwnd() };
-	GetDlgItemTextA(hwnd, IDC_DVS_ADDRESS, ip, 256);
-	GetDlgItemTextA(hwnd, IDC_DVS_USER, user, 256);
-	GetDlgItemTextA(hwnd, IDC_DVS_PASSWD, passwd, 256);
-
-	char url[1024]{ 0 };
-	sprintf_s(url, 1024, 
-		"config://dvs_host_server?command=add&factory=%d&ip=%s&port=%d&user=%s&passwd=%s&name=test_dvs", 
-		factory, ip, port, user, passwd);
-
- 	Json json;
-// //	json.parse("{\"id\":\"0\",\"ip\":\"192.168.2.225\",\"port\":\"8000\",\"user\":\"admin\",\"passwd\":\"Vrc123456\",\"channels\":\"1\",\"timestam\":\"123456\"}");
-
-// 	json.add("pos", "30");
-// 	json.add("pos", "104");
-// 	Items items;
-// 	items.push_back(std::make_pair("addr", "192.168.2.2"));
-// 	items.push_back(std::make_pair("addr", "192.168.2.5"));
-// 	json.add("rsu", items);
-
- 	const std::string urlstr{url};
-
-	int ret{ XMQNode::send(0xFFFF, urlstr.c_str(), urlstr.length()) };
-
-	if (Error_Code_Success == ret)
-	{
-		//				fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Send query device information to dvs host service successed.");
-	}
-	else
-	{
-		// 				fileLog.write(
-		// 					SeverityLevel::SEVERITY_LEVEL_ERROR,
-		// 					"Send query device information to dvs host service failed, result = [ %d ].",
-		// 					ret);
-	}
+// 	char user[256]{ 0 }, passwd[256]{0}, ip[256]{ 0 }, name[256]{ 0 };
+// 	unsigned short port{
+// 		static_cast<unsigned short>(GetDlgItemInt(IDC_DVS_PORT)) };
+// 	unsigned short factory{
+// 		static_cast<unsigned short>(GetDlgItemInt(IDC_DVS_FACTORY)) };
+// 
+// 	HWND hwnd{ this->GetSafeHwnd() };
+// 	GetDlgItemTextA(hwnd, IDC_DVS_ADDRESS, ip, 256);
+// 	GetDlgItemTextA(hwnd, IDC_DVS_USER, user, 256);
+// 	GetDlgItemTextA(hwnd, IDC_DVS_PASSWD, passwd, 256);
+// 	GetDlgItemTextA(hwnd, IDC_DVS_NAME, name, 256);
+// 
+// 	Json j;
+// 	j.add("factory", (boost::format("%d") % factory).str());
+// 	j.add("name", (boost::format("%s") % name).str());
+// 	j.add("ip", (boost::format("%s") % ip).str());
+// 	j.add("port", (boost::format("%d") % port).str());
+// 	j.add("user", (boost::format("%d") % user).str());
+// 	j.add("passwd", (boost::format("%d") % passwd).str());
+// 	j.add("timestamp", "1");
+// 	std::string jout;
+// 	j.serialize(jout);
+// 
+// 	char url[1024]{ 0 };
+// 	sprintf_s(url, 1024, 
+// 		"config://dvs_host_server?command=add&data=%s", jout.c_str());
+// 
+//  	const std::string urlstr{url};
+// 
+// 	int ret{ XMQNode::send(0xFFFF, urlstr.c_str(), urlstr.length()) };
+// 
+// 	if (Error_Code_Success == ret)
+// 	{
+// 		//				fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Send query device information to dvs host service successed.");
+// 	}
+// 	else
+// 	{
+// 		// 				fileLog.write(
+// 		// 					SeverityLevel::SEVERITY_LEVEL_ERROR,
+// 		// 					"Send query device information to dvs host service failed, result = [ %d ].",
+// 		// 					ret);
+// 	}
 }
 
 
@@ -460,7 +460,7 @@ void CdvshostdemoDlg::OnBnClickedRealplayTest()
 void CdvshostdemoDlg::processDvsControlMessage(Url& requestUrl)
 {
 	const std::vector<Parameter> parameters{ requestUrl.parameters() };
-	std::string command, error;
+	std::string command, data;
 
 	for (int i = 0; i != parameters.size(); ++i)
 	{
@@ -468,24 +468,24 @@ void CdvshostdemoDlg::processDvsControlMessage(Url& requestUrl)
 		{
 			command = parameters[i].value;
 		}
-		else if (!parameters[i].key.compare("error"))
+		else if (!parameters[i].key.compare("data"))
 		{
-			error = parameters[i].value;
-		}
-		else if (!parameters[i].key.compare("dvs"))
-		{
-			dvs = parameters[i].value;
+			data = parameters[i].value;
 		}
 	}
 
-	if (!command.compare("add") && 0 == atoi(error.c_str()))
+	if (!command.compare("add"))
 	{
 		MessageBox(CString(dvs.c_str()), NULL, MB_ICONINFORMATION | MB_OK);
 
-		char url[1024]{ 0 };
-		sprintf_s(url, 1024, "config://%s?command=add&name=dvs_host_server.dvs.devices&data=%s", DatabaseHostID, dvs.c_str());
-		const std::string urlstr{ url };
-		int ret{ XMQNode::send(0xFFFF, urlstr.c_str(), urlstr.length()) };
+// 		char url[1024]{ 0 };
+// 		sprintf_s(url, 1024, "config://%s?command=add&name=dvs_host_server.dvs.devices&data=%s", DatabaseHostID, dvs.c_str());
+// 		const std::string urlstr{ url };
+// 		int ret{ XMQNode::send(0xFFFF, urlstr.c_str(), urlstr.length()) };
+	}
+	else if (!command.compare("query"))
+	{
+
 	}
 }
 
@@ -566,5 +566,61 @@ DWORD WINAPI CdvshostdemoDlg::ThreadFunc(LPVOID c)
 // 			sprintf_s(demo->drawInfo.areas[i].text, 256, "Target 2\r\nSpeed: 90 KM/H\r\nDirection: West");
 // 		}
 // 		demo->drawInfo.enable = true;
+	}
+}
+
+
+void CdvshostdemoDlg::OnBnClickedDvsQuery()
+{
+	// TODO: Add your control notification handler code here
+
+	Json j;
+	j.add("timestamp", "10000");
+	std::string jout;
+	j.serialize(jout);
+
+	char url[1024]{ 0 };
+	sprintf_s(url, 1024,
+		"config://dvs_host_server?command=add&data=%s", jout.c_str());
+
+	const std::string urlstr{ url };
+
+	int ret{ XMQNode::send(0xFFFF, urlstr.c_str(), urlstr.length()) };
+
+	if (Error_Code_Success == ret)
+	{
+		//				fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Send query device information to dvs host service successed.");
+	}
+	else
+	{
+		// 				fileLog.write(
+		// 					SeverityLevel::SEVERITY_LEVEL_ERROR,
+		// 					"Send query device information to dvs host service failed, result = [ %d ].",
+		// 					ret);
+	}
+}
+
+
+void CdvshostdemoDlg::OnNMRClickDeviceTree(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	// TODO: Add your control notification handler code here
+	*pResult = 0;
+
+	int x = GetSystemMetrics(SM_CXSCREEN); //»ñÈ¡ÆÁÄ»XÏñËØ
+	int y = GetSystemMetrics(SM_CYSCREEN);  //»ñÈ¡ÆÁÄ»YÏñËØ
+
+	CPoint pt;
+	GetCursorPos(&pt);
+	deviceTree.ScreenToClient(&pt);
+
+	UINT flag = 0;
+	HTREEITEM item = deviceTree.HitTest(pt, &flag);
+
+	if ((item != NULL) && (TVHT_ONITEM & flag))
+	{
+		deviceTree.SelectItem(item);
+// 		CMenu menu;
+// 		menu.LoadMenu(IDR_MENU1);
+// 		menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, this, NULL);
 	}
 }

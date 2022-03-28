@@ -13,6 +13,7 @@
 #ifndef SERVICE_DVS_HOST_SERVER_H
 #define SERVICE_DVS_HOST_SERVER_H
 
+#include "boost/atomic.hpp"
 #include "boost/shared_ptr.hpp"
 #include "url/url.h"
 using namespace framework::utils::data;
@@ -74,17 +75,35 @@ protected:
         const uint32_t bytes = 0) override;
 
 private:    
-    //DVS设备业务处理
+    //处理配置请求
     //@from [in] : 源ID
-	//@requestUrl [in] : 请求URL标识
-	void processDvsControlMessage(const std::string from, Url& requestUrl);
+	//@url [in] : 请求URL
+	void config(const std::string from, Url& url);
+
+    //新增设备
+    //@from [in] : 源ID
+    //@json [in] : 设备JSON描述
+    //@Return ：错误码
+    int add(const std::string& from, const std::string& json);
+
+    //删除设备
+    //@from [in] : 源ID
+    //@json [in] : 设备JSON描述
+    //@Return ：错误码
+    int remove(const std::string& from, const std::string& json);
+
+    //查询设备集合
+    //@from [in] : 源ID
+    //@json [in] : 设备JSON描述
+    //@Return ：错误码
+    int query(const std::string& from, const std::string& json);
 
 public:
     const XMQModeConf& modeconf;
 
 private:
     const std::string logid;
-    uint32_t deviceNumber;
+    boost::atomic_int deviceNumber;
     uint32_t streamNumber;
     SharedMutex mtx;
     DVSStreamSessionPtrs sessions;

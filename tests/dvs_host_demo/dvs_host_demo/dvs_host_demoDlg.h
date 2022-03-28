@@ -41,6 +41,7 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg LRESULT OnOpenRealplay(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnNMRClickDeviceTree(NMHDR* pNMHDR, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
 
 protected:
@@ -98,4 +99,9 @@ private:
 public:
 	afx_msg void OnClose();
 	static DWORD WINAPI ThreadFunc(LPVOID c);
+	afx_msg void OnBnClickedDvsQuery();
+	CTreeCtrl deviceTree;
+	HTREEITEM videoRoot;
+	HTREEITEM lidarRoot;
+	HTREEITEM rsuRoot;
 };

@@ -5,6 +5,8 @@ using namespace boost::placeholders;
 #include "boost/make_shared.hpp"
 #include "av_pkt.h"
 using namespace module::av::stream;
+#include "json/json.h"
+using namespace framework::utils::data;
 #include "error_code.h"
 #include "memory/xmem.h"
 using namespace framework::utils::memory;
@@ -95,14 +97,14 @@ void DvsHostServer::afterPolledDataNotification(
     const char* from/* = nullptr*/)
 {
     const std::string msg{reinterpret_cast<const char*>(data), bytes};
-    Url requestUrl;
-    int ret{requestUrl.parse(data, bytes)};
+    Url url;
+    int ret{url.parse(data, bytes)};
 
     if(Error_Code_Success == ret)
     {
-        if (!requestUrl.proto().compare("config"))
+        if (!url.proto().compare("config"))
         {
-            processDvsControlMessage(from, requestUrl);
+            config(from, url);
         }
         else
         {
@@ -200,11 +202,11 @@ void DvsHostServer::afterPolledSendDataNotification(
     const int32_t e/* = 0*/)
 {}
 
-void DvsHostServer::processDvsControlMessage(const std::string from, Url& requestUrl)
+void DvsHostServer::config(const std::string from, Url& url)
 {
-    const std::vector<Parameter> parameters{requestUrl.parameters()};
-    const std::string host{requestUrl.host()};
-    std::string command, factory, ip, port, user, passwd, id, name;
+    const std::vector<Parameter> parameters{url.parameters()};
+    const std::string host{url.host()};
+    std::string command, data;
 
     for(int i = 0; i != parameters.size(); ++i)
     {
@@ -212,95 +214,92 @@ void DvsHostServer::processDvsControlMessage(const std::string from, Url& reques
         {
             command = parameters[i].value;
         }
-		else if (!parameters[i].key.compare("factory"))
+		else if (!parameters[i].key.compare("data"))
 		{
-            factory = parameters[i].value;
+            data = parameters[i].value;
 		}
-        else if (!parameters[i].key.compare("ip"))
-        {
-            ip = parameters[i].value;
-        }
-        else if (!parameters[i].key.compare("port"))
-        {
-            port = parameters[i].value;
-        }
-        else if (!parameters[i].key.compare("user"))
-        {
-            user = parameters[i].value;
-        }
-        else if (!parameters[i].key.compare("passwd"))
-        {
-            passwd = parameters[i].value;
-        }
-        else if (!parameters[i].key.compare("id"))
-        {
-            id = parameters[i].value;
-        }
-        else if (!parameters[i].key.compare("name"))
-        {
-            name = parameters[i].value;
-        }
     }
 
     if (!command.compare("query"))
     {
-        std::string url{
-            (boost::format("config://%s?command=query") % from).str()};
-        DVSModeConf* confs{ nullptr };
-        uint32_t number{ 0 };
-
-        if (Error_Code_Success == DVSNode::queryConfs(confs, number))
-        {
-			for (int i = 0; i != number; ++i)
-			{
-				const std::string dvs{
-					(boost::format("&dvs=%d_%s_%d_%s") % confs[i].id % confs[i].ip % confs[i].channels % confs[i].name).str() };
-				url.append(dvs);
-			}
-        }
-        
-        XMQNode::send(modeconf.id, url.c_str(), url.length());
+        query(from, data);
     }
     else if (!command.compare("add"))
     {
-        DVSModeConf conf{0};
-        XMem().copy(name.c_str(), name.length(), conf.name, 128);
-        XMem().copy(user.c_str(), user.length(), conf.user, 128);
-        XMem().copy(passwd.c_str(), passwd.length(), conf.passwd, 64);
-        XMem().copy(ip.c_str(), ip.length(), conf.ip, 128);
-        conf.port = atoi(port.c_str());
-        conf.id = ++deviceNumber;
-        if (!factory.compare("0"))
-        {
-            conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_HK;
-        }
-		else if (!factory.compare("1"))
-		{
-			conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_DH;
-		}
-        else
-        {
-            conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_NONE;
-        }
-        conf.model = DVSModelType::DVS_MODEL_TYPE_IPC;
-        int ret{DVSNode::addConf(conf)};
+        add(from, data);
+    }
+    else if (!command.compare("remove"))
+    {
+        remove(from, data);
+    }
+}
 
-        if (Error_Code_Success == ret)
+int DvsHostServer::add(const std::string& from, const std::string& json)
+{
+    int ret{from.empty() || json.empty() ? Error_Code_Invalid_Param : Error_Code_Success};
+
+    if (Error_Code_Success == ret)
+    {
+        Json j;
+        DVSModeConf conf{0};
+        std::string factory, name, ip, port, user, passwd, timestamp, out;
+
+        if (Error_Code_Success == j.parse(json.c_str()))
         {
-            ret = DVSNode::run(conf.id);
+            j.get("factory", factory);
+            j.get("name", name);
+            j.get("ip", ip);
+            j.get("port", port);
+            j.get("user", user);
+            j.get("passwd", passwd);
+            j.get("timestamp", timestamp);
+
+            conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_NONE;
+            if (!factory.compare("0"))
+            {
+                conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_HK;
+            }
+            else if (!factory.compare("1"))
+            {
+                conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_DH;
+            }
+            conf.model = DVSModelType::DVS_MODEL_TYPE_IPC;
+            //设备ID从1开始原子计数
+            conf.id = ++deviceNumber;
+            XMem().copy(name.c_str(), name.length(), conf.name, 128);
+            XMem().copy(user.c_str(), user.length(), conf.user, 128);
+            XMem().copy(passwd.c_str(), passwd.length(), conf.passwd, 64);
+            XMem().copy(ip.c_str(), ip.length(), conf.ip, 128);
+            conf.port = atoi(port.c_str());
+            
+            int ret{DVSNode::addConf(conf)};
+
             if (Error_Code_Success == ret)
             {
-                conf = DVSNode::queryConf(conf.id);
-            }
-            else
-            {
-                DVSNode::removeConf(conf.id);
+                ret = DVSNode::run(conf.id);
+                if (Error_Code_Success == ret)
+                {
+                    conf = DVSNode::queryConf(conf.id);
+                }
+                else
+                {
+                    DVSNode::removeConf(conf.id);
+                }
             }
         }
-        
+        else
+        {
+            ret = Error_Code_Operate_Failure;
+        }
+
+        j.reset();
+        j.add("error", (boost::format("%d") % ret).str());
+        j.add("id", (boost::format("%d") % conf.id).str());
+        j.add("channels", (boost::format("%d") % conf.channels).str());
+        j.add("timestamp", (boost::format("%lld") % timestamp).str());
+        j.serialize(out);
         const std::string url{
-            (boost::format("config://%s?command=add&error=%d&dvs=%s_%s_%d_%s") 
-            % from % ret % conf.id % ip % conf.channels % name).str()};
+            (boost::format("config://%s?command=add&data=%s") % from % out).str()};
         XMQNode::send(modeconf.id, url.c_str(), url.length());
 
         const std::string log{
@@ -309,19 +308,85 @@ void DvsHostServer::processDvsControlMessage(const std::string from, Url& reques
                 % logid % (ret ? 1 : 0) % conf.id % conf.name % conf.ip % conf.port % conf.user % conf.passwd % ret).str()};
         XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
     }
-    else if (!command.compare("remove"))
+    
+    return ret;
+}
+
+int DvsHostServer::remove(const std::string& from, const std::string& json)
+{
+    int ret{from.empty() || json.empty() ? Error_Code_Invalid_Param : Error_Code_Success};
+
+    if (Error_Code_Success == ret)
     {
-        int ret{DVSNode::removeConf(atoi(id.c_str()))};
-        const std::string msg{
-                (boost::format("config://%s?command=remove&error=%d&id=%s") % from % ret % id).str()};
-        XMQNode::send(modeconf.id, msg.c_str(), msg.length());
-        
-        const std::string log{
-            (boost::format(
-                "info://%s?command=add&severity=%d&log=Remove device [ %s ] result [ %d ].") 
-                % logid % (ret ? 1 : 0) % id.c_str() % ret).str()};
-        XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
+        Json j;
+        std::string id, timestamp, out;
+
+        if (Error_Code_Success == j.parse(json.c_str()))
+        {
+            j.get("id", id);
+            j.get("timestamp", timestamp);
+
+            int ret{DVSNode::removeConf(atoi(id.c_str()))};
+            j.reset();
+            j.add("error", (boost::format("%d") % ret).str());
+            j.add("timestamp", (boost::format("%lld") % timestamp).str());
+            j.serialize(out);
+            const std::string url{
+                    (boost::format("config://%s?command=remove&data=%s") % from % out).str()};
+            XMQNode::send(modeconf.id, url.c_str(), url.length());
+            
+            const std::string log{
+                (boost::format(
+                    "info://%s?command=add&severity=%d&log=Remove device [ %s ] result [ %d ].") 
+                    % logid % (ret ? 1 : 0) % id.c_str() % ret).str()};
+            XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
+        }
     }
+
+    return ret;
+}
+
+int DvsHostServer::query(const std::string& from, const std::string& json)
+{
+    int ret{from.empty() || json.empty() ? Error_Code_Invalid_Param : Error_Code_Success};
+
+    if (Error_Code_Success == ret)
+    {
+        Json j;
+        std::string timestamp, out;
+
+        if (Error_Code_Success == j.parse(json.c_str()))
+        {
+            j.get("timestamp", timestamp);
+            j.reset();
+            Items items;
+            DVSModeConf* confs{ nullptr };
+            uint32_t number{ 0 };
+            ret = DVSNode::queryConfs(confs, number);
+
+            if (Error_Code_Success == ret)
+            {
+                for (int i = 0; i != number; ++i)
+                {
+                    items.push_back(std::make_pair("factory", (boost::format("%s") % (int)confs[i].factory).str()));
+                    items.push_back(std::make_pair("name", confs[i].name));
+                    items.push_back(std::make_pair("id", (boost::format("%d") % confs[i].id).str()));
+                    items.push_back(std::make_pair("ip", confs[i].ip));
+                    items.push_back(std::make_pair("channels", (boost::format("%d") % confs[i].channels).str()));
+                    j.add("devices", items);
+                }
+            }
+
+            j.add("timestamp", timestamp);
+            j.add("error", (boost::format("%d") % ret).str());
+            j.serialize(out);
+            std::string url{
+                (boost::format("config://%s?command=query&data=%s") % from % out).str()};
+            XMQNode::send(modeconf.id, url.c_str(), url.length());
+        }
+    }
+
+    return ret;
 }
 
 void DvsHostServer::afterPolledRealplayDataNotification(

@@ -93,7 +93,8 @@ file(GLOB_RECURSE
 	"${SOURCE_DIR}/commandline/*.cpp" 
 	"${SOURCE_DIR}/time/*.cpp" 
 	"${SOURCE_DIR}/url/*.cpp" 
-	"${SOURCE_DIR}/memory/*.cpp")
+	"${SOURCE_DIR}/memory/*.cpp" 
+	"${SOURCE_DIR}/json/*.cpp")
 
 add_executable(
 	${PROJECT_NAME} 

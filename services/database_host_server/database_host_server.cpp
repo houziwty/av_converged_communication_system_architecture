@@ -129,7 +129,7 @@ void DatabaseHostServer::afterPolledDataNotification(
 
 void DatabaseHostServer::processDatabaseRequest(const std::string from, Url& url)
 {
-    std::string command, name, timestamp, data;
+    std::string command, name, data;
     const std::vector<Parameter> params{url.parameters()};
 
     for (int i = 0; i != params.size(); ++i)
@@ -142,10 +142,6 @@ void DatabaseHostServer::processDatabaseRequest(const std::string from, Url& url
         {
             name = params[i].value;
         }
-        else if (!params[i].key.compare("timestamp"))
-        {
-            timestamp = params[i].value;
-        }
         else if (!params[i].key.compare("data"))
         {
             data = params[i].value;
@@ -154,12 +150,6 @@ void DatabaseHostServer::processDatabaseRequest(const std::string from, Url& url
 
     if (!command.compare("query"))
     {
-        char* buf{DatabaseNode::read(id, name.c_str())};
-
-        if (buf)
-        {
-            boost::checked_array_delete(buf);
-        }
     }
     else if (!command.compare("add"))
     {
