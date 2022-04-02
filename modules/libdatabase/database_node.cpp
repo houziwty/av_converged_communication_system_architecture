@@ -70,15 +70,14 @@ int DatabaseNode::removeConf(const uint32_t id/* = 0*/)
 
 int DatabaseNode::write(
 	const uint32_t id/* = 0*/, 
-	const char* key/* = nullptr*/, 
-	const char* value/* = nullptr*/)
+	const char* transaction/* = nullptr*/)
 {
-	int ret{0 < id && key && value ? Error_Code_Success : Error_Code_Invalid_Param};
+	int ret{0 < id && transaction ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
 		DatabasePtr db{dbs.at(id)};
-		ret = db ? db->write(key, value) : Error_Code_Object_Not_Exist;
+		ret = db ? db->write(transaction) : Error_Code_Object_Not_Exist;
 	}
 	
 	return ret;
@@ -86,15 +85,15 @@ int DatabaseNode::write(
 
 char* DatabaseNode::read(
 	const uint32_t id/* = 0*/, 
-	const char* key/* = nullptr*/)
+	const char* transaction/* = nullptr*/)
 {
-	int ret{0 < id && key ? Error_Code_Success : Error_Code_Invalid_Param};
+	int ret{0 < id && transaction ? Error_Code_Success : Error_Code_Invalid_Param};
 	char* value{nullptr};
 
 	if (Error_Code_Success == ret)
 	{
 		DatabasePtr db{dbs.at(id)};
-		value = (db ? db->read(key) : nullptr);
+		value = (db ? db->read(transaction) : nullptr);
 	}
 	
 	return value;

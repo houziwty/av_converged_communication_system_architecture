@@ -31,10 +31,14 @@ socket_t Dealer::connect(
 
 		if (s)
 		{
-			int keepalive{ 1 }, idle{30};
+			int keepalive{ 1 }, idle{30}, queue_size{30}, buf_size{10 * 1024 * 1024};
 			zmq_setsockopt(s, ZMQ_TCP_KEEPALIVE, &keepalive, sizeof(int));
 			zmq_setsockopt(s, ZMQ_TCP_KEEPALIVE_IDLE, &idle, sizeof(int));
 			zmq_setsockopt(s, ZMQ_IDENTITY, id.c_str(), id.length());
+			zmq_setsockopt(s, ZMQ_SNDHWM, &queue_size,sizeof(int));
+			zmq_setsockopt(s, ZMQ_RCVHWM, &queue_size, sizeof(int));
+			zmq_setsockopt(s, ZMQ_RCVBUF, &buf_size, sizeof(int));
+			zmq_setsockopt(s, ZMQ_SNDBUF, &buf_size, sizeof(int));
 
 			if (zmq_connect(s, (boost::format("tcp://%s:%d") % ip % port).str().c_str()))
 			{

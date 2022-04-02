@@ -84,13 +84,24 @@ private:
     //@from [in] : 源ID
     //@json [in] : 设备JSON描述
     //@Return ：错误码
-    int add(const std::string& from, const std::string& json);
+    int add(
+        const std::string& from, 
+        const std::string& factory, 
+        const std::string& name, 
+        const std::string& ip, 
+        const std::string& port, 
+        const std::string& user, 
+        const std::string& passwd, 
+        const std::string& timestamp);
 
     //删除设备
     //@from [in] : 源ID
-    //@json [in] : 设备JSON描述
+    //@json [in] : 设备ID
     //@Return ：错误码
-    int remove(const std::string& from, const std::string& json);
+    int remove(
+        const std::string& from, 
+        const std::string& id, 
+        const std::string& timestamp);
 
     //查询设备集合
     //@from [in] : 源ID

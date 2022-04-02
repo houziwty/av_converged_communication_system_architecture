@@ -54,4 +54,11 @@ static const int Error_Code_File_Existed = -4001;
 static const int Error_Code_File_Not_Exist = -4002;
 static const int Error_Code_Directory_Not_Exist = -4003;
 
+//数据库
+static const int Error_Code_Invalid_Value_Of_Key = -5000;
+static const int Error_Code_Operate_Timeout = -5001;
+static const int Error_Code_Invalid_Connection = -5002;
+static const int Error_Code_IO_Error_Of_Connection = -5003;
+static const int Error_Code_DB_Other_Error = -5004;
+
 #endif//GLOBAL_ERROR_CODE_H

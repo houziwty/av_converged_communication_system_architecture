@@ -44,7 +44,7 @@ char* XStr::alloc(
 
     if (src && 0 < bytes)
     {
-        dest = new(std::nothrow) char[bytes];
+        dest = new(std::nothrow) char[bytes]{0};
         
         if (dest)
         {

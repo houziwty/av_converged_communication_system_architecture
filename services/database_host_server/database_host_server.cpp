@@ -1,8 +1,9 @@
-#include "boost/checked_delete.hpp"
+#include "boost/algorithm/string.hpp"
 #include "boost/bind/bind.hpp"
 using namespace boost::placeholders;
 #include "boost/checked_delete.hpp"
 #include "boost/format.hpp"
+#include "boost/json.hpp"
 #include "error_code.h"
 #include "memory/xstr.h"
 #include "memory/xmem.h"
@@ -106,7 +107,7 @@ void DatabaseHostServer::afterPolledDataNotification(
     {
         if (!requestUrl.proto().compare("config"))
         {
-            processDatabaseRequest(from, requestUrl);
+            config(from, requestUrl);
         }
         else
         {
@@ -127,32 +128,164 @@ void DatabaseHostServer::afterPolledDataNotification(
     }
 }
 
-void DatabaseHostServer::processDatabaseRequest(const std::string from, Url& url)
+void DatabaseHostServer::config(const std::string from, Url& url)
 {
-    std::string command, name, data;
+    std::string data;
     const std::vector<Parameter> params{url.parameters()};
 
     for (int i = 0; i != params.size(); ++i)
     {
-        if (!params[i].key.compare("command"))
-        {
-            command = params[i].value;
-        }
-        else if (!params[i].key.compare("name"))
-        {
-            name = params[i].value;
-        }
-        else if (!params[i].key.compare("data"))
+        if (!params[i].key.compare("data"))
         {
             data = params[i].value;
         }
     }
 
-    if (!command.compare("query"))
+    if (!data.empty())
     {
-    }
-    else if (!command.compare("add"))
-    {
-        DatabaseNode::write(id, name.c_str(), data.c_str());
+        auto o{boost::json::parse(data).as_object()};
+        auto command{o.at("command").as_string()}, timestamp{o.at("timestamp").as_string()};
+        std::string out;
+
+        if (!command.compare("mec.db.dvs.query"))
+        {
+            o["error"] = "0";
+            char* buf{
+                DatabaseNode::read(id, "hgetall mec.dvs.config")};
+
+            if (buf)
+            {
+                boost::json::array arr;
+                std::vector<std::string> items;
+                boost::split(items, std::string(buf), boost::is_any_of("_"));
+
+                for (int i = 0; i != items.size(); ++i)
+                {
+                    arr.emplace_back(items[i]);
+                }
+                o["devices"] = arr;
+                boost::checked_array_delete(buf);
+            }
+        }
+        else if(!command.compare("mec.db.rsu.query"))
+        {
+            o["error"] = "0";
+            char* buf{
+                DatabaseNode::read(id, "hgetall mec.rsu.config")};
+
+            if (buf)
+            {
+                boost::json::array arr;
+                std::vector<std::string> items;
+                boost::split(items, std::string(buf), boost::is_any_of("_"));
+
+                for (int i = 0; i != items.size(); ++i)
+                {
+                    arr.emplace_back(items[i]);
+                }
+                o["devices"] = arr;
+                boost::checked_array_delete(buf);
+            }
+        }
+        else if (!command.compare("mec.db.dvs.add"))
+        {
+            const std::string did{o.at("id").as_string().c_str()};
+            o.erase("command");
+            o.erase("timestamp");
+            out = boost::json::serialize(o);
+            int ret{
+                DatabaseNode::write(
+                    id, 
+                    (boost::format("hset mec.dvs.config %s %s") % did % out).str().c_str())};
+
+            o.clear();
+            o["command"] = command;
+            o["error"] = (boost::format("%d") % ret).str();
+            o["timestamp"] = timestamp;
+        }
+        else if (!command.compare("mec.db.rsu.add"))
+        {
+            const std::string did{o.at("id").as_string().c_str()};
+            o.erase("command");
+            o.erase("timestamp");
+            out = boost::json::serialize(o);
+            int ret{
+                DatabaseNode::write(
+                    id, 
+                    (boost::format("hset mec.rsu.config %s %s") % did % out).str().c_str())};
+
+            o.clear();
+            o["command"] = command;
+            o["error"] = (boost::format("%d") % ret).str();
+            o["timestamp"] = timestamp;
+        }
+        else if (!command.compare("mec.db.dvs.remove"))
+        {
+            const std::string did{o.at("id").as_string().c_str()};
+            o.erase("id");
+            out = boost::json::serialize(o);
+            int ret{
+                DatabaseNode::write(
+                    id, 
+                    (boost::format("hdel mec.dvs.config %s") % did).str().c_str())};
+            o["error"] = (boost::format("%d") % ret).str();
+        }
+        else if (!command.compare("mec.db.rsu.remove"))
+        {
+            const std::string did{o.at("id").as_string().c_str()};
+            o.erase("id");
+            out = boost::json::serialize(o);
+            int ret{
+                DatabaseNode::write(
+                    id, 
+                    (boost::format("hdel mec.rsu.config %s") % did).str().c_str())};
+            o["error"] = (boost::format("%d") % ret).str();
+        }
+        else if(!command.compare("mec.db.position.query"))
+        {
+            char* buf{
+                DatabaseNode::read(id, "get mec.position.config")};
+
+            if (buf)
+            {
+                //longitude;latitude;elevation
+                std::vector<std::string> items;
+                boost::split(items, std::string(buf), boost::is_any_of(";"));
+                if (3 == items.size())
+                {
+                    double d_longitude{ std::strtod(items[0].c_str(), NULL) };
+                    double d_latitude{ std::strtod(items[1].c_str(), NULL) };
+                    int d_elevation{ atoi(items[2].c_str()) };
+
+                    o["longitude"] = d_longitude;
+                    o["latitude"] = d_latitude;
+                    o["elevation"] = d_elevation;
+                }
+                boost::checked_array_delete(buf);
+            }
+
+            o["error"] = (buf ? "0" : "-9");
+        }
+        else if(!command.compare("mec.db.position.set"))
+        {
+            const double longitude{o["longitude"].as_double()}, latitude{o["latitude"].as_double()};
+            const int64_t elevation{o["elevation"].as_int64()};
+            //longitude;latitude;elevation
+            const std::string pos{
+                (boost::format("%.7f;%.7f;%d") % longitude % latitude % elevation).str()};
+            int ret{
+                DatabaseNode::write(
+                    id, 
+                    (boost::format("set mec.position.config %s") % pos).str().c_str())};
+            o.erase("longitude");
+            o.erase("latitude");
+            o.erase("elevation");
+            o["error"] = (boost::format("%d") % ret).str();
+        }
+
+        out = boost::json::serialize(o);
+        std::string url{
+            (boost::format("config://%s?data=%s") % from % out).str()};
+        XMQNode::send(modeconf.id, url.c_str(), url.length());
     }
 }

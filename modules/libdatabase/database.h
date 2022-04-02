@@ -43,19 +43,17 @@ namespace module
 				virtual int disconnect(void) = 0;
 
                 //写入数据
-                //@id [in] : 数据库ID
-                //@key [in] : 字段标识
-                //@value [in] : 字段值
+                //@transaction [in] : 事务语句
+                //                    支持SQL和命令
                 //@Return : 错误码
                 virtual int write(
-                    const char* key = nullptr, 
-                    const char* value = nullptr) = 0;
+                    const char* transaction = nullptr) = 0;
 
                 //读取数据
                 //@key [in] : 字段标识
                 //@Return : 字段值
                 virtual char* read( 
-                    const char* key = nullptr) = 0;
+                    const char* transaction = nullptr) = 0;
             };//class Database
         }//namespace database
     }//namespace file

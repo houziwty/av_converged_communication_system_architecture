@@ -49,10 +49,10 @@ protected:
 		const uint32_t number = 0) override;
 
 private:    
-    //数据库业务处理
+    //数据配置
     //@from [in] : 源ID
 	//@url [in] : 请求URL
-	void processDatabaseRequest(const std::string from, Url& url);
+	void config(const std::string from, Url& url);
 
 private:
     const std::string logid;

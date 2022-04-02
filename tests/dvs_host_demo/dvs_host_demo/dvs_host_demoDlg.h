@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <unordered_map>
 #include "xmq_node.h"
 using namespace module::network::xmq;
 #include "asio_node.h"
@@ -42,6 +43,17 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg LRESULT OnOpenRealplay(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnNMRClickDeviceTree(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnMenuClickDeviceQuery();
+	afx_msg void OnMenuClickDeviceAdd();
+	afx_msg void OnMenuClieckDeviceDelete();
+	afx_msg void OnBnClickedXmqConnect();
+	afx_msg void OnBnClickedXmqDisconnect();
+	afx_msg void OnBnClickedRealplayTest();
+	afx_msg void OnBnClickedGrabTest();
+	afx_msg void OnClose();
+	afx_msg void OnNMDblclkLogList(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnBnClickedXmqPositionSet();
+	afx_msg void OnBnClickedXmqPositionGet();
 	DECLARE_MESSAGE_MAP()
 
 protected:
@@ -70,38 +82,27 @@ protected:
 		const int32_t e = 0) override;
 
 private:
-	void processDvsControlMessage(Url& requestUrl);
+	void config(Url& url);
 	void avframeDataCallback(
 		const uint32_t id = 0, 
 		const void* avpkt = nullptr);
-
-public:
-	afx_msg void OnBnClickedXmqConnect();
-	afx_msg void OnBnClickedXmqDisconnect();
-
-private:
-//	FileLog fileLog;
-public:
-	afx_msg void OnBnClickedDvsLogin();
-	afx_msg void OnBnClickedDvsLogout();
+	static DWORD WINAPI ThreadFunc(LPVOID c);
+	void log(const CString& text);
 
 private:
 	uint32_t sid;
-	std::string dvs;
+	//设备添加JSON数据备份
+	//添加成功后发送给数据库
+	std::string jo;
 	uint32_t stream;
-public:
-	afx_msg void OnBnClickedRealplayTest();
-	afx_msg void OnBnClickedGrabTest();
-
-private:
 	ExtendDrawInfo drawInfo;
 	static int WM_OPEN_REALPLAY;
-public:
-	afx_msg void OnClose();
-	static DWORD WINAPI ThreadFunc(LPVOID c);
-	afx_msg void OnBnClickedDvsQuery();
 	CTreeCtrl deviceTree;
 	HTREEITEM videoRoot;
 	HTREEITEM lidarRoot;
 	HTREEITEM rsuRoot;
+	HTREEITEM selectedItem;
+	CListCtrl loglist;
+	std::unordered_map<std::string, const std::string> dvsmap;
+	std::unordered_map<HTREEITEM, const std::string> nodemap;
 };

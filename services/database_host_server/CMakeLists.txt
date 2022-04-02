@@ -17,6 +17,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(
 		LINK_LIBS 
 		libboost_program_options.a 
+		libboost_json.a 
 		xmq 
 		database 
 		log)

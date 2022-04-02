@@ -187,6 +187,8 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CAddDvsDlg.h" />
+    <ClInclude Include="CAddRsuDlg.h" />
     <ClInclude Include="dvs_host_demo.h" />
     <ClInclude Include="dvs_host_demoDlg.h" />
     <ClInclude Include="framework.h" />
@@ -196,8 +198,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\3rd\boost_1_78_0\libs\json\src\src.cpp" />
-    <ClCompile Include="..\..\..\src\json\json.cpp" />
     <ClCompile Include="..\..\..\src\url\url.cpp" />
+    <ClCompile Include="CAddDvsDlg.cpp" />
+    <ClCompile Include="CAddRsuDlg.cpp" />
     <ClCompile Include="dvs_host_demo.cpp" />
     <ClCompile Include="dvs_host_demoDlg.cpp" />
     <ClCompile Include="pch.cpp">

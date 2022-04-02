@@ -38,10 +38,9 @@ namespace module
                     const char* passwd = nullptr) override;
 				int disconnect(void) override;
                 int write(
-                    const char* key = nullptr, 
-                    const char* value = nullptr) override;
+                    const char* transaction = nullptr) override;
                 char* read( 
-                    const char* key = nullptr) override;
+                    const char* transaction = nullptr) override;
 
             private:
                 RedisPtr redis;

@@ -23,6 +23,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(
 		LINK_LIBS 
 		libboost_program_options.a 
+		libboost_json.a 
 		pthread 
 		dvs 
 		asio 
@@ -57,7 +58,8 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${BOOST_LINK_DIR}/libboost_thread-vc143-mt-sgd-x64-1_78.lib 
 			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-sgd-x64-1_78.lib 
 			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-sgd-x64-1_78.lib	
-			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-sgd-x64-1_78.lib 		
+			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_atomic-vc143-mt-sgd-x64-1_78.lib 
 			${XMQ_LINK_DIR}/xmq.lib 
 			${ASIO_LINK_DIR}/asio.lib 
 			${AVPARSER_LINK_DIR}/avparser.lib 
@@ -69,7 +71,8 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${BOOST_LINK_DIR}/libboost_thread-vc143-mt-s-x64-1_78.lib 
 			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-s-x64-1_78.lib 
 			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-s-x64-1_78.lib	
-			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-s-x64-1_78.lib 		
+			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-s-x64-1_78.lib 
+			${BOOST_LINK_DIR}/libboost_atomic-vc143-mt-s-x64-1_78.lib 			
 			${XMQ_LINK_DIR}/xmq.lib 
 			${ASIO_LINK_DIR}/asio.lib 
 			${AVPARSER_LINK_DIR}/avparser.lib 
@@ -93,8 +96,7 @@ file(GLOB_RECURSE
 	"${SOURCE_DIR}/commandline/*.cpp" 
 	"${SOURCE_DIR}/time/*.cpp" 
 	"${SOURCE_DIR}/url/*.cpp" 
-	"${SOURCE_DIR}/memory/*.cpp" 
-	"${SOURCE_DIR}/json/*.cpp")
+	"${SOURCE_DIR}/memory/*.cpp")
 
 add_executable(
 	${PROJECT_NAME} 
