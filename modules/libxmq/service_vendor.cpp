@@ -7,10 +7,15 @@ extern "C" {
 #endif
 #include "boost/format.hpp"
 #include "error_code.h"
+#include "thread/thread.h"
+#include "thread/thread_pool.h"
+using namespace framework::utils::thread;
 #include "time/xtime.h"
 using namespace framework::utils::time;
 #include "memory/xmem.h"
 using namespace framework::utils::memory;
+#include "url/url.h"
+using namespace framework::utils::data;
 #include "xmq/dealer.h"
 #include "xmq/msg.h"
 #include "service_vendor.h"
@@ -18,31 +23,33 @@ using namespace module::network::xmq;
 
 ServiceVendor::ServiceVendor(
 	const XMQModeConf& conf, 
-	PolledDataCallback pollcb, 
-	CheckOnlineStatusCallback checkcb, 
-	ServiceCapabilitiesNotificationCallback capabilitiescb) 
-	: XMQRole(conf, pollcb), registerResponseTimetamp{XTime().tickcount()}, 
-	online{false}, checkOnlineStatusCallback{checkcb}, 
-	serviceCapabilitiesNotificationCallback{capabilitiescb}
+	PolledDataCallback poll, 
+	CheckOnlineStatusCallback check, 
+	ServiceCapabilitiesNotificationCallback capabilities) 
+	: AsyncNode(conf, poll), registerResponseTimetamp{XTime().tickcount()}, 
+	online{false}, checker_t{nullptr}, checkOnlineStatusCallback{check}, 
+	serviceCapabilitiesNotificationCallback{capabilities}
 {}
 
 ServiceVendor::~ServiceVendor()
 {}
 
-int ServiceVendor::run(ctx_t c/* = nullptr*/)
+int ServiceVendor::run(xctx c/* = nullptr*/)
 {
 	int ret{c && stopped ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
-		so = Dealer().connect(modeconf.name, modeconf.ip, modeconf.port, c);
+		dso = Dealer().connect(c, modeconf.name, modeconf.ip, modeconf.port);
 
-		if(so)
+		if(dso && Error_Code_Success == AsyncNode::run(c))
 		{
-			ret = XMQRole::run(c);
+			checker_t = ThreadPool().get_mutable_instance().createNew(
+				boost::bind(&ServiceVendor::checkServiceOnlineStatusThread, this));
 		}
 		else
 		{
+			stop();
 			ret = Error_Code_Bad_New_Socket;
 		}
 	}
@@ -52,11 +59,13 @@ int ServiceVendor::run(ctx_t c/* = nullptr*/)
 
 int ServiceVendor::stop()
 {
-	int ret{XMQRole::stop()};
+	int ret{AsyncNode::stop()};
 
 	if (Error_Code_Success == ret)
 	{
-		Dealer().shutdown(so);
+		Thread().join(checker_t);
+		ThreadPool().get_mutable_instance().destroy(checker_t);
+		Dealer().shutdown(dso);
 	}
 	
 	return ret;
@@ -67,7 +76,7 @@ int ServiceVendor::send(
 	const uint64_t bytes/* = 0*/, 
 	const char* /*id = nullptr*/)
 {
-	int ret{so ? Error_Code_Success : Error_Code_Operate_Failure};
+	int ret{dso ? Error_Code_Success : Error_Code_Operate_Failure};
 
 	if (Error_Code_Success == ret)
 	{
@@ -77,8 +86,8 @@ int ServiceVendor::send(
 		{
 			Msg msg;
 			msg.add("", 0);
-			msg.add(data, bytes);
-			ret = msg.send(so);
+			msg.add(data, bytes);			
+			ret = msg.send(dso);
 		}
 	}
 
@@ -87,15 +96,15 @@ int ServiceVendor::send(
 
 void ServiceVendor::pollDataThread()
 {
-	while(so && !stopped)
+	while(dso && !stopped)
 	{
-		zmq_pollitem_t pollitems[]{ { so, 0, ZMQ_POLLIN, 0} };
+		zmq_pollitem_t pollitems[]{ { dso, 0, ZMQ_POLLIN, 0} };
 		zmq_poll(pollitems, 1, 1);
 
 		if (pollitems[0].revents & ZMQ_POLLIN)
 		{
 			Msg msg;
-			int ret{msg.recv(so)};
+			int ret{msg.recv(dso)};
 
 			if (Error_Code_Success == ret)
 			{
@@ -108,11 +117,11 @@ void ServiceVendor::pollDataThread()
 					const std::string protocol{url.proto()};
 					if (!protocol.compare("register"))
 					{
-						processRegisterResponseMessage(url);
+						processRegisterResponseMessage(&url);
 					}
 					else if (!protocol.compare("query"))
 					{
-						processQueryResponseMessage(url);
+						processQueryResponseMessage(&url);
 					}
 					else
 					{
@@ -137,11 +146,6 @@ void ServiceVendor::checkServiceOnlineStatusThread()
 		if(currentTickCount - lastTickCout > 30000)
 		{
 			//Register and heartbeat
-			// Url url;
-			// url.proto("register");
-			// url.host(modeconf.name);
-			// url.addParameter("timestamp", (boost::format("%ld") % currentTickCount).str());
-			// url.addParameter("sequence", (boost::format("%d") % sequence++).str());
 			const std::string data{
 				(boost::format("register://%s?timestamp=%lld&sequence=%lld") % modeconf.name % currentTickCount % sequence++).str()};
 
@@ -163,9 +167,9 @@ void ServiceVendor::checkServiceOnlineStatusThread()
 	}
 }
 
-void ServiceVendor::processRegisterResponseMessage(Url& url)
+void ServiceVendor::processRegisterResponseMessage(void* url /* = nullptr */)
 {
-    const std::vector<Parameter>& items{url.parameters()};
+    const std::vector<Parameter>& items{((Url*)url)->parameters()};
 
     for(int i = 0; i != items.size(); ++i)
     {
@@ -191,10 +195,10 @@ void ServiceVendor::processRegisterResponseMessage(Url& url)
     }
 }
 
-void ServiceVendor::processQueryResponseMessage(Url& url)
+void ServiceVendor::processQueryResponseMessage(void* url /* = nullptr */)
 {
     ServiceInfo* infos{nullptr};
-    const std::vector<Parameter>& items{url.parameters()};
+    const std::vector<Parameter>& items{((Url*)url)->parameters()};
     const std::size_t number{items.size()};
 
     if (0 < number)

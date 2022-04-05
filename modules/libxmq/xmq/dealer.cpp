@@ -16,13 +16,13 @@ Dealer::Dealer()
 Dealer::~Dealer()
 {}
 
-socket_t Dealer::connect(
+xsocket Dealer::connect(
+	xctx c /* = nullptr */, 
 	const char* uid/* = nullptr*/, 
 	const char* ip/* = nullptr*/, 
-	const uint16_t port /* = 0 */,
-	ctx_t c /* = nullptr */)
+	const uint16_t port /* = 0 */)
 {
-	socket_t s{nullptr};
+	xsocket s{nullptr};
 	const std::string id{uid};
 
 	if (c && uid && ip && 0 < port)
@@ -47,7 +47,45 @@ socket_t Dealer::connect(
 	return s;
 }
 
-int Dealer::shutdown(socket_t s /* = nullptr */)
+xsocket Dealer::bind(
+	xctx c /* = nullptr */, 
+	const char* name/* = nullptr*/)
+{
+	xsocket s{nullptr};
+
+	if (c)
+	{
+		s = zmq_socket(c, ZMQ_DEALER);
+
+		if (s)
+		{
+			zmq_bind(s, name);
+		}
+	}
+	
+	return s;
+}
+
+xsocket Dealer::connect_task(
+	xctx c /* = nullptr */, 
+	const char* name/* = nullptr*/)
+{
+	xsocket s{nullptr};
+
+	if (c)
+	{
+		s = zmq_socket(c, ZMQ_DEALER);
+
+		if (s)
+		{
+			zmq_connect(s, name);
+		}
+	}
+	
+	return s;
+}
+
+int Dealer::shutdown(xsocket s /* = nullptr */)
 {
 	int ret{s ? Error_Code_Success : Error_Code_Invalid_Param};
 

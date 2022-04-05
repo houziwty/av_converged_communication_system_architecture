@@ -21,7 +21,7 @@ namespace module
     {
 		namespace xmq
 		{
-			class NETWORK_XMQ_EXPORT Router
+			class Router
 			{
 			public:
 				Router(void);
@@ -32,14 +32,14 @@ namespace module
 				//@c [in] : XMQ上下文实例
 				//@port [in] : 端口号
 				//@Return : socket实例
-				socket_t bind(
-					ctx_t c = nullptr, 
+				xsocket bind(
+					xctx c = nullptr, 
 					const uint16_t port = 0);
 
 				//关闭
 				//@s [in] : socket实例
 				//@Return : 错误码
-				int shutdown(socket_t s = nullptr);
+				int shutdown(xsocket s = nullptr);
 			};//class Router
 		}//namespace xmq
     }//namespace network

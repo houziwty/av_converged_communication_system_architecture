@@ -1,3 +1,5 @@
+#include "boost/bind/bind.hpp"
+using namespace boost::placeholders;
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -6,34 +8,44 @@ extern "C" {
 }
 #endif
 #include "error_code.h"
+#include "hardware/cpu.h"
+using namespace framework::utils::hardware;
+#include "thread/thread.h"
+#include "thread/thread_pool.h"
+using namespace framework::utils::thread;
 #include "xmq/router.h"
+#include "xmq/dealer.h"
 #include "xmq/msg.h"
 #include "service_discover.h"
 using namespace module::network::xmq;
 
 ServiceDiscover::ServiceDiscover(
 	const XMQModeConf& conf, 
-	PolledDataCallback pollcb) 
-	: XMQRole(conf, pollcb)
-{}
+	PolledDataCallback callback) 
+	: AsyncNode(conf, callback), taskNumber{Cpu().getCount()}
+{
+	memset(tasks, 0, 32 * sizeof(xthread));
+}
 
 ServiceDiscover::~ServiceDiscover()
 {}
 
-int ServiceDiscover::run(ctx_t c/* = nullptr*/)
+int ServiceDiscover::run(xctx c/* = nullptr*/)
 {
 	int ret{c && stopped ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
-		so = Router().bind(c, modeconf.port);
+		rso = Router().bind(c, modeconf.port);
+		dso = Dealer().bind(c, taskName);
 
-		if (so)
+		if (rso && dso && Error_Code_Success == AsyncNode::run(c))
 		{
-			ret = XMQRole::run(c);
+			ret = createTaskThread(c);
 		}
 		else
 		{
+			stop();
 			ret = Error_Code_Bad_New_Socket;
 		}
 	}
@@ -43,11 +55,13 @@ int ServiceDiscover::run(ctx_t c/* = nullptr*/)
 
 int ServiceDiscover::stop()
 {
-	int ret{XMQRole::stop()};
+	int ret{AsyncNode::stop()};
 
 	if (Error_Code_Success == ret)
 	{
-		Router().shutdown(so);
+		destroyTaskThread();
+		Router().shutdown(rso);
+		Dealer().shutdown(dso);
 	}
 	
 	return ret;
@@ -58,7 +72,7 @@ int ServiceDiscover::send(
 	const uint64_t bytes/* = 0*/, 
 	const char* id/* = nullptr*/)
 {
-	int ret{so ? Error_Code_Success : Error_Code_Operate_Failure};
+	int ret{rso ? Error_Code_Success : Error_Code_Operate_Failure};
 
 	if(Error_Code_Success == ret)
 	{
@@ -70,8 +84,8 @@ int ServiceDiscover::send(
 			Msg msg;
 			msg.add(to.c_str(), to.length());
 			msg.add("", 0);
-			msg.add(data, bytes);
-			ret = msg.send(so);
+			msg.add(data, bytes);			
+			ret = msg.send(rso);
 		}
 	}
 
@@ -80,20 +94,88 @@ int ServiceDiscover::send(
 
 void ServiceDiscover::pollDataThread()
 {
-	while(so && !stopped) 
-	{
-		zmq_pollitem_t pollitems[]{ { so, 0, ZMQ_POLLIN, 0} };
-		zmq_poll(pollitems, 1, 1);
+	zmq_pollitem_t pollers[]{ 
+		{ rso, 0, ZMQ_POLLIN, 0}, 
+		{ dso, 0, ZMQ_POLLIN, 0} };
 
-		if (pollitems[0].revents & ZMQ_POLLIN)
+	while(rso && dso && !stopped) 
+	{
+		zmq_poll(pollers, 2, 1);
+		Msg msg;
+
+		if (pollers[0].revents & ZMQ_POLLIN)
 		{
-			Msg msg;
-			int ret{msg.recv(so)};
+			int ret{msg.recv(rso)};
 
 			if (Error_Code_Success == ret)
 			{
+				msg.send(dso);
+			}
+		}
+		else if (pollers[1].revents & ZMQ_POLLIN)
+		{
+			//读取第一段和第三段数据
+			const Any* first{ msg.msg() };
+			const Any* third{ msg.msg(2) };
+
+			if (polledDataCallback)
+			{
+				//避免Windows下数据超界产生的错误
+				const std::string from{(const char*)first->data(), first->bytes()};
+				polledDataCallback(modeconf.id, third->data(), third->bytes(), from.c_str());
+			}
+		}
+	}
+}
+
+int ServiceDiscover::createTaskThread(xctx c/* = nullptr*/)
+{
+	int ret{0 < taskNumber ? Error_Code_Success : Error_Code_Operate_Failure};
+
+	if (Error_Code_Success == ret)
+	{
+		for(int i = 0; i != taskNumber; ++i)
+		{
+			tasks[i] = ThreadPool().get_mutable_instance().createNew(
+				boost::bind(&ServiceDiscover::processTaskThread, this, c));
+		}
+	}
+
+	return ret;
+}
+
+int ServiceDiscover::destroyTaskThread()
+{
+	int ret{0 < taskNumber ? Error_Code_Success : Error_Code_Operate_Failure};
+
+	if (Error_Code_Success == ret)
+	{
+		for(int i = 0; i != taskNumber; ++i)
+		{
+			ThreadPool().get_mutable_instance().destroy(tasks[i]);
+		}
+	}
+
+	return ret;
+}
+
+void ServiceDiscover::processTaskThread(xctx c/* = nullptr*/)
+{
+	if(c)
+	{
+		xsocket s{Dealer().connect_task(c, taskName)};
+		zmq_pollitem_t pollitems[]{ { s, 0, ZMQ_POLLIN, 0} };
+
+		while(!stopped)
+		{
+			zmq_poll(pollitems, 1, 1);
+
+			if (pollitems[0].revents & ZMQ_POLLIN)
+			{
+				Msg msg;
+				int ret{msg.recv(s)};
 				//读取第一段和第三段数据
- 				const Any* first{ msg.msg() };
+				const Any* first{ msg.msg() };
 				const Any* third{ msg.msg(2) };
 
 				if (polledDataCallback)
@@ -105,9 +187,4 @@ void ServiceDiscover::pollDataThread()
 			}
 		}
 	}
-}
-
-void ServiceDiscover::checkServiceOnlineStatusThread()
-{
-	//服务发现不检查模块在线状态
 }

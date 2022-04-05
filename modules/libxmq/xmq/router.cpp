@@ -16,11 +16,11 @@ Router::Router()
 Router::~Router()
 {}
 
-socket_t Router::bind(
-	ctx_t c /* = nullptr */, 
+xsocket Router::bind(
+	xctx c /* = nullptr */, 
 	const unsigned short port /* = 0 */)
 {
-	socket_t s{nullptr};
+	xsocket s{nullptr};
 
 	if (c && 0 < port)
 	{
@@ -39,7 +39,7 @@ socket_t Router::bind(
 	return s;
 }
 
-int Router::shutdown(socket_t s /* = nullptr */)
+int Router::shutdown(xsocket s /* = nullptr */)
 {
 	int ret{s ? Error_Code_Success : Error_Code_Invalid_Param};
 

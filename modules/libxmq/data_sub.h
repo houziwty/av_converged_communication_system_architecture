@@ -13,7 +13,7 @@
 #ifndef MODULE_NETWORK_XMQ_DATA_SUB_H
 #define MODULE_NETWORK_XMQ_DATA_SUB_H
 
-#include "xmq_role.h"
+#include "async_node.h"
 
 namespace module
 {
@@ -21,7 +21,7 @@ namespace module
 	{
 		namespace xmq
 		{
-			class DataSub : public XMQRole
+			class DataSub : public AsyncNode
 			{
 			public:
 				DataSub(
@@ -30,7 +30,7 @@ namespace module
 				~DataSub(void);
 
 			public:
-				int run(ctx_t c = nullptr) override;
+				int run(xctx c = nullptr) override;
 				int stop(void) override;
 				int send(
 					const void* /*data = nullptr*/, 
@@ -39,7 +39,9 @@ namespace module
 					
 			protected:
 				void pollDataThread(void) override;
-				void checkServiceOnlineStatusThread(void) override;
+
+			private:
+				xsocket sso;
 			};//class DataSub
 		}//namespace xmq
 	}//namespace network

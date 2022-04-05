@@ -46,7 +46,7 @@ int Msg::add(const void* data /* = nullptr */, const uint64_t bytes /* = 0 */)
 	return ret;
 }
 
-int Msg::recv(socket_t s /* = nullptr */)
+int Msg::recv(xsocket s /* = nullptr */)
 {
 	int ret{ s ? Error_Code_Success : Error_Code_Invalid_Param };
 
@@ -80,7 +80,7 @@ int Msg::recv(socket_t s /* = nullptr */)
 	return ret;
 }
 
-int Msg::send(socket_t s /* = nullptr */)
+int Msg::send(xsocket s /* = nullptr */)
 {
 	int ret{ s ? Error_Code_Success : Error_Code_Invalid_Param };
 
@@ -102,7 +102,8 @@ int Msg::send(socket_t s /* = nullptr */)
 
 			//必须拷贝数据到消息内
 			XMem().copy(data, bytes, zmq_msg_data(&msg), zmq_msg_size(&msg));
-			if (bytes != zmq_msg_send(&msg, s, sndflag))
+			int ret = zmq_msg_send(&msg, s, sndflag);
+			if (bytes != ret)
 			{
 				ret = Error_Code_Bad_Operate_Send;
 				break;
