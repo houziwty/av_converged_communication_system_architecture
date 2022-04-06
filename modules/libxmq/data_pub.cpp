@@ -13,24 +13,24 @@ using namespace module::network::xmq;
 
 DataPub::DataPub(
 	const XMQModeConf& conf, 
-	const uint32_t hwm/* = 3*/) 
-	: XMQRole(conf, PolledDataCallback()), dataHWM{hwm}
+	const uint32_t number/* = 3*/) 
+	: AsyncNode(conf, PolledDataCallback()), hwm{number}, pso{nullptr}
 {}
 
 DataPub::~DataPub()
 {}
 
-int DataPub::run(ctx_t c/* = nullptr*/)
+int DataPub::run(xctx c/* = nullptr*/)
 {
 	int ret{c ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
-		so = Pub().bind(c, modeconf.port, dataHWM);
+		pso = Pub().bind(c, modeconf.port, hwm);
 
-		if(so)
+		if(pso)
 		{
-			ret = XMQRole::run(c);
+			ret = AsyncNode::run(c);
 		}
 		else
 		{
@@ -43,11 +43,11 @@ int DataPub::run(ctx_t c/* = nullptr*/)
 
 int DataPub::stop()
 {
-	int ret{XMQRole::stop()};
+	int ret{AsyncNode::stop()};
 
 	if (Error_Code_Success == ret)
 	{
-		Pub().shutdown(so);
+		Pub().shutdown(pso);
 	}
 	
 	return ret;
@@ -58,7 +58,7 @@ int DataPub::send(
 	const uint64_t bytes/* = 0*/, 
 	const char* /*name = nullptr*/)
 {
-	int ret{so ? Error_Code_Success : Error_Code_Operate_Failure};
+	int ret{pso ? Error_Code_Success : Error_Code_Operate_Failure};
 
 	if(Error_Code_Success == ret)
 	{
@@ -68,7 +68,7 @@ int DataPub::send(
 		{
 			Msg msg;
 			msg.add(data, bytes);
-			ret = msg.send(so);
+			ret = msg.send(pso);
 		}
 	}
 
@@ -78,9 +78,4 @@ int DataPub::send(
 void DataPub::pollDataThread()
 {
 	//数据发布没有数据接收
-}
-
-void DataPub::checkServiceOnlineStatusThread()
-{
-	//数据发布不检查模块在线状态
 }

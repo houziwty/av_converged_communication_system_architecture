@@ -29,9 +29,9 @@
 #define CALLBACK
 #endif//_WINDOWS
 
-typedef void* ctx_t;
-typedef void* socket_t;
-typedef void* _thread_t;
+typedef void* xctx;
+typedef void* xsocket;
+typedef void* xthread;
 
 //XMQ角色类型
 typedef enum class tagXMQModeType_t : int
@@ -40,7 +40,8 @@ typedef enum class tagXMQModeType_t : int
     XMQ_MODE_TYPE_ROUTER,
     XMQ_MODE_TYPE_DEALER,
     XMQ_MODE_TYPE_PUB,
-    XMQ_MODE_TYPE_SUB
+    XMQ_MODE_TYPE_SUB, 
+    XMQ_MODE_TYPE_REP
 }XMQModeType;
 
 //XMQ角色配置

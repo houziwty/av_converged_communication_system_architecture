@@ -13,24 +13,24 @@ using namespace module::network::xmq;
 
 DataSub::DataSub(
 	const XMQModeConf& conf, 
-	PolledDataCallback pollcb) 
-	: XMQRole(conf, pollcb)
+	PolledDataCallback callback) 
+	: AsyncNode(conf, callback), sso{nullptr}
 {}
 
 DataSub::~DataSub()
 {}
 
-int DataSub::run(ctx_t c/* = nullptr*/)
+int DataSub::run(xctx c/* = nullptr*/)
 {
 	int ret{c ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
-		so = Sub().connect(modeconf.ip, modeconf.port, c);
+		sso = Sub().connect(c, modeconf.ip, modeconf.port);
 
-		if(so)
+		if(sso)
 		{
-			ret = XMQRole::run(c);
+			ret = AsyncNode::run(c);
 		}
 		else
 		{
@@ -43,11 +43,11 @@ int DataSub::run(ctx_t c/* = nullptr*/)
 
 int DataSub::stop()
 {
-	int ret{XMQRole::stop()};
+	int ret{AsyncNode::stop()};
 
 	if (Error_Code_Success == ret)
 	{
-		Sub().shutdown(so);
+		Sub().shutdown(sso);
 	}
 	
 	return ret;
@@ -63,15 +63,15 @@ int DataSub::send(
 
 void DataSub::pollDataThread()
 {
-	while(so && !stopped)
+	while(sso && !stopped)
 	{
-		zmq_pollitem_t pollitems[]{ { so, 0, ZMQ_POLLIN, 0} };
+		zmq_pollitem_t pollitems[]{ { sso, 0, ZMQ_POLLIN, 0} };
 		zmq_poll(pollitems, 1, 1);
 
 		if (pollitems[0].revents & ZMQ_POLLIN)
 		{
 			Msg msg;
-			int ret {msg.recv(so)};
+			int ret {msg.recv(sso)};
 			
 			if (Error_Code_Success == ret)
 			{
@@ -85,9 +85,4 @@ void DataSub::pollDataThread()
 			}
 		}
 	}
-}
-
-void DataSub::checkServiceOnlineStatusThread()
-{
-	//数据订阅不检查模块在线状态
 }

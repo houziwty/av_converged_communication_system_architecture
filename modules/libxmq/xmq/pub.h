@@ -21,7 +21,7 @@ namespace module
 	{
 		namespace xmq
 		{
-			class NETWORK_XMQ_EXPORT Pub
+			class Pub
 			{
 			public:
 				Pub(void);
@@ -33,15 +33,15 @@ namespace module
 				//@port [in] : 端口号
 				//@hwm [in] : 缓存大小
 				//@Return : socket实例
-				socket_t bind(
-					ctx_t c = nullptr, 
+				xsocket bind(
+					xctx c = nullptr, 
 					const uint16_t port = 0,
 					const int32_t hwm = 10);
 
 				//关闭
 				//@s [in] : socket实例
 				//@Return : 错误码
-				int shutdown(socket_t s = nullptr);
+				int shutdown(xsocket s = nullptr);
 			};//class Pub
 		}//namespace xmq
 	}//namespace network

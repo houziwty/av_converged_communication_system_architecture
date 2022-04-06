@@ -21,7 +21,7 @@ namespace module
 	{
 		namespace xmq
 		{
-			class NETWORK_XMQ_EXPORT Sub
+			class Sub
 			{
 			public:
 				Sub(void);
@@ -29,19 +29,19 @@ namespace module
 
 			public:
 				//连接
+				//@c [in] : XMQ上下文实例
 				//@ip [in] : 远程IP
 				//@port [in] : 端口号
-				//@c [in] : XMQ上下文实例
 				//@Return : socket实例
-				socket_t connect(
+				xsocket connect(
+					xctx c = nullptr, 
 					const char* ip = nullptr,
-					const uint16_t port = 0,
-					ctx_t c = nullptr);
+					const uint16_t port = 0);
 
 				//关闭
 				//@s [in] : socket实例
 				//@Return : 错误码
-				int shutdown(socket_t s = nullptr);
+				int shutdown(xsocket s = nullptr);
 			};//class Sub
 		}//namespace xmq
 	}//namespace network

@@ -18,9 +18,9 @@ extern "C" {
 #include "xmq_node.h"
 using namespace module::network::xmq;
 
-using XMQRolePtr = boost::shared_ptr<XMQRole>;
-static UnorderedMap<const int, XMQRolePtr> roles;
-static ctx_t ctx{nullptr};
+using AsyncNodePtr = boost::shared_ptr<AsyncNode>;
+static UnorderedMap<const int, AsyncNodePtr> roles;
+static xctx ctx{nullptr};
 
 XMQNode::XMQNode()
 {
@@ -47,17 +47,17 @@ int XMQNode::addConf(const XMQModeConf& conf)
 
 		if (Error_Code_Success == ret)
 		{
-			XMQRolePtr role;
+			AsyncNodePtr node;
 
 			if (XMQModeType::XMQ_MODE_TYPE_ROUTER == conf.type)
 			{
-				role = boost::make_shared<ServiceDiscover>(
+				node = boost::make_shared<ServiceDiscover>(
 					conf, 
 					boost::bind(&XMQNode::afterPolledDataNotification, this, _1, _2, _3, _4));
 			}
 			else if (XMQModeType::XMQ_MODE_TYPE_DEALER == conf.type)
 			{
-				role = boost::make_shared<ServiceVendor>(
+				node = boost::make_shared<ServiceVendor>(
 					conf,
 					boost::bind(&XMQNode::afterPolledDataNotification, this, _1, _2, _3, _4), 
 					boost::bind(&XMQNode::afterFetchOnlineStatusNotification, this, _1), 
@@ -65,18 +65,18 @@ int XMQNode::addConf(const XMQModeConf& conf)
 			}
 			else if (XMQModeType::XMQ_MODE_TYPE_PUB == conf.type)
 			{
-				role = boost::make_shared<DataPub>(conf);
+				node = boost::make_shared<DataPub>(conf);
 			}
 			else if (XMQModeType::XMQ_MODE_TYPE_SUB == conf.type)
 			{
-				role = boost::make_shared<DataSub>(
+				node = boost::make_shared<DataSub>(
 					conf, 
 					boost::bind(&XMQNode::afterPolledDataNotification, this, _1, _2, _3, _4));
 			}
 
-			if (role)
+			if (node)
 			{
-				roles.add(conf.id, role);
+				roles.add(conf.id, node);
 			}
 			else
 			{
@@ -94,7 +94,7 @@ int XMQNode::removeConf(const uint32_t id/* = 0*/)
 
 	if (Error_Code_Success == ret)
 	{
-		XMQRolePtr role{roles.at(id)};
+		AsyncNodePtr role{roles.at(id)};
 
 		if (role)
 		{
@@ -112,7 +112,7 @@ int XMQNode::run()
 
 	if (Error_Code_Success == ret)
 	{
-		std::vector<XMQRolePtr> items{roles.values()};
+		std::vector<AsyncNodePtr> items{roles.values()};
 		for (int i = 0; i != items.size(); ++i)
 		{
 			if (items[i])
@@ -131,7 +131,7 @@ int XMQNode::stop()
 
 	if (Error_Code_Success == ret)
 	{
-		std::vector<XMQRolePtr> items{roles.values()};
+		std::vector<AsyncNodePtr> items{roles.values()};
 		for (int i = 0; i != items.size(); ++i)
 		{
 			if (items[i])
@@ -154,7 +154,7 @@ int XMQNode::send(
 
 	if(Error_Code_Success == ret)
 	{
-		XMQRolePtr role{roles.at(id)};
+		AsyncNodePtr role{roles.at(id)};
 
 		if (role)
 		{

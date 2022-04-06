@@ -75,7 +75,7 @@ private:
 	std::string logid;
 	UnorderedMap<std::string, uint64_t> registeredServices;
 	bool stopped;
-	_thread_t expire;
+	xthread expire;
 };//class XmqHostServer
 
 #endif//SERVICE_XMQ_HOST_SERVER_H

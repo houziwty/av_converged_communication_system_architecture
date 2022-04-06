@@ -16,12 +16,12 @@ Sub::Sub()
 Sub::~Sub()
 {}
 
-socket_t Sub::connect(
+xsocket Sub::connect(
+	xctx c /* = nullptr */, 
 	const char* ip/* = nullptr*/, 
-	const unsigned short port /* = 0 */,
-	ctx_t c /* = nullptr */)
+	const unsigned short port /* = 0 */)
 {
-	socket_t s{nullptr};
+	xsocket s{nullptr};
 
 	if (c && ip && 0 < port)
 	{
@@ -42,7 +42,7 @@ socket_t Sub::connect(
 	return s;
 }
 
-int Sub::shutdown(socket_t s /* = nullptr */)
+int Sub::shutdown(xsocket s /* = nullptr */)
 {
 	int ret{s ? Error_Code_Success : Error_Code_Invalid_Param};
 

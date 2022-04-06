@@ -17,9 +17,9 @@ Ctx::Ctx()
 Ctx::~Ctx()
 {}
 
-ctx_t Ctx::createNew()
+xctx Ctx::createNew()
 {
-	ctx_t c{zmq_ctx_new()};
+	xctx c{zmq_ctx_new()};
 
 	if (c)
 	{
@@ -30,7 +30,7 @@ ctx_t Ctx::createNew()
 	return c;
 }
 
-int Ctx::destroy(ctx_t c/* = nullptr*/)
+int Ctx::destroy(xctx c/* = nullptr*/)
 {
 	int ret{Error_Code_Invalid_Param};
 

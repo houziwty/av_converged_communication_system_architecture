@@ -50,12 +50,12 @@ namespace module
 				//接收
 				//@s : socket
 				//@Return : 错误码
-				int recv(socket_t s = nullptr);
+				int recv(xsocket s = nullptr);
 
 				//发送
 				//@s : socket
 				//@Return : 错误码
-				int send(socket_t s = nullptr);
+				int send(xsocket s = nullptr);
 
 			private:
 				std::vector<Any*> messages;

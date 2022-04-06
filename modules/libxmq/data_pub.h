@@ -13,7 +13,7 @@
 #ifndef MODULE_NETWORK_XMQ_DATA_PUB_H
 #define MODULE_NETWORK_XMQ_DATA_PUB_H
 
-#include "xmq_role.h"
+#include "async_node.h"
 
 namespace module
 {
@@ -21,16 +21,17 @@ namespace module
 	{
 		namespace xmq
 		{
-			class DataPub : public XMQRole
+			class DataPub : public AsyncNode
 			{
 			public:
+				//number [in] : 发布数据缓存个数
 				DataPub(
 					const XMQModeConf& conf, 
-					const uint32_t hwm = 3);
+					const uint32_t number = 3);
 				~DataPub(void);
 
 			public:
-				int run(ctx_t c = nullptr) override;
+				int run(xctx c = nullptr) override;
 				int stop(void) override;
 				int send(
 					const void* data = nullptr, 
@@ -39,10 +40,10 @@ namespace module
 					
 			protected:
 				void pollDataThread(void) override;
-				void checkServiceOnlineStatusThread(void) override;
 
 			private:
-				const uint32_t dataHWM;
+				const uint32_t hwm;
+				xsocket pso;
 			};//class DataPub
 		}//namespace xmq
 	}//namespace network

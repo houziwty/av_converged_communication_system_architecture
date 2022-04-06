@@ -21,7 +21,7 @@ namespace module
 	{
 		namespace xmq
 		{
-			class NETWORK_XMQ_EXPORT Ctx
+			class Ctx
 			{
 			public:
 				Ctx(void);
@@ -30,11 +30,11 @@ namespace module
 			public:
 				//创建
 				//@Return : 上下文实例
-				ctx_t createNew(void);
+				xctx createNew(void);
 
 				//销毁
 				//@c : 上下文实例
-				int destroy(ctx_t c = nullptr);
+				int destroy(xctx c = nullptr);
 			};//class Ctx
 		}//namespace xmq
 	}//namespace network

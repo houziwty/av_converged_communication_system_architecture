@@ -82,8 +82,8 @@ void XmqHostServer::afterPolledDataNotification(
 
             if (0 < timestamp)
             {
-                const std::string msg{(const char*)data, bytes};
-                forwardCustomMessage(from, to, msg);
+                // const std::string msg{(const char*)data, bytes};
+                // forwardCustomMessage(from, to, msg);
             }
             else
             {
@@ -246,10 +246,10 @@ void XmqHostServer::forwardCustomMessage(
 
 	if (Error_Code_Success == ret)
 	{
-		log.write(
-			SeverityLevel::SEVERITY_LEVEL_INFO,
-			"Send forwarding message [ %s ] successfully.",
-			msg.c_str());
+		// log.write(
+		// 	SeverityLevel::SEVERITY_LEVEL_INFO,
+		// 	"Send forwarding message [ %s ] successfully.",
+		// 	msg.c_str());
 	}
 	else
 	{

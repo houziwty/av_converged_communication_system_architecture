@@ -13,9 +13,7 @@
 #ifndef MODULE_NETWORK_XMQ_SERVICE_VENDOR_H
 #define MODULE_NETWORK_XMQ_SERVICE_VENDOR_H
 
-#include "xmq_role.h"
-#include "url/url.h"
-using namespace framework::utils::data;
+#include "async_node.h"
 
 namespace module
 {
@@ -31,18 +29,18 @@ namespace module
 			typedef boost::function<void(const bool)> CheckOnlineStatusCallback;
 			typedef boost::function<void(const ServiceInfo*, const uint32_t)> ServiceCapabilitiesNotificationCallback;
 
-			class ServiceVendor : public XMQRole
+			class ServiceVendor : public AsyncNode
 			{
 			public:
 				ServiceVendor(
 					const XMQModeConf& conf, 
-					PolledDataCallback pollcb, 
-					CheckOnlineStatusCallback checkcb, 
-					ServiceCapabilitiesNotificationCallback capabilitiescb);
+					PolledDataCallback poll, 
+					CheckOnlineStatusCallback check, 
+					ServiceCapabilitiesNotificationCallback capabilities);
 				~ServiceVendor(void);
 
 			public:
-				int run(ctx_t c = nullptr) override;
+				int run(xctx c = nullptr) override;
 				int stop(void) override;
 				int send(
 					const void* data = nullptr, 
@@ -51,16 +49,16 @@ namespace module
 
 			protected:
 				void pollDataThread(void) override;
-				void checkServiceOnlineStatusThread(void) override;
+				void checkServiceOnlineStatusThread(void);
 
 			private:
 				//注册应答处理
 				//@url [in] : 应答URL
-				void processRegisterResponseMessage(Url& url);
+				void processRegisterResponseMessage(void* url = nullptr);
 
 				//查询应答处理
 				//@url [in] : 应答URL
-				void processQueryResponseMessage(Url& url);
+				void processQueryResponseMessage(void* url = nullptr);
 
 				//转发业务处理
 				//@data [in] : 数据
@@ -71,7 +69,9 @@ namespace module
 
 			private:
 				uint64_t registerResponseTimetamp;
+				xthread checker_t;
 				bool online;
+				xsocket dso;
 				CheckOnlineStatusCallback checkOnlineStatusCallback;
 				ServiceCapabilitiesNotificationCallback serviceCapabilitiesNotificationCallback;
 			};//class ServiceVendor

@@ -21,7 +21,7 @@ namespace module
     {
 		namespace xmq
 		{
-			class NETWORK_XMQ_EXPORT Dealer
+			class Dealer
 			{
 			public:
 				Dealer(void);
@@ -29,21 +29,37 @@ namespace module
 
 			public:
 				//连接
+				//@c [in] : XMQ上下文实例
 				//@uid [in] : 用户ID
 				//@ip [in] : 远程IP
 				//@port [in] : 端口号
-				//@c [in] : XMQ上下文实例
 				//@Return : socket实例
-				socket_t connect(
+				xsocket connect(
+					xctx c = nullptr, 
 					const char* uid = nullptr, 
 					const char* ip = nullptr,
-					const uint16_t port = 0,
-					ctx_t c = nullptr);
+					const uint16_t port = 0);
+
+				//监听
+				//@c [in] : XMQ上下文实例
+				//@name [in] : 服务名
+				//@Return : socket实例
+				xsocket bind(
+					xctx c = nullptr, 
+					const char* name = nullptr);
+
+				//连接
+				//@c [in] : XMQ上下文实例
+				//@name [in] : 服务名
+				//@Return : socket实例
+				xsocket connect_task(
+					xctx c = nullptr, 
+					const char* name = nullptr);
 
 				//关闭
 				//@s [in] : socket实例
 				//@Return : 错误码
-				int shutdown(socket_t s = nullptr);
+				int shutdown(xsocket s = nullptr);
 			};//class Dealer
 		}//namespace xmq
     }//namespace network
