@@ -46,6 +46,8 @@ int ServiceVendor::run(xctx c/* = nullptr*/)
 		{
 			checker_t = ThreadPool().get_mutable_instance().createNew(
 				boost::bind(&ServiceVendor::checkServiceOnlineStatusThread, this));
+			sender_t = ThreadPool().get_mutable_instance().createNew(
+				boost::bind(&ServiceVendor::sendDataThread, this));
 		}
 		else
 		{
@@ -65,6 +67,8 @@ int ServiceVendor::stop()
 	{
 		Thread().join(checker_t);
 		ThreadPool().get_mutable_instance().destroy(checker_t);
+		Thread().join(sender_t);
+		ThreadPool().get_mutable_instance().destroy(sender_t);
 		Dealer().shutdown(dso);
 	}
 	
@@ -84,10 +88,13 @@ int ServiceVendor::send(
 
 		if(Error_Code_Success == ret)
 		{
-			Msg msg;
-			msg.add("", 0);
-			msg.add(data, bytes);			
-			ret = msg.send(dso);
+			Msg* msg = new Msg;
+			msg->add("", 0);
+			msg->add(data, bytes);
+			mtx.lock();
+			msgs.push_back(msg);
+			mtx.unlock();
+//			ret = msg.send(dso);
 		}
 	}
 
@@ -129,6 +136,33 @@ void ServiceVendor::pollDataThread()
 					}
 				}
 			}
+		}
+	}
+}
+
+void ServiceVendor::sendDataThread()
+{
+	while (!stopped)
+	{
+		const std::size_t number{ msgs.size() };
+
+		if (0 < number)
+		{
+			Msg* msg{ msgs[0] };
+			mtx.lock();
+			msgs.erase(msgs.begin());
+			mtx.unlock();
+
+			while (Error_Code_Success != msg->send(dso))
+			{
+				XTime().sleep(3);
+			}
+
+			boost::checked_delete(msg);
+		}
+		else
+		{
+			XTime().sleep(1);
 		}
 	}
 }

@@ -26,10 +26,10 @@ xsocket Router::bind(
 	{
 		s = zmq_socket(c, ZMQ_ROUTER);
 		int queue_size{30}, buf_size{10 * 1024 * 1024};
-		zmq_setsockopt(s, ZMQ_SNDHWM, &queue_size,sizeof(int));
-		zmq_setsockopt(s, ZMQ_RCVHWM, &queue_size, sizeof(int));
-		zmq_setsockopt(s, ZMQ_RCVBUF, &buf_size, sizeof(int));
-		zmq_setsockopt(s, ZMQ_SNDBUF, &buf_size, sizeof(int));
+		//zmq_setsockopt(s, ZMQ_SNDHWM, &queue_size,sizeof(int));
+		//zmq_setsockopt(s, ZMQ_RCVHWM, &queue_size, sizeof(int));
+		//zmq_setsockopt(s, ZMQ_RCVBUF, &buf_size, sizeof(int));
+		//zmq_setsockopt(s, ZMQ_SNDBUF, &buf_size, sizeof(int));
 
 		if(s)
 		{

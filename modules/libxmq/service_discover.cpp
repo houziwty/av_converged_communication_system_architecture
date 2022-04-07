@@ -22,7 +22,7 @@ using namespace module::network::xmq;
 ServiceDiscover::ServiceDiscover(
 	const XMQModeConf& conf, 
 	PolledDataCallback callback) 
-	: AsyncNode(conf, callback), taskNumber{Cpu().getCount()}
+	: AsyncNode(conf, callback), taskNumber{(uint8_t)Cpu().getCount()}
 {
 	memset(tasks, 0, 32 * sizeof(xthread));
 }
@@ -105,12 +105,7 @@ void ServiceDiscover::pollDataThread()
 
 		if (pollers[0].revents & ZMQ_POLLIN)
 		{
-			int ret{msg.recv(rso)};
-
-			if (Error_Code_Success == ret)
-			{
-				msg.send(dso);
-			}
+			msg.forward(rso, dso);
 		}
 		else if (pollers[1].revents & ZMQ_POLLIN)
 		{
@@ -164,13 +159,13 @@ void ServiceDiscover::processTaskThread(xctx c/* = nullptr*/)
 	if(c)
 	{
 		xsocket s{Dealer().connect_task(c, taskName)};
-		zmq_pollitem_t pollitems[]{ { s, 0, ZMQ_POLLIN, 0} };
+		zmq_pollitem_t poller[]{ { s, 0, ZMQ_POLLIN, 0} };
 
 		while(!stopped)
 		{
-			zmq_poll(pollitems, 1, 1);
+			zmq_poll(poller, 1, 1);
 
-			if (pollitems[0].revents & ZMQ_POLLIN)
+			if (poller[0].revents & ZMQ_POLLIN)
 			{
 				Msg msg;
 				int ret{msg.recv(s)};

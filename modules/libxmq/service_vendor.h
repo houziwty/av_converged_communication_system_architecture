@@ -13,6 +13,8 @@
 #ifndef MODULE_NETWORK_XMQ_SERVICE_VENDOR_H
 #define MODULE_NETWORK_XMQ_SERVICE_VENDOR_H
 
+#include <mutex>
+#include "xmq/msg.h"
 #include "async_node.h"
 
 namespace module
@@ -50,6 +52,7 @@ namespace module
 			protected:
 				void pollDataThread(void) override;
 				void checkServiceOnlineStatusThread(void);
+				void sendDataThread(void);
 
 			private:
 				//注册应答处理
@@ -70,10 +73,13 @@ namespace module
 			private:
 				uint64_t registerResponseTimetamp;
 				xthread checker_t;
+				xthread sender_t;
 				bool online;
 				xsocket dso;
 				CheckOnlineStatusCallback checkOnlineStatusCallback;
 				ServiceCapabilitiesNotificationCallback serviceCapabilitiesNotificationCallback;
+				std::mutex mtx;
+				std::vector<Msg*> msgs;
 			};//class ServiceVendor
 		}//namespace xmq
 	}//namespace network

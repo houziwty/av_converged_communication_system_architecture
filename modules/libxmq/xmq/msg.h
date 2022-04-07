@@ -48,14 +48,20 @@ namespace module
 				}
 
 				//接收
-				//@s : socket
+				//@s [in] : socket
 				//@Return : 错误码
 				int recv(xsocket s = nullptr);
 
 				//发送
-				//@s : socket
+				//@s [in] : socket
 				//@Return : 错误码
 				int send(xsocket s = nullptr);
+
+				//转发
+				//@rs [in] : 接收socket
+				//@ss [in] : 发送socket
+				//@Return : 错误码
+				int forward(xsocket rs = nullptr, xsocket ss = nullptr);
 
 			private:
 				std::vector<Any*> messages;

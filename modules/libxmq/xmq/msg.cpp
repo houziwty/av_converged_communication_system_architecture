@@ -115,3 +115,37 @@ int Msg::send(xsocket s /* = nullptr */)
 
 	return ret;
 }
+
+int Msg::forward(xsocket rs /* = nullptr */, xsocket ss /* = nullptr */)
+{
+	int ret{ rs && ss ? Error_Code_Success : Error_Code_Invalid_Param };
+
+	if (Error_Code_Success == ret)
+	{
+		bool more{ true };
+
+		while (more)
+		{
+			zmq_msg_t msg;
+
+			if (zmq_msg_init(&msg))
+			{
+				return Error_Code_Bad_New_Object;
+			}
+
+			if (-1 < zmq_msg_recv(&msg, rs, ZMQ_DONTWAIT))
+			{
+				more = (0 < zmq_msg_more(&msg) ? true : false);
+
+				ret = zmq_msg_send(
+					&msg, 
+					ss, 
+					more ? ZMQ_DONTWAIT | ZMQ_SNDMORE : ZMQ_DONTWAIT);
+			}
+
+			zmq_msg_close(&msg);
+		}
+	}
+
+	return ret;
+}

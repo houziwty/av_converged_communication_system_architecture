@@ -62,28 +62,28 @@ void XmqHostServer::afterPolledDataNotification(
     // 2. 解析主机名称，与服务名称对比是否一致，如果是则由服务执行业务处理， 否则到（3）；
     // 3. 在注册服务表中查找主机名称，如果存在，则执行转发消息，否则应答消息不可达错误。
     
-    Url requestUrl;
-    int ret{requestUrl.parse(data, bytes)};
+    Url url;
+    int ret{ url.parse(data, bytes)};
 
     if(Error_Code_Success == ret)
     {
-        if (!requestUrl.proto().compare("register"))
+        if (!url.proto().compare("register"))
         {
-            processRegisterMessage(from, requestUrl);
+            processRegisterMessage(from, url);
         }
-        else if (!requestUrl.host().compare(XMQHostID))
+        else if (!url.host().compare(XMQHostID))
         {
-            processRequestMessage(from, requestUrl);
+            processRequestMessage(from, url);
         }
         else
         {
-            const std::string to{requestUrl.host()};
+            const std::string to{ url.host()};
             const unsigned long long timestamp{registeredServices.at(to)};
 
             if (0 < timestamp)
             {
-                // const std::string msg{(const char*)data, bytes};
-                // forwardCustomMessage(from, to, msg);
+                 const std::string msg{(const char*)data, bytes};
+                 forwardCustomMessage(from, to, msg);
             }
             else
             {
@@ -174,15 +174,15 @@ void XmqHostServer::processRegisterMessage(const std::string from, Url& requestU
 				{
 					log.write(
 						SeverityLevel::SEVERITY_LEVEL_INFO,
-						"Send response message of register [ %s ] successfully.",
-						msg.c_str());
+						"Send response message of register [ %s ] to [%s] successfully.",
+						msg.c_str(), from.c_str());
 				}
 				else
 				{
 					log.write(
 						SeverityLevel::SEVERITY_LEVEL_ERROR,
-						"Send response message of register [ %s ] failed, result [ %d ].",
-						msg.c_str(), ret);
+                        "Send response message of register [ %s ] to [%s] successfully.",
+                        msg.c_str(), from.c_str());
 				}
 
                 break;

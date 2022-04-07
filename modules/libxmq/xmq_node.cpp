@@ -19,7 +19,7 @@ extern "C" {
 using namespace module::network::xmq;
 
 using AsyncNodePtr = boost::shared_ptr<AsyncNode>;
-static UnorderedMap<const int, AsyncNodePtr> roles;
+static UnorderedMap<const int, AsyncNodePtr> nodes;
 static xctx ctx{nullptr};
 
 XMQNode::XMQNode()
@@ -31,7 +31,7 @@ XMQNode::~XMQNode()
 {
 	stop();
 	Ctx().destroy(ctx);
-	roles.clear();
+	nodes.clear();
 }
 
 int XMQNode::addConf(const XMQModeConf& conf)
@@ -76,7 +76,7 @@ int XMQNode::addConf(const XMQModeConf& conf)
 
 			if (node)
 			{
-				roles.add(conf.id, node);
+				nodes.add(conf.id, node);
 			}
 			else
 			{
@@ -94,12 +94,12 @@ int XMQNode::removeConf(const uint32_t id/* = 0*/)
 
 	if (Error_Code_Success == ret)
 	{
-		AsyncNodePtr role{roles.at(id)};
+		AsyncNodePtr node{nodes.at(id)};
 
-		if (role)
+		if (node)
 		{
-			ret = role->stop();
-			roles.remove(id);
+			ret = node->stop();
+			nodes.remove(id);
 		}
 	}
 
@@ -112,7 +112,7 @@ int XMQNode::run()
 
 	if (Error_Code_Success == ret)
 	{
-		std::vector<AsyncNodePtr> items{roles.values()};
+		std::vector<AsyncNodePtr> items{ nodes.values()};
 		for (int i = 0; i != items.size(); ++i)
 		{
 			if (items[i])
@@ -131,7 +131,7 @@ int XMQNode::stop()
 
 	if (Error_Code_Success == ret)
 	{
-		std::vector<AsyncNodePtr> items{roles.values()};
+		std::vector<AsyncNodePtr> items{ nodes.values()};
 		for (int i = 0; i != items.size(); ++i)
 		{
 			if (items[i])
@@ -154,11 +154,11 @@ int XMQNode::send(
 
 	if(Error_Code_Success == ret)
 	{
-		AsyncNodePtr role{roles.at(id)};
+		AsyncNodePtr node{ nodes.at(id)};
 
-		if (role)
+		if (node)
 		{
-			ret = role->send(data, bytes, to);
+			ret = node->send(data, bytes, to);
 		}
 	}
 
