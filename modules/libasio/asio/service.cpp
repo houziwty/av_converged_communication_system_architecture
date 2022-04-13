@@ -1,11 +1,10 @@
-#include <algorithm>
 #include "error_code.h"
 #include "service.h"
 using namespace module::network::asio;
 
 Service::Service() 
 	: idle{ 0 }, 
-	ctxs{ std::max(static_cast<int>(std::thread::hardware_concurrency()), 1) }, works{ ctxs.size() }
+	ctxs{std::thread::hardware_concurrency()}, works{ ctxs.size() }
 {}
 
 Service::~Service()

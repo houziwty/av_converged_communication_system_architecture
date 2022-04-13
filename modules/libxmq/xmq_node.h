@@ -5,8 +5,6 @@
 //		E-mail : wangkw531@hotmail.com
 //		Date : 2022-01-21
 //		Description : XMQ节点
-//					  1.动态创建角色
-//					  2.多角色并行
 //
 //		History:
 //					1. 2022-01-21 由王科威创建
@@ -15,6 +13,7 @@
 #ifndef MODULE_NETWORK_XMQ_XMQ_NODE_H
 #define MODULE_NETWORK_XMQ_XMQ_NODE_H
 
+#include "boost/function.hpp"
 #include "defs.h"
 
 namespace module
@@ -23,65 +22,50 @@ namespace module
 	{
 		namespace xmq
 		{
-			class NETWORK_XMQ_EXPORT XMQNode
+			//接收数据通知
+			//@_1 [out] : 节点ID
+			//@_2 [out] : 数据 
+			//@_3 [out] : 大小
+			//@_4 [out] : 数据源名称
+			typedef boost::function<void(const uint32_t, const void*, const uint64_t, const char*)> PolledDataCallback;
+			
+			class XMQNode
 			{
 			public:
-				XMQNode(void);
+				XMQNode(PolledDataCallback callback);
 				virtual ~XMQNode(void);
 
 			public:
-				//添加角色
-				//@conf [in] : 角色配置参数
-				//@Return : 错误码
-				int addConf(const XMQModeConf& conf);
-
-				//删除角色
-				//@id [in] : 角色ID
-				//@Return : 错误码
-				int removeConf(const uint32_t id = 0);
-
 				//运行
+				//conf [in] : 配置
+				//ctx [in] : XMQ上下文
 				//@Return : 错误码
-				virtual int run(void);
+				virtual int run(
+					const XMQNodeConf& conf, 
+					void* ctx = nullptr);
 
 				//停止
 				//@Return : 错误码
 				virtual int stop(void);
 
-				//发送数据
-				//@id [in] : 角色ID
+				//发送
 				//@data [in] : 数据
 				//@bytes [in] : 大小
-				//@to [out] : 数据目的地
+				//@name [in] : 接收端名称
 				//@Return : 错误码
 				virtual int send(
-					const uint32_t id = 0, 
 					const void* data = nullptr, 
 					const uint64_t bytes = 0, 
-					const char* to = nullptr);
-			
+					const char* name = nullptr) = 0;
+
 			protected:
-				//接收数据通知
-				//@id [out] : 角色ID
-				//@data [out] : 数据 
-				//@bytes [out] : 大小
-				//@from [out] : 数据来源
-				virtual void afterPolledDataNotification(
-					const uint32_t id = 0, 
-					const void* data = nullptr,  
-					const uint64_t bytes = 0, 
-					const char* from = nullptr) = 0;
+				//读取线程
+				virtual void pollDataThread(void) = 0;
 
-				//在线状态通知
-				//@online [out] : true表示在线，false表示离线
-				virtual void afterFetchOnlineStatusNotification(const bool online = false) = 0;
-
-				//服务信息通知
-				//@infos [out] : 服务信息集合 
-				//@number [out] : 服务个数
-				virtual void afterFetchServiceCapabilitiesNotification(
-					const ServiceInfo* infos = nullptr, 
-					const uint32_t number = 0) = 0;
+			protected:
+				void* poller;
+				bool stopped;
+				PolledDataCallback polledDataCallback;
 			};//class XMQNode
 		}//namespace xmq
 	}//namespace network

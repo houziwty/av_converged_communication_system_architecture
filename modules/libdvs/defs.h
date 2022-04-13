@@ -10,8 +10,8 @@
 //					1. 2022-01-27 由王科威创建
 //
 
-#ifndef MODULE_DEVICE_DVS_DEFS_H
-#define MODULE_DEVICE_DVS_DEFS_H
+#ifndef MODULE_DEVICE_DVS_LIB_DEFS_H
+#define MODULE_DEVICE_DVS_LIB_DEFS_H
 
 #include <cstdint>
 
@@ -27,8 +27,6 @@
 #define CALLBACK
 #endif//_WINDOWS
 
-typedef void* _thread_t;
-
 typedef enum class tagDVSFactoryType_t : uint32_t
 {
 	DVS_FACTORY_TYPE_NONE = 0,
@@ -36,24 +34,25 @@ typedef enum class tagDVSFactoryType_t : uint32_t
 	DVS_FACTORY_TYPE_DH
 }DVSFactoryType;
 
-typedef enum class tagDVSModelType_t : uint32_t
+typedef enum class tagDVSModuleType_t : uint32_t
 {
-	DVS_MODEL_TYPE_NONE = 0,
-	DVS_MODEL_TYPE_IPC
-}DVSModelType;
+	DVS_MODULE_TYPE_NONE = 0,
+	DVS_MODULE_TYPE_IPC,
+	DVS_MODULE_TYPE_DVR,
+	DVS_MODULE_TYPE_NVR,
+	DVS_MODULE_TYPE_XVR
+}DVSModuleType;
 
 //DVS设备配置
 typedef struct tagDVSModeConf_t
 {
-	char name[128];
     char user[128];
 	char passwd[128];
     char ip[128];
     uint16_t port;
     uint32_t id;                    //物理设备ID标识，0 < id，由调用者定义
-	uint32_t channels;				//设备通道个数，仅设备查询有效
     DVSFactoryType factory;
-	DVSModelType model;
+	DVSModuleType module;
 }DVSModeConf;
 
-#endif//MODULE_DEVICE_DVS_DEFS_H
+#endif//MODULE_DEVICE_DVS_LIB_DEFS_H

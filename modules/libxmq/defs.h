@@ -8,12 +8,13 @@
 //
 //		History:
 //					1. 2021-11-15 由王科威创建
-//                  2. 2021-12-30 由王科威修改  回调函数定义不能使用typedef void (CALLBACK *func)(...)的形式
-//					3. 2022-02-10 由王科威修改 添加服务ID
+//                  2. 2021-12-30 由王科威修改      回调函数定义不能使用typedef void (CALLBACK *func)(...)的形式
+//					3. 2022-02-10 由王科威修改      添加服务ID定义
+//                  3. 2022-04-07 由王科威修改      添加服务选项定义
 //
 
-#ifndef MODULE_NETWORK_XMQ_DEFS_H
-#define MODULE_NETWORK_XMQ_DEFS_H
+#ifndef MODULE_NETWORK_XMQ_LIB_DEFS_H
+#define MODULE_NETWORK_XMQ_LIB_DEFS_H
 
 #include <cstdint>
 
@@ -29,37 +30,65 @@
 #define CALLBACK
 #endif//_WINDOWS
 
-typedef void* xctx;
-typedef void* xsocket;
-typedef void* xthread;
-
-//XMQ角色类型
-typedef enum class tagXMQModeType_t : int
+//XMQ模式类型
+typedef enum class tagXMQModuleType_t : int
 {
-    XMQ_MODE_TYPE_NONE = 0,
-    XMQ_MODE_TYPE_ROUTER,
-    XMQ_MODE_TYPE_DEALER,
-    XMQ_MODE_TYPE_PUB,
-    XMQ_MODE_TYPE_SUB, 
-    XMQ_MODE_TYPE_REP
-}XMQModeType;
+    XMQ_MODULE_TYPE_NONE = 0, 
+    XMQ_MODULE_TYPE_DISPATCHER, 
+    XMQ_MODULE_TYPE_WORKER, 
+    XMQ_MODULE_TYPE_TASK, 
+    XMQ_MODULE_TYPE_PUB, 
+    XMQ_MODULE_TYPE_SUB
+}XMQModuleType;
 
-//XMQ角色配置
-typedef struct tagXMQModeConf_t
+//XMQ配置选项
+typedef struct tagXMQConfOption_t
+{
+    //  Set high water mark
+    //  The option shall set the high water mark for the specified socket. The high water 
+    //  mark is a hard limit on the maximum number of outstanding 
+    //  messages shall queue in memory for any single peer that the specified socket 
+    //  is communicating with.
+    uint64_t hwm;
+
+    //  For non-zero values, the lowest bit corresponds to thread 1, second lowest bit 
+    //  to thread 2 and so on. For example, a value of 3 specifies that subsequent 
+    //  connections on socket shall be handled exclusively by I/O threads 1 and 2.
+    uint64_t affinity;
+
+    //  The send buffer option shall set the underlying kernel transmit buffer size for 
+    //  the socket to the specified size in bytes. A value of zero means leave the OS 
+    //  default unchanged. For details please refer to your operating system documentation 
+    //  for the SO_SNDBUF socket option.
+    uint64_t sndbuf;
+
+    //  The recv buffer option shall set the underlying kernel receive buffer size for the 
+    //  socket to the specified size in bytes. A value of zero means leave the OS default 
+    //  unchanged. For details refer to your operating system documentation for the SO_RCVBUF 
+    //  socket option.
+    uint64_t rcvbuf;
+
+    //  The option shall set the initial reconnection interval for the specified socket. 
+    //  The reconnection interval is the period shall wait between attempts to reconnect 
+    //  disconnected peers when using connection-oriented transports.
+    //  The reconnection interval may be randomized by user to prevent reconnection storms in 
+    //  topologies with a large number of peers per socket.
+    //  Option value unit	milliseconds
+    int32_t reconivl;
+}XMQConfOption;
+
+//XMQ节点配置
+typedef struct tagXMQNodeConf_t
 {
     char name[128];
     char ip[32];
     uint16_t port;
-    uint32_t id;                    //角色ID标识，0 < id，由调用者定义
-    XMQModeType type;
-}XMQModeConf;
+    uint32_t id;                    //节点ID标识，0 < id，由调用者定义
+    XMQModuleType type;
+    XMQConfOption opt;
+}XMQNodeConf;
 
-//服务信息
-typedef struct tagServiceInfo_t
-{
-    char name[128];
-}ServiceInfo;
-
+//服务名称
 static const char* XMQHostID = "xmq_host_server";
 static const char* DVSHostID = "dvs_host_server";
 static const char* DatabaseHostID = "database_host_server";
@@ -72,4 +101,4 @@ static const char* TrafficBreakLawCacheID = "traffic_break_law_cache_server";
 static const char* VehicleDriveWarningCacheID = "vehicle_drive_warning_cache_server";
 static const char* VehicleDriveTipCacheID = "vehicle_drive_tip_cache_server";
 
-#endif//MODULE_NETWORK_XMQ_DEFS_H
+#endif//MODULE_NETWORK_XMQ_LIB_DEFS_H

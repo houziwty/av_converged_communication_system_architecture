@@ -4,7 +4,7 @@
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
 //		Date : 2021-11-28
-//		Description : URL封装解析
+//		Description : URL解析
 //
 //		History:
 //					1. 2021-11-28 由王科威创建
@@ -15,7 +15,6 @@
 
 #include <string>
 #include <vector>
-//#include "any/any.h"
 
 namespace framework
 {
@@ -26,7 +25,6 @@ namespace framework
             typedef struct tagParameter_t
             {
                 std::string key;
-                //Any value;
                 std::string value;
             }Parameter;
 
@@ -42,10 +40,6 @@ namespace framework
                 //@bytes [in] : 大小
                 //@Return : 错误码
                 int parse(const void* data = nullptr, const uint64_t bytes = 0);
-
-                //封装
-                //@Return : URL
-//                const Any& encode(void);
 
                 //获取协议名称
                 //@Return : 协议名称
@@ -99,21 +93,6 @@ namespace framework
                 {
                     return _params;
                 }
-
-                //添加参数项
-                //@key [in] : 键
-                //@data [in] : 数据
-                //@bytes [in] : 大小
-                //@Return : 错误码
-                // int addItem(
-                //     const std::string key, 
-                //     const void* data = nullptr, 
-                //     const uint64_t bytes = 0);
-
-                //删除参数项
-                //@key [in] : 键
-                //@Return : 错误码
-//                int removeItem(const std::string key);
 
             private:
                 std::string _proto;

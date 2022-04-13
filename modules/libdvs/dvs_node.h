@@ -3,18 +3,20 @@
 //
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
-//		Date : 2022-01-27
-//		Description : DVS节点
-//					  多物理设备管理
+//		Date : 2021-12-10
+//		Description : DVS设备
 //
 //		History:
-//					1. 2022-01-27 由王科威创建
+//					1. 2021-12-10 由王科威创建
 //
 
 #ifndef MODULE_DEVICE_DVS_DVS_NODE_H
 #define MODULE_DEVICE_DVS_DVS_NODE_H
 
-#include "defs.h"
+#include "boost/function.hpp"
+#include "ability/enable_login_logout.h"
+#include "ability/enable_catch_exception.h"
+#include "ability/enable_realplay_stream.h"
 
 namespace module
 {
@@ -22,57 +24,48 @@ namespace module
 	{
 		namespace dvs
 		{
-			class DEVICE_DVS_EXPORT DVSNode
+			//音视频流数据回调
+			//@_1 : 设备ID
+			//@_2 : 通道ID
+			//@_3 : 数据类型
+			//@_4 : 数据
+			//@_5 : 数据大小
+			typedef boost::function<void(const uint32_t, const int32_t, const uint32_t, const void*, const uint32_t)> PolledDataCallback;
+
+			//设备异常回调
+			//@_1 : 设备ID
+			//@_2 : 错误码
+			typedef boost::function<void(const uint32_t, const int32_t)> PolledExceptionCallback;
+
+			class DVSNode : 
+				protected EnableLoginAndLogout, 
+				protected EnableCatchException, 
+				protected EnableRealplayStream
 			{
 			public:
-				DVSNode(void);
+				DVSNode(
+					PolledDataCallback data, 
+					PolledExceptionCallback exception);
 				virtual ~DVSNode(void);
 
 			public:
-				//添加设备
-				//@conf [in] : 设备配置参数
+				//运行
+				//@conf [in] : 设备配置
 				//@Return : 错误码
-				int addConf(const DVSModeConf& conf);
+				int run(const DVSModeConf& conf);
 
-				//删除设备
-				//@id [in] : 设备ID
+				//停止
 				//@Return : 错误码
-				int removeConf(const uint32_t id = 0);
-
-				//获取所有设备配置集
-				//@confs [in,out] : 设备配置集
-				//@number [in,out] : 设备个数
-				//@Return : 错误码
-				int queryConfs(DVSModeConf*& confs, uint32_t& number);
-
-				//查询设备配置
-				//@id [in] : 设备ID
-				//@Return : 设备配置
-				const DVSModeConf queryConf(const uint32_t id = 0);
-
-				//运行设备
-				//@id [in] : 设备ID
-				//@Return : 错误码
-				virtual int run(const uint32_t id = 0);
-
-				//停止设备
-				//@id [in] : 设备ID
-				//@Return : 错误码
-				virtual int stop(const uint32_t id = 0);
+				int stop(void);
 
 			protected:
-				//实时流数据通知
-				//@id [out] : 设备ID
-				//@channel [out] : 通道号，从1开始计数
-				//@type [out] : 数据类型
-				//@data [out] : 数据 
-				//@bytes [out] : 大小
-				virtual void afterPolledRealplayDataNotification(
-					const uint32_t id = 0, 
-					const int32_t channel = 0, 
-					const uint32_t type = 0, 
-					const void* data = nullptr, 
-					const uint32_t bytes = 0) = 0;
+				DVSModuleType module;
+				uint32_t did;
+				int64_t uid;
+				//Max support channel number is 64.
+				int64_t cid[64];
+				PolledDataCallback polledDataCallback;
+				PolledExceptionCallback polledExceptionCallback;
 			};//class DVSNode
 		}//namespace dvs
 	}//namespace device

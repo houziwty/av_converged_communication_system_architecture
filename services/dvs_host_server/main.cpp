@@ -1,13 +1,14 @@
-#include "boost/make_shared.hpp"
 #include "error_code.h"
 #include "commandline/commandline.h"
 using namespace framework::utils::parser;
 #include "memory/xstr.h"
 using namespace framework::utils::memory;
-#include "dvs_host_server.h"
+#include "server.h"
 
 int main(int argc, char* argv[])
 {
+    FileLog log;
+    log.createNew("", false);
     CommandLineParser parser;
     parser.setOption("xmq_addr", "");
     parser.setOption("xmq_port", "");
@@ -20,20 +21,14 @@ int main(int argc, char* argv[])
         XMQModeConf conf{0};
         conf.id = 0xB1;
         conf.port = atoi(xmq_port.c_str());
-        conf.type = XMQModeType::XMQ_MODE_TYPE_DEALER;
-        XStr xstr;
-		xstr.copy(name.c_str(), name.length(), conf.name, 128);
-		xstr.copy(xmq_addr.c_str(), xmq_addr.length(), conf.ip, 32);
+        conf.type = XMQModuleType::XMQ_MODULE_TYPE_TASK;
+		XStr().copy(name.c_str(), name.length(), conf.name, 128);
+		XStr().copy(xmq_addr.c_str(), xmq_addr.length(), conf.ip, 32);
 
-        boost::shared_ptr<XMQNode> node{
-            boost::make_shared<DvsHostServer>(conf)};
-        if(node && Error_Code_Success == node->addConf(conf))
-        {
-            node->run();
-            getchar();
-			node->removeConf(conf.id);
-            node->stop();
-        }
+        Server svr(log);
+        svr.run(conf);
+        getchar();
+        svr.stop();
     }
 
     return 0;

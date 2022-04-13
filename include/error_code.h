@@ -43,10 +43,14 @@ static const int Error_Code_Device_Login_Failure = -2002;
 static const int Error_Code_Device_Logout_Failure = -2003;
 static const int Error_Code_Stream_Open_Failure = -2004;
 static const int Error_Code_Stream_Close_Failure = -2005;
+static const int Error_Code_Catch_Device_Exception = -2006;
+static const int Error_Code_Catch_Device_Exception_Resume = -2007;
+static const int Error_Code_Catch_Device_Exception_Ignore = -2008;
 
 //解析
 static const int Error_Code_Invalid_Flag = -3000;
-static const int Error_Code_Out_Of_Range = -3001;
+static const int Error_Code_Invalid_URL = -3001;
+static const int Error_Code_Out_Of_Range = -3002;
 
 //文件
 static const int Error_Code_File_Open_Failure = -4000;

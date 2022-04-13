@@ -1,165 +1,44 @@
 #include "boost/bind/bind.hpp"
 using namespace boost::placeholders;
-#include "boost/make_shared.hpp"
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include "zmq.h"
-#ifdef __cplusplus
-}
-#endif
-#include "map/unordered_map.h"
 #include "error_code.h"
-#include "xmq/ctx.h"
-#include "service_discover.h"
-#include "service_vendor.h"
-#include "data_pub.h"
-#include "data_sub.h"
+#include "thread/thread_pool.h"
+using namespace framework::utils::thread;
 #include "xmq_node.h"
 using namespace module::network::xmq;
 
-using AsyncNodePtr = boost::shared_ptr<AsyncNode>;
-static UnorderedMap<const int, AsyncNodePtr> nodes;
-static xctx ctx{nullptr};
-
-XMQNode::XMQNode()
-{
-	ctx = Ctx().createNew();
-}
+XMQNode::XMQNode(PolledDataCallback callback) 
+	: poller{nullptr}, stopped{false}, polledDataCallback{callback}
+{}
 
 XMQNode::~XMQNode()
 {
 	stop();
-	Ctx().destroy(ctx);
-	nodes.clear();
 }
 
-int XMQNode::addConf(const XMQModeConf& conf)
+int XMQNode::run(
+	const XMQNodeConf& conf, 
+	void* ctx/* = nullptr*/)
 {
-	int ret{ctx && 0 < conf.id ? Error_Code_Success : Error_Code_Operate_Failure};
+	int ret{0 < conf.id ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
-		ret = (
-			XMQModeType::XMQ_MODE_TYPE_NONE < conf.type && conf.name && conf.ip && 0 < conf.port && 0 < conf.id ? 
-			Error_Code_Success : 
-			Error_Code_Invalid_Param);
-
-		if (Error_Code_Success == ret)
-		{
-			AsyncNodePtr node;
-
-			if (XMQModeType::XMQ_MODE_TYPE_ROUTER == conf.type)
-			{
-				node = boost::make_shared<ServiceDiscover>(
-					conf, 
-					boost::bind(&XMQNode::afterPolledDataNotification, this, _1, _2, _3, _4));
-			}
-			else if (XMQModeType::XMQ_MODE_TYPE_DEALER == conf.type)
-			{
-				node = boost::make_shared<ServiceVendor>(
-					conf,
-					boost::bind(&XMQNode::afterPolledDataNotification, this, _1, _2, _3, _4), 
-					boost::bind(&XMQNode::afterFetchOnlineStatusNotification, this, _1), 
-					boost::bind(&XMQNode::afterFetchServiceCapabilitiesNotification, this, _1, _2));
-			}
-			else if (XMQModeType::XMQ_MODE_TYPE_PUB == conf.type)
-			{
-				node = boost::make_shared<DataPub>(conf);
-			}
-			else if (XMQModeType::XMQ_MODE_TYPE_SUB == conf.type)
-			{
-				node = boost::make_shared<DataSub>(
-					conf, 
-					boost::bind(&XMQNode::afterPolledDataNotification, this, _1, _2, _3, _4));
-			}
-
-			if (node)
-			{
-				nodes.add(conf.id, node);
-			}
-			else
-			{
-				ret = Error_Code_Bad_New_Object;
-			}
-		}
+		poller = ThreadPool().get_mutable_instance().createNew(
+			boost::bind(&XMQNode::pollDataThread, this));
+		ret = (poller ? Error_Code_Success : Error_Code_Bad_New_Thread);
 	}
-
-	return ret;
-}
-
-int XMQNode::removeConf(const uint32_t id/* = 0*/)
-{
-	int ret{ctx && 0 < id ? Error_Code_Success : Error_Code_Operate_Failure};
-
-	if (Error_Code_Success == ret)
-	{
-		AsyncNodePtr node{nodes.at(id)};
-
-		if (node)
-		{
-			ret = node->stop();
-			nodes.remove(id);
-		}
-	}
-
-	return ret;
-}
-
-int XMQNode::run()
-{
-	int ret{ctx ? Error_Code_Success : Error_Code_Operate_Failure};
-
-	if (Error_Code_Success == ret)
-	{
-		std::vector<AsyncNodePtr> items{ nodes.values()};
-		for (int i = 0; i != items.size(); ++i)
-		{
-			if (items[i])
-			{
-				items[i]->run(ctx);
-			}
-		}
-	}
-
+	
 	return ret;
 }
 
 int XMQNode::stop()
 {
-	int ret{ctx ? Error_Code_Success : Error_Code_Operate_Failure};
+	int ret{!stopped ? Error_Code_Success : Error_Code_Operate_Failure};
 
 	if (Error_Code_Success == ret)
 	{
-		std::vector<AsyncNodePtr> items{ nodes.values()};
-		for (int i = 0; i != items.size(); ++i)
-		{
-			if (items[i])
-			{
-				items[i]->stop();
-			}
-		}
-	}
-
-	return ret;
-}
-
-int XMQNode::send(
-	const uint32_t id/* = 0*/, 
-	const void* data/* = nullptr*/, 
-	const uint64_t bytes/* = 0*/, 
-	const char* to/* = nullptr*/)
-{
-	int ret{ctx ? Error_Code_Success : Error_Code_Operate_Failure};
-
-	if(Error_Code_Success == ret)
-	{
-		AsyncNodePtr node{ nodes.at(id)};
-
-		if (node)
-		{
-			ret = node->send(data, bytes, to);
-		}
+		stopped = true;
+		ThreadPool().get_mutable_instance().destroy(poller);
 	}
 
 	return ret;
