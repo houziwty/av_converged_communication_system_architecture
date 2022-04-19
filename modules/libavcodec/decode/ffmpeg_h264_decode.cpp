@@ -6,15 +6,14 @@ extern "C"
 #include "libavutil/imgutils.h"
 }
 #endif//__cplusplus
-#include "av_pkt.h"
+#include "libavpkt.h"
 #include "error_code.h"
 #include "ffmpeg_h264_decode.h"
 using namespace module::av::stream;
 
 FFmpegH264Decode::FFmpegH264Decode(
-    AVCodecDataCallback callback, 
-	const uint32_t id/* = 0*/) 
-    : AVcodec(callback, id), ctx{nullptr}, codec{nullptr}, 
+    AVCodecDataCallback callback, const uint32_t id/* = 0*/) 
+    : AVcodecNode(callback, id), ctx{nullptr}, codec{nullptr}, 
     iframe{nullptr}, oframe{nullptr}, obuffer{nullptr}, obytes{0}
 {}
 
@@ -23,12 +22,13 @@ FFmpegH264Decode::~FFmpegH264Decode()
     uninit();
 }
 
-int FFmpegH264Decode::input(const AVPkt* avpkt/* = nullptr*/)
+int FFmpegH264Decode::input(const void* avpkt/* = nullptr*/)
 {
     int ret{avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
 
     if(Error_Code_Success == ret && Error_Code_Success == init(avpkt))
     {
+		Libavpkt* inpkt{reinterpret_cast<Libavpkt*>((void*)avpkt)};
 		AVPacket* pkt{ av_packet_alloc() };
 		if (!pkt)
 		{
@@ -36,8 +36,8 @@ int FFmpegH264Decode::input(const AVPkt* avpkt/* = nullptr*/)
 		}
 		else
 		{
-			pkt->data = (uint8_t*)avpkt->data();
-			pkt->size = avpkt->bytes();
+			pkt->data = (uint8_t*)inpkt->data();
+			pkt->size = inpkt->bytes();
 		}
 
 		if (0 > avcodec_send_packet((AVCodecContext*)ctx, pkt))
@@ -45,8 +45,8 @@ int FFmpegH264Decode::input(const AVPkt* avpkt/* = nullptr*/)
 			return Error_Code_Operate_Failure;
 		}
 
-		const uint32_t w{ avpkt->width() }, h{ avpkt->height() };
-		const uint64_t seq{ avpkt->sequence() }, ts{ avpkt->timestamp() };
+		const uint32_t w{ inpkt->width() }, h{ inpkt->height() };
+		const uint64_t seq{ inpkt->sequence() }, ts{ inpkt->timestamp() };
 		AVCodecContext* avcodecctx{ reinterpret_cast<AVCodecContext*>(ctx) };
 		AVFrame* output_frame{ reinterpret_cast<AVFrame*>(oframe) };
 
@@ -61,15 +61,15 @@ int FFmpegH264Decode::input(const AVPkt* avpkt/* = nullptr*/)
 
 			av_image_copy_to_buffer(
 				obuffer, obytes, output_frame->data, output_frame->linesize, AV_PIX_FMT_YUV420P, w, h, 1);
-			AVPkt _avpkt_{ 
+			Libavpkt outpkt{ 
 				AVMainType::AV_MAIN_TYPE_VIDEO, 
 				AVSubType::AV_SUB_TYPE_YUV420P, 
 				seq, ts, w, h };
-			_avpkt_.input(obuffer, obytes);
+			outpkt.input(obuffer, obytes);
 
 			if (avcodecDataCallback)
 			{
-				avcodecDataCallback(cid, &_avpkt_);
+				avcodecDataCallback(cid, &outpkt);
 			}
 		}
 
@@ -79,13 +79,14 @@ int FFmpegH264Decode::input(const AVPkt* avpkt/* = nullptr*/)
     return ret;
 }
 
-int FFmpegH264Decode::init(const AVPkt* avpkt /* = nullptr */)
+int FFmpegH264Decode::init(const void* avpkt /* = nullptr */)
 {
     int ret{avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
 
     if (Error_Code_Success == ret)
     {
-        const uint32_t w{ avpkt->width() }, h{ avpkt->width() };
+		Libavpkt* inpkt{reinterpret_cast<Libavpkt*>((void*)avpkt)};
+        const uint32_t w{ inpkt->width() }, h{ inpkt->width() };
         AVCodecContext* avcodecctx{ reinterpret_cast<AVCodecContext*>(ctx) };
 		AVCodec* avcodec{ reinterpret_cast<AVCodec*>(codec) };
         

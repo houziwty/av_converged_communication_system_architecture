@@ -14,7 +14,7 @@
 #define MODULE_AV_STREAM_PS_PARSER_H
 
 #include "av/sps/sps_parser.h"
-#include "av_parser.h"
+#include "av_parser_node.h"
 
 namespace module
 {
@@ -22,7 +22,7 @@ namespace module
 	{
 		namespace stream
 		{
-            class PSParser : public AVParser
+            class PSParser : public AVParserNode
             {
             public:
                 PSParser(
@@ -31,7 +31,7 @@ namespace module
                 virtual ~PSParser(void);
 
             public:
-                int input(const AVPkt* avpkt = nullptr) override;
+                int input(const void* avpkt = nullptr) override;
 
             private:
                 //PS数据解析回调

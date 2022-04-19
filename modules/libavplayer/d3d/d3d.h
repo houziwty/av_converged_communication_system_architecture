@@ -15,7 +15,7 @@
 
 #include <d3d9.h>
 #include "av/d3dx9/d3dx9core.h"
-#include "av_player.h"
+#include "av_player_node.h"
 
 namespace module
 {
@@ -42,7 +42,7 @@ namespace module
 				AVDrawParam* areas;
 			}ExtendDrawInfo;
 
-			class D3D : public AVPlayer
+			class D3D : public AVPlayerNode
 			{
 			public:
 				D3D(
@@ -52,12 +52,12 @@ namespace module
 				~D3D(void);
 
 			public:
-				int input(const AVPkt* avpkt = nullptr) override;
+				int input(const void* avpkt = nullptr) override;
 
 			private:
-				int init(const AVPkt* avpkt = nullptr);
+				int init(const void* avpkt = nullptr);
 				int uninit(void);
-				int draw(const AVPkt* avpkt = nullptr);
+				int draw(const void* avpkt = nullptr);
 
 			private:
 				const void* displayHwnd;

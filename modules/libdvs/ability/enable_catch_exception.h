@@ -13,7 +13,6 @@
 #ifndef MODULE_DEVICE_DVS_ENABLE_CATCH_EXCEPTION_H
 #define MODULE_DEVICE_DVS_ENABLE_CATCH_EXCEPTION_H
 
-#include "defs.h"
 #include "error_code.h"
 
 namespace module

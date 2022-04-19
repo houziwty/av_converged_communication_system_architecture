@@ -13,8 +13,6 @@
 #ifndef MODULE_DEVICE_DVS_ENABLE_LOGIN_AND_LOGOUT_H
 #define MODULE_DEVICE_DVS_ENABLE_LOGIN_AND_LOGOUT_H
 
-#include "defs.h"
-
 namespace module
 {
 	namespace device

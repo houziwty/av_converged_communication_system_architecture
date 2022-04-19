@@ -1,5 +1,5 @@
 #include "boost/checked_delete.hpp"
-#include "av_pkt.h"
+#include "libavpkt.h"
 #include "error_code.h"
 #include "memory/xmem.h"
 using namespace framework::utils::memory;
@@ -10,7 +10,7 @@ BufferParser::BufferParser(
 	ParsedDataCallback callback, 
 	const uint32_t id/* = 0*/, 
 	const uint64_t bytes/* = 3 * 1024 * 1024*/)
-	: AVParser(callback, id), bufSize{ bytes }, pos{ 0 }, buffer{nullptr}
+	: AVParserNode(callback, id), bufSize{ bytes }, pos{ 0 }, buffer{nullptr}
 {
 	buffer = new(std::nothrow) uint8_t[bufSize];
 }
@@ -20,15 +20,16 @@ BufferParser::~BufferParser()
 	boost::checked_array_delete(reinterpret_cast<uint8_t*>(buffer));
 }
 
-int BufferParser::input(const AVPkt* avpkt/* = nullptr*/)
+int BufferParser::input(const void* avpkt/* = nullptr*/)
 {
 	int ret{avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
+		Libavpkt* pkt{reinterpret_cast<Libavpkt*>((void*)avpkt)};
 		const uint8_t* data{
-			reinterpret_cast<const uint8_t*>(avpkt->data())};
-		const uint64_t bytes{avpkt->bytes()};
+			reinterpret_cast<const uint8_t*>(pkt->data())};
+		const uint64_t bytes{pkt->bytes()};
 
 		//从数据缓存第一个字节开始解析
 		//首先检查数据头是否是帧头标志
@@ -120,7 +121,7 @@ int BufferParser::parse()
 
 		if (parsedDataCallback)
 		{
-			AVPkt avpkt{
+			Libavpkt avpkt{
 				static_cast<AVMainType>(*maintype),
 				static_cast<AVSubType>(*subtype),
 				*sequence, 

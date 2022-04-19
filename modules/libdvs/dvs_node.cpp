@@ -6,9 +6,7 @@ DVSNode::DVSNode(
     PolledExceptionCallback exception) 
     : polledDataCallback{data}, polledExceptionCallback{exception}, 
     did{0}, uid{-1}, module{DVSModuleType::DVS_MODULE_TYPE_NONE}
-{
-    memset(cid, -1, 64 * sizeof(int64_t));
-}
+{}
 
 DVSNode::~DVSNode()
 {
@@ -26,10 +24,16 @@ int DVSNode::run(const DVSModeConf& conf)
 
         if (-1 < uid)
         {
-            //Try to open all live stream of channels at once.
-            for (int i = 0; i != 64; ++i)
+            if (Error_Code_Success == getChanNum(uid, chanNums))
             {
-                cid[i] = openRealplayStream(uid, i);
+                for (int i = 0; i != chanNums.size(); ++i)
+                {
+                    int64_t sid{openRealplayStream(uid, chanNums[i])};
+                    if (-1 < sid)
+                    {
+                        sids.push_back(sid);
+                    }
+                }
             }
             
             did = conf.id;
@@ -49,15 +53,14 @@ int DVSNode::stop()
 
     if (Error_Code_Success == ret)
     {
-        //Try to close all live stream of channels at once.
-        for (int i = 0; i != 64; ++i)
+        for (int i = 0; i != sids.size(); ++i)
         {
-            if (-1 < cid[i])
+            if (-1 < sids[i])
             {
-                closeRealplayStream(cid[i]);
-                cid[i] = -1;
+                closeRealplayStream(sids[i]);
             }
         }
+        sids.clear();
 
         ret = logout(uid);
         if (Error_Code_Success == ret)

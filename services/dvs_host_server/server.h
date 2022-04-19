@@ -15,9 +15,7 @@
 
 #include "boost/atomic.hpp"
 #include "boost/shared_ptr.hpp"
-#include "lock/rw_lock.h"
-using namespace framework::utils::lock;
-#include "file_log.h"
+#include "libfilelog.h"
 using namespace module::file::log;
 #include "libasio.h"
 using namespace module::network::asio;
@@ -25,23 +23,28 @@ using namespace module::network::asio;
 using namespace module::network::xmq;
 #include "libdvs.h"
 using namespace module::device::dvs;
+#include "libavparser.h"
+using namespace module::av::stream;
 #include "session.h"
 #include "map/unordered_map.h"
 
-using DVSStreamSessionPtr = boost::shared_ptr<DvsStreamSession>;
-using DVSStreamSessionPtrs = UnorderedMap<const uint32_t, DVSStreamSessionPtr>;
-using AVFrameIDs = UnorderedMap<const std::string, uint64_t>;
+using SessionPtr = boost::shared_ptr<Session>;
+using StreamSessions = UnorderedMap<const std::string, SessionPtr>;
 
 class Server final 
-    : protected Libxmq, protected Libasio, protected Libdvs
+    : protected Libxmq, protected Libasio, protected Libdvs, protected Libavparser
 {
 public:
     Server(FileLog& flog);
     ~Server(void);
 
 public:
-	int run(const XMQModeConf& conf);
+	int run(const XMQNodeConf& conf);
 	int stop(void);
+    int sendframe(
+        const uint32_t id = 0, 
+        const void* data = nullptr, 
+        const uint64_t bytes = 0);
 
 protected:
 	void afterPolledXMQDataNotification(
@@ -76,53 +79,35 @@ protected:
     void afterPolledDVSExceptionNotification(
         const uint32_t id = 0, 
         const int32_t error = 0) override;
+    void afterParsedDataNotification(
+        const uint32_t id = 0, 
+        const void* avpkt = nullptr) override;
 
-private:    
-    //处理配置请求
-    //@name [in] : 源ID
-	//@req [in] : 请求JSON
+private:
 	void processConfigRequest(
         const char* name = nullptr, 
         const char* req = nullptr);
-
-    //新增设备
-    //@from [in] : 源ID
-    //@json [in] : 设备JSON描述
-    //@Return ：错误码
-    int add(
-        const std::string& from, 
+    int addDVS(
         const std::string& factory, 
-        const std::string& name, 
         const std::string& ip, 
         const std::string& port, 
         const std::string& user, 
         const std::string& passwd, 
+        const std::string& from, 
+        const std::string& name, 
         const std::string& timestamp);
-
-    //删除设备
-    //@from [in] : 源ID
-    //@json [in] : 设备ID
-    //@Return ：错误码
-    int remove(
+    int removeDVS(
         const std::string& from, 
         const std::string& id, 
         const std::string& timestamp);
-
-    //查询设备集合
-    //@from [in] : 源ID
-    //@json [in] : 设备JSON描述
-    //@Return ：错误码
-    int query(const std::string& from, const std::string& json);
 
 private:
     FileLog& log;
     uint32_t xid;
     const std::string logid;
-    boost::atomic_int deviceNumber;
-    uint32_t streamNumber;
-    SharedMutex mtx;
-    DVSStreamSessionPtrs sessions;
-    AVFrameIDs fids;
+    boost::atomic_int did;
+    boost::atomic_int sid;
+    StreamSessions sss;
 };//class Server
 
 #endif//SERVICE_DVS_HOST_SERVER_H

@@ -3,7 +3,7 @@
 #include "glog/logging.h"
 #include "boost/filesystem.hpp"
 #include "error_code.h"
-#include "file_log.h"
+#include "libfilelog.h"
 using namespace module::file::log;
 
 static std::string logDir{""};

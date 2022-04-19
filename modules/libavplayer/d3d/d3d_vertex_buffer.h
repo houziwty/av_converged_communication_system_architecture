@@ -15,7 +15,7 @@
 
 #include <d3d9.h>
 #include "av/d3dx9/d3dx9math.h"
-#include "defs.h"
+#include "libavplayer_defs.h"
 
 namespace module
 {

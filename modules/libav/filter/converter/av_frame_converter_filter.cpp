@@ -5,7 +5,7 @@ using namespace module::av::stream;
 
 AVFrameConverterFilter::AVFrameConverterFilter(
 	const AVFilterType type /* = AVFilterType::AV_FILTER_TYPE_NONE */)
-	: AVFilter(type), AVCodecNode(), offset{ 10000 }
+	: AVFilter(type), Libavcodec(), offset{ 10000 }
 {}
 
 AVFrameConverterFilter::~AVFrameConverterFilter()
@@ -28,7 +28,7 @@ int AVFrameConverterFilter::createNew(const AVModeConf& conf)
 		}
 		
 		AVCodecModeConf codecConf{ conf.id + offset, type };
-		ret = AVCodecNode::addConf(codecConf);
+		ret = Libavcodec::addConf(codecConf);
 
 		if (Error_Code_Success == ret)
 		{
@@ -41,24 +41,23 @@ int AVFrameConverterFilter::createNew(const AVModeConf& conf)
 
 int AVFrameConverterFilter::destroy(const uint32_t id /* = 0 */)
 {
-	int ret{AVCodecNode::removeConf(id + offset)};
+	int ret{Libavcodec::removeConf(id + offset)};
 	return Error_Code_Success == ret ? AVFilter::destroy() : ret;
 }
 
 int AVFrameConverterFilter::input(
 	const uint32_t id /* = 0 */, 
-	const AVPkt* avpkt /* = nullptr */)
+	const void* avpkt /* = nullptr */)
 {
-	return AVCodecNode::input(id + offset, avpkt);
+	return Libavcodec::input(id + offset, avpkt);
 }
 
 void AVFrameConverterFilter::afterCodecDataNotification(
 	const uint32_t id/* = 0*/,  
-	const AVPkt* avpkt/* = nullptr*/)
+	const void* avpkt/* = nullptr*/)
 {
 	if (0 < id && avpkt)
 	{
-		//���ݴ���Ҫ��ȥƫ����
 		AVFilter::input(id - offset, avpkt);
 	}
 }

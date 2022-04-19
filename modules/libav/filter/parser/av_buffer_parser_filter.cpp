@@ -5,7 +5,7 @@ using namespace module::av::stream;
 
 AVBufferParserFilter::AVBufferParserFilter(
 	const AVFilterType type/* = AVFilterType::AV_FILTER_TYPE_NONE*/) 
-	: AVFilter(type), AVParserNode()
+	: AVFilter(type), Libavparser()
 {}
 
 AVBufferParserFilter::~AVBufferParserFilter()
@@ -18,7 +18,7 @@ int AVBufferParserFilter::createNew(const AVModeConf& conf)
 	if (Error_Code_Success == ret)
 	{
 		AVParserModeConf parserConf{ conf.id, AVParserType::AV_PARSER_TYPE_BUFFER_PARSER };
-		ret = AVParserNode::addConf(parserConf);
+		ret = Libavparser::addConf(parserConf);
 
 		if (Error_Code_Success == ret)
 		{
@@ -31,20 +31,20 @@ int AVBufferParserFilter::createNew(const AVModeConf& conf)
 
 int AVBufferParserFilter::destroy(const uint32_t id /* = 0 */)
 {
-	int ret{AVParserNode::removeConf(id)};
+	int ret{Libavparser::removeConf(id)};
 	return Error_Code_Success == ret ? AVFilter::destroy() : ret;
 }
 
 int AVBufferParserFilter::input(
 	const uint32_t id /* = 0 */, 
-	const AVPkt* avpkt /* = nullptr */)
+	const void* avpkt /* = nullptr */)
 {
-	return AVParserNode::input(id, avpkt);
+	return Libavparser::input(id, avpkt);
 }
 
 void AVBufferParserFilter::afterParsedDataNotification(
 	const uint32_t id/* = 0*/,  
-	const AVPkt* avpkt/* = nullptr*/)
+	const void* avpkt/* = nullptr*/)
 {
 	if (0 < id && avpkt)
 	{

@@ -10,10 +10,10 @@
 //					1. 2021-12-14 由王科威创建
 //
 
-#ifndef MODULE_AV_STREAM_AV_PKT_H
-#define MODULE_AV_STREAM_AV_PKT_H
+#ifndef MODULE_AV_STREAM_LIB_AV_PKT_H
+#define MODULE_AV_STREAM_LIB_AV_PKT_H
 
-#include "defs.h"
+#include "libavpkt_defs.h"
 
 namespace module
 {
@@ -21,21 +21,21 @@ namespace module
     {
         namespace stream
         {
-            class AV_PKT_EXPORT AVPkt
+            class AV_PKT_EXPORT Libavpkt
             {
             public:
                 //@mainType [in] : 主类型
 				//@subType [in] : 子类型
 				//@sequence [in] : 序列号
                 //@timestamp [in] : 时间戳
-                AVPkt(
+                Libavpkt(
                     const AVMainType mainType = AVMainType::AV_MAIN_TYPE_NONE, 
                     const AVSubType subType = AVSubType::AV_SUB_TYPE_NONE, 
                     const uint64_t sequence = 0, 
                     const uint64_t timestamp = 0, 
                     const uint32_t w = 0, 
                     const uint32_t h = 0);
-                virtual ~AVPkt(void);
+                virtual ~Libavpkt(void);
 
             public:
                 //输入数据
@@ -112,9 +112,9 @@ namespace module
                 uint64_t avpktDataBytes;
                 const uint32_t pixelWidth;
                 const uint32_t pixelHeight;
-            };//class AVPkt
+            };//class Libavpkt
         }//namespace stream
     }//namespace av
 }//namespace module
 
-#endif//MODULE_AV_STREAM_AV_PKT_H
+#endif//#define MODULE_AV_STREAM_LIB_AV_PKT_H

@@ -1,4 +1,4 @@
-#include "av_pkt.h"
+#include "libavpkt.h"
 #include "error_code.h"
 #include "d3d_device.h"
 #include "d3d_pixel_shader.h"
@@ -13,7 +13,7 @@ D3D::D3D(
 	const uint32_t id /* = 0 */, 
 	void* hwnd /* = nullptr */, 
 	ExtendDrawInfo* areas /* = nullptr */)
-	: AVPlayer(id), displayHwnd{ hwnd }, extendDrawInfo{areas}, d3d9{ nullptr }, d3d9Device{ nullptr },
+	: AVPlayerNode(id), displayHwnd{ hwnd }, extendDrawInfo{areas}, d3d9{ nullptr }, d3d9Device{ nullptr },
 	d3d9PixelShader{ nullptr }, d3d9VertexBuffer{ nullptr }, d3dxFont{ nullptr }, d3dxLine{nullptr},
 	width{ 0 }, height{ 0 }
 {
@@ -25,7 +25,7 @@ D3D::~D3D()
 	uninit();
 }
 
-int D3D::input(const AVPkt* avpkt /* = nullptr */)
+int D3D::input(const void* avpkt /* = nullptr */)
 {
 	int ret{ avpkt ? Error_Code_Success : Error_Code_Invalid_Param };
 
@@ -37,13 +37,14 @@ int D3D::input(const AVPkt* avpkt /* = nullptr */)
 	return ret;
 }
 
-int D3D::init(const AVPkt* avpkt /* = nullptr */)
+int D3D::init(const void* avpkt /* = nullptr */)
 {
 	int ret{ avpkt ? Error_Code_Success : Error_Code_Invalid_Param };
 
 	if (Error_Code_Success == ret)
 	{
-		const uint32_t w{ avpkt->width() }, h{ avpkt->height() };
+		Libavpkt* pkt{reinterpret_cast<Libavpkt*>((void*)avpkt)};
+		const uint32_t w{ pkt->width() }, h{ pkt->height() };
 
 		if (0 < w && 0 < h)
 		{
@@ -125,10 +126,11 @@ int D3D::uninit(void)
 	return Error_Code_Success;
 }
 
-int D3D::draw(const AVPkt* avpkt /* = nullptr */)
+int D3D::draw(const void* avpkt /* = nullptr */)
 {
 	uint32_t u_pos{ width * height }, v_pos{ u_pos * 5 / 4 };
-	const uint8_t* data{ reinterpret_cast<const uint8_t*>(avpkt->data()) };
+	Libavpkt* pkt{reinterpret_cast<Libavpkt*>((void*)avpkt)};
+	const uint8_t* data{ reinterpret_cast<const uint8_t*>(pkt->data()) };
 
 	d3d9Device->BeginScene();
 	d3d9Device->SetStreamSource(0, d3d9VertexBuffer, 0, sizeof(D3DVertex));

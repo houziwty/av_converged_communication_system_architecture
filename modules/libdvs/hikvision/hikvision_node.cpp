@@ -97,6 +97,51 @@ int HikvisionNode::closeRealplayStream(const int64_t sid/* = 0*/)
 	return ret;
 }
 
+int HikvisionNode::getChanNum(
+	const int64_t uid, 
+	std::vector<int64_t>& chanNums)
+{
+	int ret{-1 < uid ? Error_Code_Success : Error_Code_Invalid_Param};
+
+	if(Error_Code_Success == ret)
+	{
+		DWORD err{0};
+		NET_DVR_DEVICEINFO_V40 devinfo{0};
+		NET_DVR_IPPARACFG_V40 ipparamcfg{ 0 };
+		
+		if (NET_DVR_GetDVRConfig(uid, NET_DVR_GET_DEVICECFG_V40, 0, &devinfo, sizeof(NET_DVR_DEVICEINFO_V40), &err))
+		{
+			for(int i = 0; i != devinfo.struDeviceV30.byChanNum; ++i)
+			{
+				chanNums.push_back(devinfo.struDeviceV30.byStartChan + i);
+			}
+		}
+
+		if (NET_DVR_GetDVRConfig(uid, NET_DVR_GET_IPPARACFG_V40, 0, &ipparamcfg, sizeof(NET_DVR_IPPARACFG_V40), &err))
+		{
+			for (int i = 0; i != ipparamcfg.dwDChanNum; ++i)
+			{
+				switch (ipparamcfg.struStreamMode[i].byGetStreamType)
+				{
+				case 0:
+					{
+						if (ipparamcfg.struStreamMode[i].uGetStream.struChanInfo.byEnable)
+						{
+							chanNums.push_back(ipparamcfg.dwStartDChan + i);
+						}
+
+						break;
+					}
+				default:
+					break;
+				}
+			}
+		}
+	}
+
+	return ret;
+}
+
 void HikvisionNode::livestreamDataCallback(
 	LONG lRealHandle, DWORD dwDataType, BYTE *pBuffer, DWORD dwBufSize, void* pUser)
 {

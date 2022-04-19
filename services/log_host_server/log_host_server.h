@@ -13,34 +13,34 @@
 #ifndef SERVICE_LOG_HOST_SERVER_H
 #define SERVICE_LOG_HOST_SERVER_H
 
-#include "file_log.h"
+#include "libfilelog.h"
 using namespace module::file::log;
-#include "xmq_node.h"
+#include "libxmq.h"
 using namespace module::network::xmq;
 
 class LogHostServer final 
-    : public XMQNode
+    : public Libxmq
 {
 public:
     LogHostServer(
-        const XMQModeConf& conf, 
+        const XMQNodeConf& conf, 
         FileLog& flog, 
         const uint32_t expire = 0);
     ~LogHostServer(void);
 
 protected:
-	void afterPolledDataNotification(
+	void afterPolledXMQDataNotification(
 		const uint32_t id = 0, 
         const void* data = nullptr,  
         const uint64_t bytes = 0, 
-        const char* from = nullptr) override;
+        const char* name = nullptr) override;
 	void afterFetchOnlineStatusNotification(const bool online = false) override;
 	void afterFetchServiceCapabilitiesNotification(
-		const ServiceInfo* infos = nullptr, 
+		const char** names = nullptr, 
 		const uint32_t number = 0) override;
 
 private:
-    const XMQModeConf& modeconf;
+    const XMQNodeConf& modeconf;
     FileLog& log;
     const uint32_t expireDays;
 };//class LogHostServer

@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
         const std::string xmq_addr{parser.getParameter("xmq_addr")};
         const std::string xmq_port{parser.getParameter("xmq_port")};
         const std::string name{DVSHostID};
-        XMQModeConf conf{0};
+        XMQNodeConf conf{0};
         conf.id = 0xB1;
         conf.port = atoi(xmq_port.c_str());
         conf.type = XMQModuleType::XMQ_MODULE_TYPE_TASK;

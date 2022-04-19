@@ -13,7 +13,7 @@
 #ifndef MODULE_AV_STREAM_AV_FRAME_ENCODER_FILTER_H
 #define MODULE_AV_STREAM_AV_FRAME_ENCODER_FILTER_H
 
-#include "av_codec_node.h"
+#include "libavcodec.h"
 #include "filter/av_filter.h"
 
 namespace module
@@ -23,7 +23,7 @@ namespace module
 		namespace stream
 		{
 			class AVFrameEncoderFilter 
-				: public AVFilter, protected AVCodecNode
+				: public AVFilter, protected Libavcodec
 			{
 			public:
 				AVFrameEncoderFilter(
@@ -35,12 +35,12 @@ namespace module
 				int destroy(const uint32_t id = 0) override;
 				int input(
 					const uint32_t id = 0,
-					const AVPkt* avpkt = nullptr) override;
+					const void* avpkt = nullptr) override;
 
 			protected:
 				void afterCodecDataNotification(
 					const uint32_t id = 0, 
-					const AVPkt* avpkt = nullptr) override;
+					const void* avpkt = nullptr) override;
 
 			private:
 				//AVFrameEncoderFilter和AVFrameDecodeFilter都使用AVCodecNode

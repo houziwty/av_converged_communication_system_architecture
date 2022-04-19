@@ -5,7 +5,7 @@ using namespace module::av::stream;
 
 AVFrameDecoderFilter::AVFrameDecoderFilter(
 	const AVFilterType type/* = AVFilterType::AV_FILTER_TYPE_NONE*/) 
-	: AVFilter(type), AVCodecNode()
+	: AVFilter(type), Libavcodec()
 {}
 
 AVFrameDecoderFilter::~AVFrameDecoderFilter()
@@ -18,7 +18,7 @@ int AVFrameDecoderFilter::createNew(const AVModeConf& conf)
 	if (Error_Code_Success == ret)
 	{
 		AVCodecModeConf codecConf{ conf.id, AVCodecType::AV_CODEC_TYPE_DECODE_H264 };
-		ret = AVCodecNode::addConf(codecConf);
+		ret = Libavcodec::addConf(codecConf);
 
 		if (Error_Code_Success == ret)
 		{
@@ -31,20 +31,20 @@ int AVFrameDecoderFilter::createNew(const AVModeConf& conf)
 
 int AVFrameDecoderFilter::destroy(const uint32_t id /* = 0 */)
 {
-	int ret{AVCodecNode::removeConf(id)};
+	int ret{Libavcodec::removeConf(id)};
 	return Error_Code_Success == ret ? AVFilter::destroy() : ret;
 }
 
 int AVFrameDecoderFilter::input(
 	const uint32_t id /* = 0 */, 
-	const AVPkt* avpkt /* = nullptr */)
+	const void* avpkt /* = nullptr */)
 {
-	return AVCodecNode::input(id, avpkt);
+	return Libavcodec::input(id, avpkt);
 }
 
 void AVFrameDecoderFilter::afterCodecDataNotification(
 	const uint32_t id/* = 0*/,  
-	const AVPkt* avpkt/* = nullptr*/)
+	const void* avpkt/* = nullptr*/)
 {
 	if (0 < id && avpkt)
 	{

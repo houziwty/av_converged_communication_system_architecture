@@ -2,10 +2,10 @@
 #include "error_code.h"
 #include "memory/xmem.h"
 using namespace framework::utils::memory;
-#include "av_pkt.h"
+#include "libavpkt.h"
 using namespace module::av::stream;
 
-AVPkt::AVPkt(
+Libavpkt::Libavpkt(
 	const AVMainType mainType /* = AVMainType::AV_MAIN_TYPE_NONE */, 
 	const AVSubType subType /* = AVSubType::AV_SUB_TYPE_NONE */, 
 	const uint64_t sequence /* = 0 */, 
@@ -17,12 +17,12 @@ AVPkt::AVPkt(
 	pixelWidth{w}, pixelHeight{h}
 {}
 
-AVPkt::~AVPkt()
+Libavpkt::~Libavpkt()
 {
 	boost::checked_array_delete(reinterpret_cast<uint8_t*>(avpktData));
 }
 
-int AVPkt::input(
+int Libavpkt::input(
 	const void* data/* = nullptr*/, 
 	const uint64_t bytes/* = 0*/)
 {

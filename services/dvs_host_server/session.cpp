@@ -1,30 +1,73 @@
-#include "boost/bind/bind.hpp"
-using namespace boost::placeholders;
-#include "boost/make_shared.hpp"
-#include "boost/format.hpp"
-#include "av_pkt.h"
+#include "boost/checked_delete.hpp"
+#include "libasio.h"
+using namespace module::network::asio;
+#include "libavpkt.h"
+using namespace module::av::stream;
 #include "error_code.h"
-#include "url/url.h"
-using namespace framework::utils::data;
-#include "dvs_host_server.h"
-#include "dvs_stream_session.h"
+#include "memory/xmem.h"
+using namespace framework::utils::memory;
+#include "server.h"
+#include "session.h"
 
-DvsStreamSession::DvsStreamSession(
-    XMQNode& node, 
-    const XMQModeConf& conf, 
-    const uint32_t id/* = 0*/)
-    : AVParserNode(), sid{ id }, cid{ 0 }, did{ 0 }, fid{0}, xmqNode{node}, modeconf{conf}
+Session::Session(Server& svr) : server{svr}, sequence{0}
+{}
+
+Session::~Session()
+{}
+
+int Session::addTarget(const uint32_t sid/* = 0*/)
 {
-    AVParserModeConf c{sid, AVParserType::AV_PARSER_TYPE_BUFFER_PARSER};
-    AVParserNode::addConf(c);
+    int ret{0 < sid ? Error_Code_Success : Error_Code_Invalid_Param};
+
+    if (Error_Code_Success == ret)
+    {
+        mtx.lock();
+        for (int i = 0; i != sids.size(); ++i)
+        {
+            if (sid == sids[i])
+            {
+                ret = Error_Code_Object_Existed;
+                break;
+            }
+        }
+
+        if (Error_Code_Success == ret)
+        {
+            sids.push_back(sid);
+        }
+        mtx.lock();
+    }
+    
+    return ret;
 }
 
-DvsStreamSession::~DvsStreamSession()
+int Session::removeTarget(const uint32_t sid/* = 0*/)
 {
-    AVParserNode::removeConf(1);
+    int ret{0 < sid ? Error_Code_Success : Error_Code_Invalid_Param};
+
+    if (Error_Code_Success == ret)
+    {
+        mtx.lock();
+        for (std::vector<uint32_t>::iterator it = sids.begin(); it != sids.end();)
+        {
+            if (sid == *it)
+            {
+                it = sids.erase(it);
+                break;
+            }
+            else
+            {
+                ++it;
+                ret = Error_Code_Object_Not_Exist;
+            }
+        }
+        mtx.lock();
+    }
+    
+    return ret;
 }
 
-int DvsStreamSession::recv(
+int Session::input(
     const void* data/* = nullptr*/, 
     const uint64_t bytes/* = 0*/)
 {
@@ -32,55 +75,25 @@ int DvsStreamSession::recv(
 
     if (Error_Code_Success == ret)
     {
-        AVPkt avpkt;
-        ret = avpkt.input(data, bytes);
-        ret = (Error_Code_Success == ret ? AVParserNode::input(sid, &avpkt) : ret);
+       const uint64_t totalBytes{bytes + 32};
+        char* frameData{ new(std::nothrow) char[totalBytes] };
+        *((uint32_t*)frameData) = 0xFF050301;
+        *((uint32_t*)(frameData + 4)) = (uint32_t)AVMainType::AV_MAIN_TYPE_VIDEO;
+        *((uint32_t*)(frameData + 8)) = (uint32_t)AVSubType::AV_SUB_TYPE_PS;
+        *((uint32_t*)(frameData + 12)) = bytes;
+        *((uint64_t*)(frameData + 16)) = ++sequence;
+        *((uint64_t*)(frameData + 24)) = 0;
+        XMem().copy(data, bytes, frameData + 32, bytes);
+
+        for(int i = 0; i != sids.size(); ++i)
+        {
+            mtx.lock();
+            server.sendframe(sids[i], frameData, totalBytes);
+            mtx.unlock();
+        }
+        
+        boost::checked_array_delete(frameData);
     }
     
     return ret;
-}
-
-void DvsStreamSession::getIDs(uint32_t& sid, uint32_t& did, uint32_t& cid, uint64_t& fid)
-{
-    sid = this->sid;
-    did = this->did;
-    cid = this->cid;
-    fid = ++(this->fid);
-}
-
-void DvsStreamSession::afterParsedDataNotification(
-    const uint32_t id/* = 0*/, 
-    const AVPkt* avpkt/* = nullptr*/)
-{
-    const std::string logid{std::string(DVSHostID) + "_log"};
-    const std::string msg{(const char*)avpkt->data(), avpkt->bytes()};
-    Url url;
-    int ret{url.parse(avpkt->data(), avpkt->bytes())};
-
-    if(Error_Code_Success == ret)
-    {
-        //realplay://1?command=1&channel=1&stream=0
-
-        int command{-1};
-        did = atoi(url.host().c_str());
-        const std::vector<Parameter> params{url.parameters()};
-
-        for(int i  = 0; i != params.size(); ++i)
-        {
-            if(!params[i].key.compare("command"))
-            {
-                command = atoi(params[i].value.c_str());
-            }
-            else if(!params[i].key.compare("channel"))
-            {
-                cid = atoi(params[i].value.c_str());
-            }
-        }
-    }
-
-    const std::string log{
-        (boost::format(
-            "info://%s?command=add&severity=%d&log=Play live stream [ %u_%u ], result [ %d ].") 
-            % logid % (ret ? 1 : 0) % did % cid % ret).str()};
-    xmqNode.send(modeconf.id, log.c_str(), log.length(), logid.c_str());
 }

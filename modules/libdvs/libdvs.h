@@ -13,7 +13,7 @@
 #ifndef MODULE_DEVICE_DVS_LIB_DVS_H
 #define MODULE_DEVICE_DVS_LIB_DVS_H
 
-#include "defs.h"
+#include "libdvs_defs.h"
 
 namespace module
 {
@@ -37,6 +37,16 @@ namespace module
 				//@id [in] : 设备ID
 				//@Return : 错误码
 				int removeConf(const uint32_t id = 0);
+
+				//查询配置
+				//@id [in] : 设备ID
+				//@type [in] : 配置类型
+				//@param [in] : 配置值
+				//@Return : 错误码
+				int queryConf(
+					const uint32_t id = 0, 
+					const DVSConfParamType type = DVSConfParamType::DVS_CONF_PARAM_TYPE_NONE, 
+					void* param = nullptr);
 
 			protected:
 				//音视频流数据通知

@@ -1,14 +1,13 @@
 #include "av/mpeg/mpeg-ps.h"
 #include "av/mpeg/mpeg-ts-proto.h"
-#include "av_pkt.h"
+#include "libavpkt.h"
 #include "error_code.h"
 #include "ps_parser.h"
 using namespace module::av::stream;
 
 PSParser::PSParser(
-    ParsedDataCallback callback, 
-	const uint32_t id/* = 0*/) 
-    : AVParser(callback, id), demuxer{nullptr}, sequence{0}, width{0}, height{0}
+    ParsedDataCallback callback, const uint32_t id/* = 0*/) 
+    : AVParserNode(callback, id), demuxer{nullptr}, sequence{0}, width{0}, height{0}
 {}
 
 PSParser::~PSParser()
@@ -19,7 +18,7 @@ PSParser::~PSParser()
     } 
 }
 
-int PSParser::input(const AVPkt* avpkt/* = nullptr*/)
+int PSParser::input(const void* avpkt/* = nullptr*/)
 {
     int ret{avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
 
@@ -33,12 +32,13 @@ int PSParser::input(const AVPkt* avpkt/* = nullptr*/)
 
         if (demuxer)
         {
-            sequence = avpkt->sequence();
+            Libavpkt* pkt{reinterpret_cast<Libavpkt*>((void*)avpkt)};
+            sequence = pkt->sequence();
             ret = 
                 (0 <= ps_demuxer_input(
                     reinterpret_cast<ps_demuxer_t*>(demuxer), 
-                    (const uint8_t*)avpkt->data(), 
-                    avpkt->bytes()) ? Error_Code_Success : Error_Code_Operate_Failure);
+                    (const uint8_t*)pkt->data(), 
+                    pkt->bytes()) ? Error_Code_Success : Error_Code_Operate_Failure);
         }
         else
         {
@@ -83,10 +83,9 @@ int PSParser::parsedPSPacketCallback(
                 maintype = AVMainType::AV_MAIN_TYPE_VIDEO;
             }
 
-            //保证每一帧数据都有宽高值
             if (0 < parser->width && 0 < parser->height)
             {
-				AVPkt avpkt{
+				Libavpkt avpkt{
 				    maintype,
 				    AVSubType::AV_SUB_TYPE_NONE,
 				    parser->sequence,

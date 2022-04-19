@@ -16,7 +16,7 @@
 #include "boost/shared_ptr.hpp"
 #include "boost/weak_ptr.hpp"
 #include "map/unordered_map.h"
-#include "defs.h"
+#include "libav_defs.h"
 
 namespace module
 {
@@ -64,11 +64,11 @@ namespace module
 
 				//输入数据
 				//@id [in] : 模块ID标识
-				//@avpkt [in] : 数据包
+				//@avpkt [in] : 数据
 				//@Return : 错误码
 				virtual int input(
 					const uint32_t id = 0, 
-					const AVPkt* avpkt = nullptr);
+					const void* avpkt = nullptr);
 
 			protected:
 				const AVFilterType filterType;

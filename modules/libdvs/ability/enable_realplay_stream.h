@@ -13,7 +13,6 @@
 #ifndef MODULE_DEVICE_DVS_ENABLE_REALPLAY_STREAM_H
 #define MODULE_DEVICE_DVS_ENABLE_REALPLAY_STREAM_H
 
-#include "defs.h"
 #include "error_code.h"
 
 namespace module
@@ -30,7 +29,7 @@ namespace module
 
 			public:
 				//打开
-				//@user [in] : 登录用户ID
+				//@user [in] : 用户ID
     			//@bytes [in] : 通道
 				//@Return : 流ID
 				virtual int64_t openRealplayStream(

@@ -2,107 +2,66 @@ cmake_minimum_required(VERSION 3.5...3.16)
 
 project(dvs_host_server VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 
-set(
-	XMQ_ROOT_DIR 
-	${ROOT_DIR}/modules/libxmq)
-set(
-	ASIO_ROOT_DIR 
-	${ROOT_DIR}/modules/libasio)
-set(
-	DVS_ROOT_DIR 
-	${ROOT_DIR}/modules/libdvs)
-set(
-	AVPARSER_ROOT_DIR 
-	${ROOT_DIR}/modules/libavparser)
-set(
-	AVPKT_ROOT_DIR 
-	${ROOT_DIR}/modules/libavpkt)
-
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-	link_directories(${XMQ_ROOT_DIR} ${ASIO_ROOT_DIR} ${DVS_ROOT_DIR} ${AVPARSER_ROOT_DIR} ${AVPKT_ROOT_DIR})
-	set(
-		LINK_LIBS 
-		libboost_program_options.a 
-		libboost_json.a 
-		pthread 
-		dvs 
-		asio 
-		avparser 
-		avpkt 
-		xmq)
+	set(FILELOG_DIR ${MODULES_DIR}/libfilelog)
+	set(XMQ_DIR ${MODULES_DIR}/libxmq)
+	set(ASIO_DIR ${MODULES_DIR}/libasio)
+	set(DVS_DIR ${MODULES_DIR}/libdvs)
+	set(AVPARSER_DIR ${MODULES_DIR}/libavparser)
+	set(AVPKT_DIR ${MODULES_DIR}/libavpkt)
+	set(DEPENDS libboost_program_options.a libboost_json.a pthread filelog xmq dvs asio avparser avpkt)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
-	set(
-		BOOST_ROOT_DIR 
-		${3RDPART_DIR}/boost_1_78_0)
-	set(
-		BOOST_LINK_DIR 
-		${BOOST_ROOT_DIR}/stage/lib)
-	set(
-		XMQ_LINK_DIR 
-		${ROOT_DIR}/build/x64/modules/libxmq/${CMAKE_BUILD_TYPE})
-	set(
-		ASIO_LINK_DIR 
-		${ROOT_DIR}/build/x64/modules/libasio/${CMAKE_BUILD_TYPE})
-	set(
-		DVS_LINK_DIR 
-		${ROOT_DIR}/build/x64/modules/libdvs/${CMAKE_BUILD_TYPE})
-	set(
-		AVPARSER_LINK_DIR 
-		${ROOT_DIR}/build/x64/modules/libavparser/${CMAKE_BUILD_TYPE})
-	set(
-		AVPKT_LINK_DIR 
-		${ROOT_DIR}/build/x64/modules/libavpkt/${CMAKE_BUILD_TYPE})
+	set(BOOST_DIR ${3RDPART_DIR}/boost_1_78_0 ${3RDPART_DIR}/boost_1_78_0/stage/lib)
+	set(FILELOG_DIR ${MODULES_DIR}/libfilelog ${ROOT_DIR}/build/x64/modules/libfilelog)
+	set(XMQ_DIR ${MODULES_DIR}/libxmq ${ROOT_DIR}/build/x64/modules/libxmq)
+	set(ASIO_DIR ${MODULES_DIR}/libasio ${ROOT_DIR}/build/x64/modules/libasio)
+	set(DVS_DIR ${MODULES_DIR}/libdvs ${ROOT_DIR}/build/x64/modules/libdvs)
+	set(AVPARSER_DIR ${MODULES_DIR}/libavparser ${ROOT_DIR}/build/x64/modules/libavparser)
+	set(AVPKT_DIR  ${MODULES_DIR}/libavpkt ${ROOT_DIR}/build/x64/modules/libavpkt)
+	
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
-		set(
-			LINK_LIBS 
-			${BOOST_LINK_DIR}/libboost_thread-vc143-mt-sgd-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-sgd-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-sgd-x64-1_78.lib	
-			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-sgd-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_atomic-vc143-mt-sgd-x64-1_78.lib 
-			${XMQ_LINK_DIR}/xmq.lib 
-			${ASIO_LINK_DIR}/asio.lib 
-			${AVPARSER_LINK_DIR}/avparser.lib 
-			${AVPKT_LINK_DIR}/avpkt.lib 
-			${DVS_LINK_DIR}/dvs.lib)
+		set(DEPENDS 
+			${BOOST_DIR}/libboost_thread-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_chrono-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_program_options-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_serialization-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_atomic-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_json-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_container-vc143-mt-sgd-x64-1_78.lib 
+			${FILELOG_DIR}/${CMAKE_BUILD_TYPE}/filelog.lib 
+			${XMQ_DIR}/${CMAKE_BUILD_TYPE}/xmq.lib 
+			${ASIO_DIR}/${CMAKE_BUILD_TYPE}/asio.lib 
+			${AVPARSER_DIR}/${CMAKE_BUILD_TYPE}/avparser.lib 
+			${AVPKT_DIR}/${CMAKE_BUILD_TYPE}/avpkt.lib 
+			${DVS_DIR}/${CMAKE_BUILD_TYPE}/dvs.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
-		set(
-			LINK_LIBS 
-			${BOOST_LINK_DIR}/libboost_thread-vc143-mt-s-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-s-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-s-x64-1_78.lib	
-			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-s-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_atomic-vc143-mt-s-x64-1_78.lib 			
-			${XMQ_LINK_DIR}/xmq.lib 
-			${ASIO_LINK_DIR}/asio.lib 
-			${AVPARSER_LINK_DIR}/avparser.lib 
-			${AVPKT_LINK_DIR}/avpkt.lib 
-			${DVS_LINK_DIR}/dvs.lib)
+		set(DEPENDS 
+			${BOOST_DIR}/libboost_thread-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_chrono-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_program_options-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_serialization-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_atomic-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_json-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_container-vc143-mt-s-x64-1_78.lib 
+			${FILELOG_DIR}/${CMAKE_BUILD_TYPE}/filelog.lib 
+			${XMQ_DIR}/${CMAKE_BUILD_TYPE}/xmq.lib 
+			${ASIO_DIR}/${CMAKE_BUILD_TYPE}/asio.lib 
+			${AVPARSER_DIR}/${CMAKE_BUILD_TYPE}/avparser.lib 
+			${AVPKT_DIR}/${CMAKE_BUILD_TYPE}/avpkt.lib 
+			${DVS_DIR}/${CMAKE_BUILD_TYPE}/dvs.lib)
 	endif()
+	
 	add_definitions(-DUSE_MODULE_NETWORK_XMQ -DUSE_MODULE_NETWORK_ASIO -DUSE_MODULE_DEVICE_DVS -DUSE_MODULE_AV_PARSER -DUSE_MODULE_AV_PKT)
 endif()
 
-include_directories(
-	${INCLUDE_DIR} 
-	${BOOST_ROOT_DIR} 
-	${XMQ_ROOT_DIR} 
-	${ASIO_ROOT_DIR} 
-	${AVPARSER_ROOT_DIR} 
-	${AVPKT_ROOT_DIR} 
-	${DVS_ROOT_DIR})
-file(GLOB_RECURSE main "*.cpp")
+include_directories(${INCLUDE_DIR} ${BOOST_DIR} ${XMQ_DIR} ${ASIO_DIR} ${AVPARSER_DIR} ${AVPKT_DIR} ${DVS_DIR} ${FILELOG_DIR})
 file(GLOB_RECURSE 
-	utils 
+	src 
+	"*.cpp"
 	"${SOURCE_DIR}/commandline/*.cpp" 
 	"${SOURCE_DIR}/time/*.cpp" 
 	"${SOURCE_DIR}/url/*.cpp" 
 	"${SOURCE_DIR}/memory/*.cpp")
 
-add_executable(
-	${PROJECT_NAME} 
-	${main} 
-	${utils})
-target_link_libraries(
-	${PROJECT_NAME} 
-	PRIVATE 
-	${LINK_LIBS})
+add_executable(${PROJECT_NAME} ${src})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${DEPENDS})

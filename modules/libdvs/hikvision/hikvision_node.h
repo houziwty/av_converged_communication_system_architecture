@@ -42,6 +42,9 @@ namespace module
 					const int64_t uid = 0, 
 					const int32_t channel = -1) override;
 				int closeRealplayStream(const int64_t sid = 0) override;
+				int getChanNum(
+					const int64_t uid, 
+					std::vector<int64_t>& chanNums) override;
 
 			private:
 				static void CALLBACK livestreamDataCallback(

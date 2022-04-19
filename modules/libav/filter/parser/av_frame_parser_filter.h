@@ -13,7 +13,7 @@
 #ifndef MODULE_AV_STREAM_AV_FRAME_PARSER_FILTER_H
 #define MODULE_AV_STREAM_AV_FRAME_PARSER_FILTER_H
 
-#include "av_parser_node.h"
+#include "libavparser.h"
 #include "filter/av_filter.h"
 
 namespace module
@@ -23,7 +23,7 @@ namespace module
 		namespace stream
 		{
 			class AVFrameParserFilter 
-				: public AVFilter, protected AVParserNode
+				: public AVFilter, protected Libavparser
 			{
 			public:
 				AVFrameParserFilter(
@@ -35,12 +35,12 @@ namespace module
 				int destroy(const uint32_t id = 0) override;
 				int input(
 					const uint32_t id = 0, 
-					const AVPkt* avpkt = nullptr) override;
+					const void* avpkt = nullptr) override;
 
 			protected:
 				void afterParsedDataNotification(
 					const uint32_t id = 0, 
-					const AVPkt* avpkt = nullptr) override;
+					const void* avpkt = nullptr) override;
 
 			private:
 				//AVFrameParserFilter和AVBufferParserFilter都使用AVParserNode

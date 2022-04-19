@@ -14,7 +14,7 @@
 #define MODULE_AV_STREAM_D3D_TEXTURE_H
 
 #include <d3d9.h>
-#include "defs.h"
+#include "libavplayer_defs.h"
 
 namespace module
 {

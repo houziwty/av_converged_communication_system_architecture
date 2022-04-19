@@ -77,3 +77,35 @@ int Libdvs::removeConf(const uint32_t id/* = 0*/)
 
 	return ret;
 }
+
+int Libdvs::queryConf(
+	const uint32_t id/* = 0*/, 
+	const DVSConfParamType type/* = DVSConfParamType::DVS_CONF_PARAM_TYPE_NONE*/, 
+	void* param/* = nullptr*/)
+{
+	int ret{0 < id && param ? Error_Code_Success : Error_Code_Invalid_Param};
+
+	if (Error_Code_Success == ret)
+	{
+		DVSNodePtr node{dvss.at(id)};
+
+		if(node)
+		{
+			if (DVSConfParamType::DVS_CONF_PARAM_TYPE_CHANNEL_NUMBER == type)
+			{
+				uint32_t* channels{reinterpret_cast<uint32_t*>(param)};
+				*channels = node->channums();
+			}
+			else
+			{
+				ret = Error_Code_Method_Not_Support;
+			}
+		}
+		else
+		{
+			ret = Error_Code_Object_Not_Exist;
+		}
+	}
+
+	return ret;
+}

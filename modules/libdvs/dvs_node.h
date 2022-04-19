@@ -14,9 +14,11 @@
 #define MODULE_DEVICE_DVS_DVS_NODE_H
 
 #include "boost/function.hpp"
+#include "libdvs_defs.h"
 #include "ability/enable_login_logout.h"
 #include "ability/enable_catch_exception.h"
 #include "ability/enable_realplay_stream.h"
+#include "ability/enable_config_camera.h"
 
 namespace module
 {
@@ -40,7 +42,8 @@ namespace module
 			class DVSNode : 
 				protected EnableLoginAndLogout, 
 				protected EnableCatchException, 
-				protected EnableRealplayStream
+				protected EnableRealplayStream, 
+				protected EnableConfigCamera
 			{
 			public:
 				DVSNode(
@@ -58,12 +61,19 @@ namespace module
 				//@Return : 错误码
 				int stop(void);
 
+				//获取通道数
+				//@Return : 通道数
+				inline const std::size_t channums(void) const
+				{
+					return chanNums.size();
+				}
+
 			protected:
 				DVSModuleType module;
 				uint32_t did;
 				int64_t uid;
-				//Max support channel number is 64.
-				int64_t cid[64];
+				std::vector<int64_t> chanNums;
+				std::vector<int64_t> sids;
 				PolledDataCallback polledDataCallback;
 				PolledExceptionCallback polledExceptionCallback;
 			};//class DVSNode

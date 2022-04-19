@@ -7,10 +7,9 @@ using namespace framework::utils::data;
 #include "log_host_server.h"
 
 LogHostServer::LogHostServer(
-    const XMQModeConf& conf, 
-    FileLog& flog, 
+    const XMQNodeConf& conf, FileLog& flog, 
     const uint32_t expire/* = 0*/)
-    : XMQNode(), modeconf{conf}, log{ flog }, expireDays{ expire }
+    : Libxmq(), modeconf{conf}, log{ flog }, expireDays{ expire }
 {}
 
 LogHostServer::~LogHostServer()
@@ -31,14 +30,14 @@ void LogHostServer::afterFetchOnlineStatusNotification(const bool online)
 }
 
 void LogHostServer::afterFetchServiceCapabilitiesNotification(
-    const ServiceInfo* infos/* = nullptr*/, 
+    const char** names/* = nullptr*/, 
     const uint32_t number/* = 0*/)
 {
     std::string text;
 
     for (int i = 0; i != number; ++i)
     {
-        text += ("[ " + std::string(infos[i].name) + " ]");
+        text += ("[ " + std::string(names[i]) + " ]");
     }
 
 	log.write(
@@ -47,11 +46,11 @@ void LogHostServer::afterFetchServiceCapabilitiesNotification(
         text.c_str());
 }
 
-void LogHostServer::afterPolledDataNotification(
+void LogHostServer::afterPolledXMQDataNotification(
     const uint32_t id/* = 0*/, 
     const void* data/* = nullptr*/, 
     const uint64_t bytes/* = 0*/, 
-    const char* from/* = nullptr*/)
+    const char* name/* = nullptr*/)
 {
     Url requestUrl;
     int ret{requestUrl.parse(data, bytes)};
@@ -127,8 +126,8 @@ void LogHostServer::afterPolledDataNotification(
 				}
 
 				const std::string msg{
-                    (boost::format("info://%s?command=query&timestamp=%s%s") % from % timestamp % filenames).str() };
-				XMQNode::send(modeconf.id, msg.c_str(), msg.length());
+                    (boost::format("info://%s?command=query&timestamp=%s%s") % name % timestamp % filenames).str() };
+				Libxmq::send(modeconf.id, msg.c_str(), msg.length());
             }
             else if(!command.compare("fetch"))
             {
@@ -157,18 +156,18 @@ void LogHostServer::afterPolledDataNotification(
 #else
                         fread(text, fdbytes, 1, fd);
 #endif//_WINDOWS
-                        msg = (boost::format("info://%s?command=fetch&timestamp=%s%s") % from % timestamp % text).str();
+                        msg = (boost::format("info://%s?command=fetch&timestamp=%s%s") % name % timestamp % text).str();
                     }
                     else
                     {
-                        msg = (boost::format("info://%s?command=fetch&timestamp=%s") % from % timestamp).str();
+                        msg = (boost::format("info://%s?command=fetch&timestamp=%s") % name % timestamp).str();
                     }
 
                     fclose(fd);
                     boost::checked_array_delete(text);
                 }
 
-				XMQNode::send(modeconf.id, msg.c_str(), msg.length());
+				Libxmq::send(modeconf.id, msg.c_str(), msg.length());
             }
         }
     }

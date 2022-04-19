@@ -110,6 +110,29 @@ int DahuaNode::closeRealplayStream(const int64_t sid/* = 0*/)
 	return ret;
 }
 
+int DahuaNode::getChanNum(
+	const int64_t uid, 
+	std::vector<int64_t>& chanNums)
+{
+	int ret{-1 < uid ? Error_Code_Success : Error_Code_Invalid_Param};
+
+	if(Error_Code_Success == ret)
+	{
+		NET_IN_GET_CAMERA_STATEINFO in{sizeof(NET_IN_GET_CAMERA_STATEINFO), TRUE};
+		NET_OUT_GET_CAMERA_STATEINFO out{0};
+		
+		if (CLIENT_QueryDevInfo(uid, NET_QUERY_GET_CAMERA_STATE, &in, &out))
+		{
+			for(int i = 0; i != out.nValidNum; ++i)
+			{
+				chanNums.push_back(out.pCameraStateInfo[i].nChannel);
+			}
+		}
+	}
+
+	return ret;
+}
+
 void DahuaNode::livestreamDataCallback(
 	LLONG lRealHandle, DWORD dwDataType, BYTE *pBuffer, DWORD dwBufSize, LONG param, LDWORD dwUser)
 {

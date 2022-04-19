@@ -16,7 +16,7 @@
 #include "boost/shared_ptr.hpp"
 #include "boost/weak_ptr.hpp"
 #include "map/unordered_map.h"
-#include "defs.h"
+#include "libav_defs.h"
 
 namespace module
 {

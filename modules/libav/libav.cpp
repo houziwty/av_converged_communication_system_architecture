@@ -8,7 +8,7 @@
 #include "graph/av_grab_ps_graph.h"
 #include "graph/av_grab_jpeg_image_graph.h"
 #include "filter/av_filter.h"
-#include "av_node.h"
+#include "libav.h"
 using namespace module::av::stream;
 
 using AVGraphPtr = boost::shared_ptr<AVGraph>;
@@ -16,13 +16,13 @@ using AVGraphPtrs = UnorderedMap<const uint32_t, AVGraphPtr>;
 
 static AVGraphPtrs graphs;
 
-AVNode::AVNode()
+Libav::Libav()
 {}
 
-AVNode::~AVNode()
+Libav::~Libav()
 {}
 
-int AVNode::addConf(const AVModeConf& conf)
+int Libav::addConf(const AVModeConf& conf)
 {
 	int ret{0 < conf.id ? Error_Code_Success : Error_Code_Invalid_Param};
 
@@ -63,7 +63,7 @@ int AVNode::addConf(const AVModeConf& conf)
 	return ret;
 }
 
-int AVNode::removeConf(const uint32_t id/* = 0*/)
+int Libav::removeConf(const uint32_t id/* = 0*/)
 {
 	int ret{0 < id ? Error_Code_Success : Error_Code_Operate_Failure};
 
@@ -85,9 +85,9 @@ int AVNode::removeConf(const uint32_t id/* = 0*/)
 	return ret;
 }
 
-int AVNode::input(
+int Libav::input(
 	const uint32_t id/* = 0*/, 
-	const AVPkt* avpkt/* = nullptr*/)
+	const void* avpkt/* = nullptr*/)
 {
 	int ret{0 < id && avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
 

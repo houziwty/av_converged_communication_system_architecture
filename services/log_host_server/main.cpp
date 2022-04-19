@@ -1,4 +1,3 @@
-#include "boost/make_shared.hpp"
 #include "error_code.h"
 #include "commandline/commandline.h"
 using namespace framework::utils::parser;
@@ -26,25 +25,23 @@ int main(int argc, char* argv[])
 		FileLog log;
 		log.createNew(file_dir.c_str(), true, atoi(expire_days.c_str()));
 
-		XMQModeConf conf{ 0 };
+		XMQNodeConf conf{ 0 };
 		conf.id = 0xB1;
 		conf.port = atoi(xmq_port.c_str());
-		conf.type = XMQModeType::XMQ_MODE_TYPE_DEALER;
+		conf.type = XMQModuleType::XMQ_MODULE_TYPE_TASK;
 		XMem().copy(log_name.c_str(), log_name.length(), conf.name, 128);
 		XMem().copy(xmq_addr.c_str(), xmq_addr.length(), conf.ip, 32);
-        boost::shared_ptr<XMQNode> node{
-            boost::make_shared<LogHostServer>(conf, log, atoi(expire_days.c_str()))};
 
-        if(node && Error_Code_Success == node->addConf(conf))
+		LogHostServer svr{conf, log, (uint32_t)atoi(expire_days.c_str())};
+
+        if(Error_Code_Success == svr.addNode(conf))
         {
 			log.write(
 				SeverityLevel::SEVERITY_LEVEL_INFO,
 				"Run log host server [ %s ] with xmq server [ %s ], port [ %s ], log directory [ %s ], expire days [ %s ] successfully.",
 				log_name.c_str(), xmq_addr.c_str(), xmq_port.c_str(), log.dir(), expire_days.c_str());
-			node->run();
 			getchar();
-			node->stop();
-			node->removeConf(conf.id);
+			svr.removeNode(conf.id);
         }
 		else
 		{

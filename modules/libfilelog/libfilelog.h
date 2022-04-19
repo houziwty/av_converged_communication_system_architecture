@@ -4,7 +4,7 @@
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
 //		Date : 2021-11-25
-//		Description : 日志类
+//		Description : 文件日志类
 //
 //		History:
 //					1. 2021-11-25 由王科威创建

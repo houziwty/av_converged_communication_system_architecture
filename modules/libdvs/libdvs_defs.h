@@ -43,16 +43,22 @@ typedef enum class tagDVSModuleType_t : uint32_t
 	DVS_MODULE_TYPE_XVR
 }DVSModuleType;
 
+typedef enum class tagDVSConfParamType_t : uint32_t
+{
+	DVS_CONF_PARAM_TYPE_NONE = 0, 
+	DVS_CONF_PARAM_TYPE_CHANNEL_NUMBER				//查询设备通道总数 --> uint32_t
+}DVSConfParamType;
+
 //DVS设备配置
 typedef struct tagDVSModeConf_t
 {
+	DVSFactoryType factory;
+	DVSModuleType module;
     char user[128];
 	char passwd[128];
     char ip[128];
     uint16_t port;
     uint32_t id;                    //物理设备ID标识，0 < id，由调用者定义
-    DVSFactoryType factory;
-	DVSModuleType module;
 }DVSModeConf;
 
 #endif//MODULE_DEVICE_DVS_LIB_DEFS_H

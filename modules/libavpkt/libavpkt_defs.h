@@ -29,6 +29,7 @@
 typedef enum class tagAVMainType_t : uint32_t
 {
 	AV_MAIN_TYPE_NONE = 0, 
+	AV_MAIN_TYPE_URL, 
 	AV_MAIN_TYPE_MUXER, 
 	AV_MAIN_TYPE_VIDEO, 
 	AV_MAIN_TYPE_AUDIO, 

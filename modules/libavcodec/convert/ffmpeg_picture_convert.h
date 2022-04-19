@@ -13,7 +13,7 @@
 #ifndef MODULE_AV_STREAM_FFMPEG_PICTURE_CONVERT_H
 #define MODULE_AV_STREAM_FFMPEG_PICTURE_CONVERT_H
 
-#include "av_codec.h"
+#include "av_codec_node.h"
 
 namespace module
 {
@@ -21,7 +21,7 @@ namespace module
 	{
 		namespace stream
 		{
-            class FFmpegPictureConvert : public AVcodec
+            class FFmpegPictureConvert : public AVcodecNode
             {
             public:
                 //@in [in] : 输入图片格式
@@ -33,10 +33,10 @@ namespace module
                 virtual ~FFmpegPictureConvert(void);
 
             public:
-                int input(const AVPkt* avpkt = nullptr) override;
+                int input(const void* avpkt = nullptr) override;
 
             private:
-                int init(const AVPkt* avpkt = nullptr);
+                int init(const void* avpkt = nullptr);
                 int uninit(void);
 
             private:

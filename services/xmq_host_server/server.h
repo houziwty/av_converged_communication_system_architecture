@@ -17,7 +17,7 @@
 #include "dispatcher.h"
 #include "consumer.h"
 using namespace module::network::xmq;
-#include "file_log.h"
+#include "libfilelog.h"
 using namespace module::file::log;
 #include "map/unordered_map.h"
 

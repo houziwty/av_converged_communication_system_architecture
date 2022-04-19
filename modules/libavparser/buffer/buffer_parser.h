@@ -22,7 +22,7 @@
 #ifndef MODULE_AV_STREAM_BUFFER_PARSER_H
 #define MODULE_AV_STREAM_BUFFER_PARSER_H
 
-#include "av_parser.h"
+#include "av_parser_node.h"
 
 namespace module
 {
@@ -33,7 +33,7 @@ namespace module
 			const static uint32_t frame_header_flag = 0xff050301;
 			const static uint32_t frame_header_size = 32;
 
-			class BufferParser : public AVParser
+			class BufferParser : public AVParserNode
 			{
 			public:
 				//callback [in] : 数据解析回调
@@ -49,7 +49,7 @@ namespace module
 				//输入数据
 				//@avpkt [in] : 数据包
 				//@Return : 错误码
-				int input(const AVPkt* avpkt = nullptr) override;
+				int input(const void* avpkt = nullptr) override;
 
 			private:
 				//解析单帧数据

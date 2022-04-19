@@ -13,7 +13,7 @@
 #ifndef MODULE_AV_STREAM_FFMPEG_H264_DECODE_H
 #define MODULE_AV_STREAM_FFMPEG_H264_DECODE_H
 
-#include "av_codec.h"
+#include "av_codec_node.h"
 
 namespace module
 {
@@ -21,7 +21,7 @@ namespace module
 	{
 		namespace stream
 		{
-            class FFmpegH264Decode : public AVcodec
+            class FFmpegH264Decode : public AVcodecNode
             {
             public:
                 FFmpegH264Decode(
@@ -30,10 +30,10 @@ namespace module
                 virtual ~FFmpegH264Decode(void);
 
             public:
-                int input(const AVPkt* avpkt = nullptr) override;
+                int input(const void* avpkt = nullptr) override;
 
             private:
-                int init(const AVPkt* avpkt = nullptr);
+                int init(const void* avpkt = nullptr);
                 int uninit(void);
 
             private:

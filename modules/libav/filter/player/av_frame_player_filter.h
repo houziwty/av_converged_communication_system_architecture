@@ -14,7 +14,7 @@
 #define MODULE_AV_STREAM_FRAME_PLAYER_FILTER_H
 
 #ifdef _WINDOWS
-#include "av_player_node.h"
+#include "libavplayer.h"
 #include "filter/av_filter.h"
 
 namespace module
@@ -24,7 +24,7 @@ namespace module
 		namespace stream
 		{
 			class AVFramePlayerFilter 
-				: public AVFilter, protected AVPlayerNode
+				: public AVFilter, protected Libavplayer
 			{
 			public:
 				AVFramePlayerFilter(
@@ -36,7 +36,7 @@ namespace module
 				int destroy(const uint32_t id = 0) override;
 				int input(
 					const uint32_t id = 0, 
-					const AVPkt* avpkt = nullptr) override;
+					const void* avpkt = nullptr) override;
 
 			private:
 				bool flag;

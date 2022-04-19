@@ -6,15 +6,14 @@ extern "C"
 #include "libavutil/imgutils.h"
 }
 #endif//__cplusplus
-#include "av_pkt.h"
+#include "libavpkt.h"
 #include "error_code.h"
 #include "ffmpeg_jpeg_encode.h"
 using namespace module::av::stream;
 
 FFmpegJPEGEncode::FFmpegJPEGEncode(
-    AVCodecDataCallback callback, 
-	const uint32_t id/* = 0*/) 
-    : AVcodec(callback, id), ctx{nullptr}, codec{nullptr}, iframe{nullptr}
+    AVCodecDataCallback callback, const uint32_t id/* = 0*/) 
+    : AVcodecNode(callback, id), ctx{nullptr}, codec{nullptr}, iframe{nullptr}
 {}
 
 FFmpegJPEGEncode::~FFmpegJPEGEncode()
@@ -22,18 +21,19 @@ FFmpegJPEGEncode::~FFmpegJPEGEncode()
     uninit();
 }
 
-int FFmpegJPEGEncode::input(const AVPkt* avpkt/* = nullptr*/)
+int FFmpegJPEGEncode::input(const void* avpkt/* = nullptr*/)
 {
     int ret{avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
 
     if(Error_Code_Success == ret && Error_Code_Success == init(avpkt))
     {
-		const uint32_t w{ avpkt->width() }, h{ avpkt->height() };
-		const uint64_t seq{ avpkt->sequence() }, ts{ avpkt->timestamp() };
+		Libavpkt* inpkt{reinterpret_cast<Libavpkt*>((void*)avpkt)};
+		const uint32_t w{ inpkt->width() }, h{ inpkt->height() };
+		const uint64_t seq{ inpkt->sequence() }, ts{ inpkt->timestamp() };
 
 		AVFrame* avf{ reinterpret_cast<AVFrame*>(iframe) };
 		av_image_fill_arrays(
-			avf->data, avf->linesize, (const uint8_t*)avpkt->data(), AV_PIX_FMT_YUV420P, w, h, 1);
+			avf->data, avf->linesize, (const uint8_t*)inpkt->data(), AV_PIX_FMT_YUV420P, w, h, 1);
 
 		if (0 > avcodec_send_frame((AVCodecContext*)ctx, avf))
 		{
@@ -56,15 +56,15 @@ int FFmpegJPEGEncode::input(const AVPkt* avpkt/* = nullptr*/)
 				break;
 			}
 
-			AVPkt _avpkt_{ 
+			Libavpkt outpkt{ 
 				AVMainType::AV_MAIN_TYPE_VIDEO, 
 				AVSubType::AV_SUB_TYPE_JPEG, 
 				seq, ts, w, h };
-			_avpkt_.input(out->data, out->size);
+			outpkt.input(out->data, out->size);
 
 			if (avcodecDataCallback)
 			{
-				avcodecDataCallback(cid, &_avpkt_);
+				avcodecDataCallback(cid, &outpkt);
 			}
 
 			av_packet_free(&out);
@@ -74,13 +74,14 @@ int FFmpegJPEGEncode::input(const AVPkt* avpkt/* = nullptr*/)
     return ret;
 }
 
-int FFmpegJPEGEncode::init(const AVPkt* avpkt /* = nullptr */)
+int FFmpegJPEGEncode::init(const void* avpkt /* = nullptr */)
 {
     int ret{avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
 
     if (Error_Code_Success == ret)
     {
-        const uint32_t w{ avpkt->width() }, h{ avpkt->height() };
+		Libavpkt* inpkt{reinterpret_cast<Libavpkt*>((void*)avpkt)};
+        const uint32_t w{ inpkt->width() }, h{ inpkt->height() };
         AVCodecContext* avcodecctx{ reinterpret_cast<AVCodecContext*>(ctx) };
 		AVCodec* avcodec{ reinterpret_cast<AVCodec*>(codec) };
         

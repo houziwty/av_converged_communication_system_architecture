@@ -29,7 +29,7 @@ int AVPin::connect(AVPinRef pin)
 
 int AVPin::input(
 	const uint32_t id /* = 0 */, 
-	const AVPkt* avpkt /* = nullptr */)
+	const void* avpkt /* = nullptr */)
 {
 	int ret{ avpkt ? Error_Code_Success : Error_Code_Invalid_Param };
 
