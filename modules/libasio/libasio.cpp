@@ -99,7 +99,7 @@ int Libasio::addConf(const ASIOModeConf& conf)
 						ios, 
 						[&](boost::asio::ip::tcp::socket* so, const int32_t e)
 						{
-							const uint32_t sid{afterFetchIOConnectedEventNotification(e)};
+							const uint32_t sid{afterFetchIOConnectedEventNotification(e, conf.tcp.user)};
 
 							if (0 < sid)
 							{

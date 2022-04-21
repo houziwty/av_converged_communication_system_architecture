@@ -68,8 +68,11 @@ namespace module
 
 				//连接事件通知
 				//@e [out] : 错误码
+				//@user [out] : 用户数据
 				//@Return : 会话ID，>0有效
-				virtual uint32_t afterFetchIOConnectedEventNotification(const int32_t e = 0) = 0;
+				virtual uint32_t afterFetchIOConnectedEventNotification(
+					const int32_t e = 0, 
+					void* user = nullptr) = 0;
 
 				//接收数据通知
 				//@id [out] : 会话ID

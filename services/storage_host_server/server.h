@@ -13,6 +13,8 @@
 #ifndef SERVICE_STORAGE_HOST_SERVER_H
 #define SERVICE_STORAGE_HOST_SERVER_H
 
+#include "boost/atomic.hpp"
+#include "boost/shared_ptr.hpp"
 #include "libfilelog.h"
 using namespace module::file::log;
 #include "libxmq.h"
@@ -21,6 +23,11 @@ using namespace module::network::xmq;
 using namespace module::network::asio;
 #include "libfdfs.h"
 using namespace module::file::storage;
+#include "map/unordered_map.h"
+
+class UploadSession;
+using UploadSessionPtr = boost::shared_ptr<UploadSession>;
+using UploadSessions = UnorderedMap<const uint32_t, UploadSessionPtr>;
 
 class Server final 
     : protected Libxmq, protected Libfdfs, protected Libasio
@@ -34,6 +41,11 @@ public:
         const XMQNodeConf& conf, 
         const char* fdfsconf = nullptr);
 	int stop(void);
+    //ASIO数据发送
+    int send(
+        const uint32_t sid = 0, 
+        const void* data = nullptr, 
+        const uint64_t bytes = 0);
 
 protected:
 	void afterPolledXMQDataNotification(
@@ -49,7 +61,9 @@ protected:
         const char* ip = nullptr, 
         const uint16_t port = 0, 
         const int32_t e = 0) override;
-    uint32_t afterFetchIOConnectedEventNotification(const int32_t e = 0) override;
+    uint32_t afterFetchIOConnectedEventNotification(
+        const int32_t e = 0, 
+        void* user = nullptr) override;
     void afterPolledIOReadDataNotification(
         const uint32_t id = 0, 
         const void* data = nullptr, 
@@ -61,9 +75,16 @@ protected:
         const int32_t e = 0) override;
 
 private:
+    void processConfigRequest(
+        const char* name = nullptr, 
+        const char* req = nullptr);
+
+private:
     FileLog& log;
     uint32_t xid;
     const std::string logid;
+    boost::atomic_uint32_t sid;
+    UploadSessions uploadSessions;
 };//class Server
 
 #endif//SERVICE_STORAGE_HOST_SERVER_H

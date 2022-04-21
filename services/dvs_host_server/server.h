@@ -60,7 +60,9 @@ protected:
         const char* ip = nullptr, 
         const uint16_t port = 0, 
         const int32_t e = 0) override;
-    uint32_t afterFetchIOConnectedEventNotification(const int32_t e = 0) override;
+    uint32_t afterFetchIOConnectedEventNotification(
+        const int32_t e = 0, 
+        void* user = nullptr) override;
     void afterPolledIOReadDataNotification(
         const uint32_t id = 0, 
         const void* data = nullptr, 
@@ -106,7 +108,7 @@ private:
     uint32_t xid;
     const std::string logid;
     boost::atomic_int did;
-    boost::atomic_int sid;
+    boost::atomic_uint32_t sid;
     StreamSessions sss;
 };//class Server
 

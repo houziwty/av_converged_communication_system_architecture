@@ -37,9 +37,8 @@ namespace framework
             public:
                 //解析
                 //@data [in] : 数据
-                //@bytes [in] : 大小
                 //@Return : 错误码
-                int parse(const void* data = nullptr, const uint64_t bytes = 0);
+                int parse(const char* data = nullptr);
 
                 //获取协议名称
                 //@Return : 协议名称

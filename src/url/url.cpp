@@ -1,4 +1,4 @@
-#include "boost/algorithm/string.hpp"
+//#include "boost/algorithm/string.hpp"
 #include "error_code.h"
 #include "url/url.h"
 using namespace framework::utils::data;
@@ -9,18 +9,18 @@ Url::Url()
 Url::~Url()
 {}
 
-int Url::parse(const void* data/* = nullptr*/, const uint64_t bytes/* = 0*/)
+int Url::parse(const char* data/* = nullptr*/)
 {
-    int ret{data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
+    int ret{data ? Error_Code_Success : Error_Code_Invalid_Param};
 
     if (Error_Code_Success == ret)
     {
         try
         {
-            const std::string str((const char*)data, bytes);
-            const int colonPos{static_cast<const int>(str.find_first_of(':'))};
-            const int questionPos{static_cast<const int>(str.find_first_of('?'))};
-            const int totalLength{static_cast<const int>(str.length())};
+            const std::string str(data);
+            const std::size_t colonPos{str.find_first_of(':')};
+            const std::size_t questionPos{str.find_first_of('?')};
+            const std::size_t totalLength{str.length()};
 
             //协议
             _proto = str.substr(0, colonPos);
@@ -37,24 +37,26 @@ int Url::parse(const void* data/* = nullptr*/, const uint64_t bytes/* = 0*/)
                     _path = host_path.substr(splashPos, host_path.length());
                 }
             }
-            //参数项
+            //针对特定的URL解析而非通用URL格式
             const std::string params{-1 < questionPos ? str.substr(questionPos + 1, totalLength - questionPos) : ""};
             if (!params.empty())
             {
-                std::vector<std::string> param_items;
-                boost::split(param_items, params, boost::is_any_of("&"));
+                //from字段必须出现在data字段后面
+                const std::size_t data_pos{params.find("data=")};
+                const std::size_t from_pos{params.find("from=")};
 
-                for(int i = 0; i != param_items.size(); ++i)
+                if (std::string::npos != from_pos)
                 {
-                    std::vector<std::string> kv_item;
-                    boost::split(kv_item, param_items[i], boost::is_any_of("="));
+                    Parameter param_from{"from", params.substr(from_pos + 5, totalLength - from_pos - 5)};
+                    _params.push_back(param_from);
 
-                    //数组越界访问无法异常捕获
-                    if (2 == kv_item.size())
-                    {
-                        Parameter parameter{kv_item[0], kv_item[1]};
-                        _params.push_back(parameter);
-                    }
+                    Parameter param_data{"data", params.substr(data_pos + 5, from_pos - data_pos - 6)};
+                    _params.push_back(param_data);
+                }
+                else
+                {
+                    Parameter param_data{"data", params.substr(data_pos + 5, totalLength - data_pos - 5)};
+                    _params.push_back(param_data);
                 }
             }
         }

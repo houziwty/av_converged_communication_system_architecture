@@ -52,6 +52,7 @@ typedef struct tagASIOModeConf_t
         {
             ASIOModeType mode;
             char* ip;                       //仅ASIO_MODE_TYPE_CONNECT == mode时有效
+            void* user;                     //仅ASIO_MODE_TYPE_CONNECT == mode时有效
         }tcp;
         struct
         {
