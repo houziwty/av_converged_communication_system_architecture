@@ -1,4 +1,5 @@
 #include "boost/format.hpp"
+#include "boost/json.hpp"
 #include "boost/make_shared.hpp"
 #include "error_code.h"
 #include "url/url.h"
@@ -7,6 +8,7 @@ using namespace framework::utils::data;
 using namespace framework::utils::time;
 #include "memory/xstr.h"
 using namespace framework::utils::memory;
+#include "upload_session.h"
 #include "server.h"
 
 Server::Server(FileLog& flog)
@@ -249,7 +251,7 @@ uint32_t Server::afterFetchIOConnectedEventNotification(
 
         if (sess && Error_Code_Success == sess->run((uint32_t)atoi(did.c_str()), (uint32_t)atoi(cid.c_str())))
         {
-            uploadSessions.add(sessionid, ptr);
+            uploadSessions.add(sessionid, sess);
         }
 
         boost::checked_array_delete(user);
@@ -313,7 +315,7 @@ void Server::processConfigRequest(
             conf.tcp.mode = ASIOModeType::ASIO_MODE_TYPE_CONNECT;
             conf.tcp.ip = "127.0.0.1";
             conf.tcp.user = XStr().alloc(id.c_str(), id.length());
-            int ret{ ASIONode::addConf(conf) };
+            int ret{ Libasio::addConf(conf) };
 
             //Reply
             boost::json::object o;
@@ -322,7 +324,7 @@ void Server::processConfigRequest(
             o["timestamp"] = timestamp;
             const std::string out{boost::json::serialize(o)};
             const std::string rep{
-                (boost::format("config://%s?data=%s") % from % out).str()};
+                (boost::format("config://%s?data=%s") % name % out).str()};
             Libxmq::send(xid, rep.c_str(), rep.length(), name);
 
             log.write(

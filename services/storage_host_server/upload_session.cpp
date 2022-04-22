@@ -64,7 +64,7 @@ void UploadSession::sendRealplayRequestThread(
     const uint32_t did/* = 0*/, 
     const uint32_t cid/* = 0*/)
 {
-    int ret{0 < die && 0 < cid ? Error_Code_Success : Error_Code_Invalid_Param};
+    int ret{0 < did && 0 < cid ? Error_Code_Success : Error_Code_Invalid_Param};
 
     if (Error_Code_Success == ret)
     {
@@ -80,9 +80,7 @@ void UploadSession::sendRealplayRequestThread(
         *((uint64_t*)(frameData + 16)) = ++sequence;
         *((uint64_t*)(frameData + 24)) = 0;
         XMem().copy(req.c_str(), bytes, frameData + 32, bytes);
-        ret = server.send(frameData, totalBytes);
+        ret = server.send(sid, frameData, totalBytes);
         boost::checked_array_delete(frameData);
     }
-    
-    return ret;
 }

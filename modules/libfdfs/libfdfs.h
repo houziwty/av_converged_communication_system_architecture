@@ -47,11 +47,15 @@ namespace module
                 //@Return : 错误码
                 int destroy(void);
 
-                //上传
-                //@data : 数据
-                //@bytes : 大小
-                //@Return : 错误码
-                int upload(const char* data = nullptr, const uint64_t bytes = 0);
+                //块上传
+                //@id [in] : 用户自定义标识
+                //@data [in] : 数据
+                //@bytes [in] : 大小
+                //@Return : 文件名
+                const char* upload(
+                    const uint32_t id = 0, 
+                    const void* data = nullptr, 
+                    const uint64_t bytes = 0);
 
                 //下载
                 int download();

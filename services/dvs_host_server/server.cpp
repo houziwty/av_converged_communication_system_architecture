@@ -108,7 +108,7 @@ void Server::afterPolledXMQDataNotification(
     const char* name/* = nullptr*/)
 {
     Url url;
-    int ret{url.parse(data, bytes)};
+    int ret{url.parse((const char*)data)};
 
     //Only configure message work.
     if(Error_Code_Success == ret && !url.proto().compare("config"))
@@ -447,7 +447,7 @@ void Server::afterParsedDataNotification(
 {
     Libavpkt* pkt{reinterpret_cast<Libavpkt*>((void*)avpkt)};
     Url url;
-    int ret{url.parse(pkt->data(), pkt->bytes())};
+    int ret{url.parse((const char*)pkt->data())};
     int command{-1}, did{-1}, cid{-1};
 
     if(Error_Code_Success == ret)

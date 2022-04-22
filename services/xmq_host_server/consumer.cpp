@@ -49,7 +49,7 @@ void Consumer::afterPolledXMQDataNotification(
     // 3. 在注册服务表中查找主机名称，如果存在，则执行转发消息，否则应答消息不可达错误。
     
     Url url;
-    int ret{ url.parse(data, bytes)};
+    int ret{ url.parse((const char*)data)};
 
     if(Error_Code_Success == ret)
     {

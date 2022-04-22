@@ -53,7 +53,7 @@ void LogHostServer::afterPolledXMQDataNotification(
     const char* name/* = nullptr*/)
 {
     Url requestUrl;
-    int ret{requestUrl.parse(data, bytes)};
+    int ret{requestUrl.parse((const char*)data)};
 
     if(Error_Code_Success == ret)
     {

@@ -109,7 +109,7 @@ void DataTask::pollDataThread()
 			}
 
 			Url url;
-			int ret{ url.parse(recvbuf, curpos)};
+			int ret{ url.parse(recvbuf)};
 
 			if(Error_Code_Success == ret)
 			{
