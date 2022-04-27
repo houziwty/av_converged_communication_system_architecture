@@ -61,7 +61,7 @@ int Server::run(const XMQNodeConf& conf)
 
     const std::string text{
         (boost::format(
-            "info://%s?command=add&severity=0&log=Run dvs host server name [ %s ], xmq_addr [ %s ], xmq_port [ %d ], type [ %d ].") 
+            "info://%s?data={\"command\":\"add\",\"severity\":0,\"text\":\"Run dvs host server name [ %s ], xmq_addr [ %s ], xmq_port [ %d ], type [ %d ].\"}") 
             % logid % conf.name % conf.ip % conf.port % static_cast<int>(conf.type)).str()};
     Libxmq::send(xid, text.c_str(), text.length(), logid.c_str());
     
@@ -108,7 +108,7 @@ void Server::afterPolledXMQDataNotification(
     const char* name/* = nullptr*/)
 {
     Url url;
-    int ret{url.parse((const char*)data)};
+    int ret{url.parse(data, bytes)};
 
     //Only configure message work.
     if(Error_Code_Success == ret && !url.proto().compare("config"))
@@ -148,22 +148,19 @@ void Server::afterFetchOnlineStatusNotification(const bool online)
             SeverityLevel::SEVERITY_LEVEL_WARNING,
             "Fetch dvs host server online status [ %s ].", online ? "online" : "offline");
     }
+
+    const std::string text{
+        (boost::format(
+            "info://%s?data={\"command\":\"add\",\"severity\":0,\"text\":\"DVS host server online status [ %s ].\"}")
+            % logid % (online ? "online" : "offline")).str()};
+    Libxmq::send(xid, text.c_str(), text.length(), logid.c_str());
 }
 
-void Server::afterFetchServiceCapabilitiesNotification(
-    const char** names/* = nullptr*/, 
-    const uint32_t number/* = 0*/)
+void Server::afterFetchServiceCapabilitiesNotification(const char* names/* = nullptr*/)
 {
-    std::string text;
-
-    for (int i = 0; i != number; ++i)
-    {
-        text += ("[ " + std::string(names[i]) + " ]");
-    }
-
     log.write(
         SeverityLevel::SEVERITY_LEVEL_INFO,
-        "Fetch system online names of servers [ %s ].", text.c_str());
+        "Fetch system online names of servers [ %s ].", names);
 }
 
 uint32_t Server::afterFetchIOAcceptedEventNotification(
@@ -211,7 +208,7 @@ void Server::afterPolledIOReadDataNotification(
         Libavparser::addConf(conf);
         Libavpkt avpkt;
         avpkt.input(data, bytes);
-        Libavparser::input(0xfffe, &avpkt);
+        Libavparser::input(id, &avpkt);
         Libavparser::removeConf(id);
     }
     else
@@ -225,16 +222,15 @@ void Server::afterPolledIOReadDataNotification(
                 break;
             }
         }
-        
-        const std::string text{
-            (boost::format(
-                "info://%s?command=add&severity=1&log=Remove stream session [ %d ] while catch error code [ %d ].") 
-                % logid % id % e).str()};
-        Libxmq::send(xid, text.c_str(), text.length(), logid.c_str());
 
         log.write(
             SeverityLevel::SEVERITY_LEVEL_WARNING,
             "Remove stream session [ %d ] while catch error code [ %d ].", id, e);
+        const std::string text{
+            (boost::format(
+                "info://%s?data={\"command\":\"add\",\"severity\":1,\"text\":\"Remove stream session [ %d ] while catch error code [ %d ]\".")
+                % logid % id % e).str() };
+        Libxmq::send(xid, text.c_str(), text.length(), logid.c_str());
     }
 }
 
@@ -256,15 +252,21 @@ void Server::processConfigRequest(
 
         if (!command.compare("mec.dvs.add"))
         {
-            auto factory{o.at("factory").as_string()}, 
-                name{o.at("name").as_string()}, 
-                ip{o.at("ip").as_string()}, 
-                port{o.at("port").as_string()}, 
-                user{o.at("user").as_string()}, 
-                passwd{o.at("passwd").as_string()}, 
-                timestamp{o.at("timestamp").as_string()};
+            std::string id;
+            auto factory{ o.at("factory").as_string() },
+                name{ o.at("name").as_string() },
+                ip{ o.at("ip").as_string() },
+                port{ o.at("port").as_string() },
+                user{ o.at("user").as_string() },
+                passwd{ o.at("passwd").as_string() },
+                timestamp{ o.at("timestamp").as_string() };
+            if (o.contains("id"))
+            {
+                id = o.at("id").as_string().c_str();
+            }
+
             addDVS(
-                factory.c_str(), ip.c_str(), port.c_str(), user.c_str(), passwd.c_str(), 
+                factory.c_str(), id, ip.c_str(), port.c_str(), user.c_str(), passwd.c_str(), 
                 from.c_str(), name.c_str(), timestamp.c_str());
         }
         else if (!command.compare("mec.dvs.remove"))
@@ -277,6 +279,7 @@ void Server::processConfigRequest(
 
 int Server::addDVS(
     const std::string& factory, 
+    const std::string& id, 
     const std::string& ip, 
     const std::string& port, 
     const std::string& user, 
@@ -290,10 +293,13 @@ int Server::addDVS(
         !passwd.empty() && !from.empty() && !name.empty() && !timestamp.empty() ? 
         Error_Code_Success : 
         Error_Code_Invalid_Param};
+    uint32_t channels{ 0 };
     DVSModeConf conf;
+    memset(&conf, 0, sizeof(DVSModeConf));
 
     if (Error_Code_Success == ret)
     {
+        const uint32_t temp_did{ (uint32_t)atoi(id.c_str()) };
         conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_NONE;
         if (!factory.compare("0"))
         {
@@ -305,7 +311,7 @@ int Server::addDVS(
         }
         conf.module = DVSModuleType::DVS_MODULE_TYPE_NONE;
         //设备ID从1开始原子计数
-        conf.id = ++did;
+        conf.id = (id.empty() ? ++did : temp_did);
         XMem().copy(user.c_str(), user.length(), conf.user, 128);
         XMem().copy(passwd.c_str(), passwd.length(), conf.passwd, 64);
         XMem().copy(ip.c_str(), ip.length(), conf.ip, 128);
@@ -317,23 +323,29 @@ int Server::addDVS(
         o["command"] = "mec.dvs.add";
         o["error"] = (boost::format("%d") % ret).str();
         o["id"] = (boost::format("%d") % conf.id).str();
-        uint32_t channels{0};
         if (Error_Code_Success == Libdvs::queryConf(conf.id, DVSConfParamType::DVS_CONF_PARAM_TYPE_CHANNEL_NUMBER, &channels))
         {
             o["channels"] = (boost::format("%d") % channels).str();
         }
-        o["timestamp"] = (boost::format("%lld") % timestamp).str();
+        o["timestamp"] = (boost::format("%llu") % timestamp).str();
+        if (!id.empty())
+        {
+            o["factory"] = factory;
+            o["ip"] = ip;
+            o["port"] = port;
+            o["user"] = user;
+            o["passwd"] = passwd;
+            o["name"] = name;
+
+            if (did <= temp_did)
+            {
+                did = temp_did;
+            }
+        }
         const std::string out{boost::json::serialize(o)};
         const std::string rep{
             (boost::format("config://%s?data=%s") % from % out).str()};
         Libxmq::send(xid, rep.c_str(), rep.length(), from.c_str());
-
-        //Log
-        const std::string text{
-            (boost::format(
-                "info://%s?command=add&severity=%d&log=Add new device [ %d_%s_%s_%u_%s_%s ] result [ %d ].") 
-                % logid % (ret ? 1 : 0) % conf.id % name.c_str() % conf.ip % conf.port % conf.user % conf.passwd % ret).str()};
-        Libxmq::send(xid, text.c_str(), text.length(), logid.c_str());
     }
 
     //Terminal
@@ -341,16 +353,23 @@ int Server::addDVS(
     {
         log.write(
             SeverityLevel::SEVERITY_LEVEL_INFO,
-            "Add new device [ %d_%s_%s_%u_%s_%s ] successfully.", 
-            conf.id, name.c_str(), conf.ip, conf.port, conf.user, conf.passwd);
+            "Add new device [ %d_%s_%s_%u_%s_%s_%d ] successfully.", 
+            conf.id, name.c_str(), conf.ip, conf.port, conf.user, conf.passwd, channels);
     }
     else
     {
         log.write(
             SeverityLevel::SEVERITY_LEVEL_WARNING,
-            "Add new device [ %d_%s_%s_%u_%s_%s ] failed, result = [ %d ].", 
-            conf.id, name.c_str(), conf.ip, conf.port, conf.user, conf.passwd, ret);
+            "Add new device [ %d_%s_%s_%u_%s_%s_%d ] failed, result = [ %d ].", 
+            conf.id, name.c_str(), conf.ip, conf.port, conf.user, conf.passwd, channels, ret);
     }
+
+    //Log
+    const std::string text{
+        (boost::format(
+            "info://%s?data={\"command\":\"add\",\"severity\":%d,\"text\":\"Add new device [ %d_%s_%s_%u_%s_%s_%d ] result [ %d ].\"}")
+            % logid % (ret ? 1 : 0) % conf.id % name.c_str() % conf.ip % conf.port % conf.user % conf.passwd % channels % ret).str() };
+    Libxmq::send(xid, text.c_str(), text.length(), logid.c_str());
     
     return ret;
 }
@@ -374,13 +393,6 @@ int Server::removeDVS(
         const std::string rep{
                 (boost::format("config://%s?data=%s") % from % out).str()};
         Libxmq::send(xid, rep.c_str(), rep.length(), from.c_str());
-        
-        //Log
-        const std::string text{
-            (boost::format(
-                "info://%s?command=add&severity=%d&log=Remove device [ %s ] result [ %d ].") 
-                % logid % (ret ? 1 : 0) % id.c_str() % ret).str()};
-        Libxmq::send(xid, text.c_str(), text.length(), logid.c_str());
     }
 
     //Terminal
@@ -396,6 +408,13 @@ int Server::removeDVS(
             SeverityLevel::SEVERITY_LEVEL_WARNING,
             "Remove device [ %s ] failed, result = [ %d ].", id.c_str(), ret);
     }
+
+    //Log
+    const std::string text{
+        (boost::format(
+            "info://%s?data={\"command\":\"add\",\"severity\":%d,\"text\":\"Remove device [ %s ] result [ %d ].\"}")
+            % logid % (ret ? 1 : 0) % id.c_str() % ret).str() };
+    Libxmq::send(xid, text.c_str(), text.length(), logid.c_str());
 
     return ret;
 }
@@ -428,17 +447,17 @@ void Server::afterPolledDVSExceptionNotification(
     const uint32_t id/* = 0*/, 
     const int32_t error/* = 0*/)
 {
-    //Log
-    const std::string text{
-        (boost::format(
-            "info://%s?command=add&severity=1&log=Fetch exception code [ %d ] from device [ %d ].") 
-            % logid % error % id).str()};
-    Libxmq::send(xid, text.c_str(), text.length(), logid.c_str());
-
     //Terminal
     log.write(
         SeverityLevel::SEVERITY_LEVEL_WARNING,
         "Fetch exception code [ %d ] from device [ %d ].", error, id);
+
+    //Log
+    const std::string text{
+        (boost::format(
+            "info://%s?data={\"command\":\"add\",\"severity\":1,\"text\":\"Fetch exception code [ %d ] from device [ %d ].\"}")
+            % logid % error % id).str() };
+    Libxmq::send(xid, text.c_str(), text.length(), logid.c_str());
 }
 
 void Server::afterParsedDataNotification(
@@ -447,7 +466,7 @@ void Server::afterParsedDataNotification(
 {
     Libavpkt* pkt{reinterpret_cast<Libavpkt*>((void*)avpkt)};
     Url url;
-    int ret{url.parse((const char*)pkt->data())};
+    int ret{url.parse(pkt->data(), pkt->bytes())};
     int command{-1}, did{-1}, cid{-1};
 
     if(Error_Code_Success == ret)
@@ -458,29 +477,23 @@ void Server::afterParsedDataNotification(
 
         for(int i  = 0; i != params.size(); ++i)
         {
-            if(!params[i].key.compare("command"))
+            if(!params[i].key.compare("data"))
             {
-                command = atoi(params[i].value.c_str());
-            }
-            else if(!params[i].key.compare("channel"))
-            {
-                cid = atoi(params[i].value.c_str());
-            }
-        }
+                auto o{ boost::json::parse(params[i].value).as_object() };
+                auto channel{ o.at("channel").as_string() };
+                cid = atoi(channel.c_str());
 
-        const std::string sid{ (boost::format("%d_%d") % did % cid).str() };
-        SessionPtr sp{ sss.at(sid) };
-        if (sp)
-        {
-            ret = sp->addTarget(id);
+                const std::string sid{ (boost::format("%d_%d") % did % cid).str() };
+                SessionPtr sp{ sss.at(sid) };
+                if (sp)
+                {
+                    ret = sp->addTarget(id);
+                }
+
+                break;
+            }
         }
     }
-
-    const std::string text{
-        (boost::format(
-            "info://%s?command=add&severity=%d&log=Play live stream [ %d_%d ] from session [ %d ], result [ %d ].") 
-            % logid % (ret ? 1 : 0) % did % cid % ret).str()};
-    Libxmq::send(xid, text.c_str(), text.length(), logid.c_str());
 
      //Terminal
     if(Error_Code_Success == ret)
@@ -495,4 +508,10 @@ void Server::afterParsedDataNotification(
             SeverityLevel::SEVERITY_LEVEL_WARNING,
             "Play live stream [ %d_%d ] from session [ %d ] failed, result = [ %d ].", did, cid, id);
     }
+
+    //const std::string text{
+    //    (boost::format(
+    //        "info://%s?data={\"command\":\"add\",\"severity\":%d,\"text\":\"Play live stream [ %d_%d ] from session [ %d ], result [ %d ].\"}")
+    //        % logid % (ret ? 1 : 0) % did % cid % ret).str() };
+    //Libxmq::send(xid, text.c_str(), text.length(), logid.c_str());
 }

@@ -9,7 +9,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 		dl)
 endif()
 
-include_directories(${INCLUDE_DIR})
+include_directories(${INCLUDE_DIR} ${BOOST_DIR} ${FDFS_DIR})
 file(GLOB_RECURSE src "*.cpp")
 
 add_library(${PROJECT_NAME} SHARED ${src})

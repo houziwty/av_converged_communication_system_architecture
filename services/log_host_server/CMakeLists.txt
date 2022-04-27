@@ -5,7 +5,7 @@ project(log_host_server VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(FILELOG_DIR ${MODULES_DIR}/libfilelog)
 	set(XMQ_DIR ${MODULES_DIR}/libxmq)
-	set(DEPENDS libboost_program_options.a libboost_filesystem.a xmq filelog)
+	set(DEPENDS libboost_program_options.a libboost_filesystem.a libboost_json.a xmq filelog)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(BOOST_DIR ${3RDPART_DIR}/boost_1_78_0 ${3RDPART_DIR}/boost_1_78_0/stage/lib)
 	set(FILELOG_DIR ${MODULES_DIR}/libfilelog ${ROOT_DIR}/build/x64/modules/libfilelog)
@@ -15,6 +15,8 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 		set(DEPENDS 
 			${BOOST_DIR}/libboost_program_options-vc143-mt-sgd-x64-1_78.lib 
 			${BOOST_DIR}/libboost_filesystem-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_json-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_container-vc143-mt-sgd-x64-1_78.lib 
 			${XMQ_DIR}/${CMAKE_BUILD_TYPE}/xmq.lib 
 			${FILELOG_DIR}/${CMAKE_BUILD_TYPE}/filelog.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
@@ -22,6 +24,8 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			LINK_LIBS 
 			${BOOST_DIR}/libboost_program_options-vc143-mt-s-x64-1_78.lib 
 			${BOOST_DIR}/libboost_filesystem-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_json-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_container-vc143-mt-sgd-x64-1_78.lib 
 			${XMQ_DIR}/${CMAKE_BUILD_TYPE}/xmq.lib 
 			${FILELOG_DIR}/${CMAKE_BUILD_TYPE}/filelog.lib)
 	endif()

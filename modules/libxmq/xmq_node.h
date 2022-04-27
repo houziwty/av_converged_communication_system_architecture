@@ -14,7 +14,7 @@
 #define MODULE_NETWORK_XMQ_XMQ_NODE_H
 
 #include "boost/function.hpp"
-#include "defs.h"
+#include "libxmq_defs.h"
 
 namespace module
 {

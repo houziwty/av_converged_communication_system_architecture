@@ -13,7 +13,7 @@
 #ifndef MODULE_NETWORK_XMQ_CTX_H
 #define MODULE_NETWORK_XMQ_CTX_H
 
-#include "defs.h"
+#include "libxmq_defs.h"
 
 namespace module
 {

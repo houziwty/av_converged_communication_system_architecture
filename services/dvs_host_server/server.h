@@ -53,9 +53,7 @@ protected:
         const uint64_t bytes = 0, 
         const char* name = nullptr) override;
 	void afterFetchOnlineStatusNotification(const bool online = false) override;
-	void afterFetchServiceCapabilitiesNotification(
-		const char** names = nullptr, 
-		const uint32_t number = 0) override;
+	void afterFetchServiceCapabilitiesNotification(const char* names = nullptr) override;
     uint32_t afterFetchIOAcceptedEventNotification(
         const char* ip = nullptr, 
         const uint16_t port = 0, 
@@ -91,6 +89,7 @@ private:
         const char* req = nullptr);
     int addDVS(
         const std::string& factory, 
+        const std::string& id, 
         const std::string& ip, 
         const std::string& port, 
         const std::string& user, 

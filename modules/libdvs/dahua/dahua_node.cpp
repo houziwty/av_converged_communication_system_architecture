@@ -41,6 +41,14 @@ int64_t DahuaNode::login(
 		out.dwSize = sizeof(NET_OUT_LOGIN_WITH_HIGHLEVEL_SECURITY);
 
 		uid = CLIENT_LoginWithHighLevelSecurity(&login, &out);
+
+		if (-1 < uid)
+		{
+			for (int i = 0; i != out.stuDeviceInfo.nChanNum; ++i)
+			{
+				chanNums.push_back(i);
+			}
+		}
 	}
 
 	return uid;
@@ -70,7 +78,7 @@ int DahuaNode::catchException()
 	return Error_Code_Success;
 }
 
-int64_t DahuaNode::openRealplayStream(
+int64_t DahuaNode::openRealplay(
 	const int64_t uid/* = 0*/, 
 	const int32_t channel/* = -1*/)
 {
@@ -98,7 +106,7 @@ int64_t DahuaNode::openRealplayStream(
 	return sid;
 }
 
-int DahuaNode::closeRealplayStream(const int64_t sid/* = 0*/)
+int DahuaNode::closeRealplay(const int64_t sid/* = 0*/)
 {
 	int ret{-1 < sid ? Error_Code_Success : Error_Code_Invalid_Param};
 
@@ -118,16 +126,16 @@ int DahuaNode::getChanNum(
 
 	if(Error_Code_Success == ret)
 	{
-		NET_IN_GET_CAMERA_STATEINFO in{sizeof(NET_IN_GET_CAMERA_STATEINFO), TRUE};
-		NET_OUT_GET_CAMERA_STATEINFO out{0};
-		
-		if (CLIENT_QueryDevInfo(uid, NET_QUERY_GET_CAMERA_STATE, &in, &out))
-		{
-			for(int i = 0; i != out.nValidNum; ++i)
-			{
-				chanNums.push_back(out.pCameraStateInfo[i].nChannel);
-			}
-		}
+		//NET_IN_GET_CAMERA_STATEINFO in{sizeof(NET_IN_GET_CAMERA_STATEINFO), TRUE};
+		//NET_OUT_GET_CAMERA_STATEINFO out{0};
+		//
+		//if (CLIENT_QueryDevInfo(uid, NET_QUERY_GET_CAMERA_STATE, &in, &out))
+		//{
+		//	for(int i = 0; i != out.nValidNum; ++i)
+		//	{
+		//		chanNums.push_back(out.pCameraStateInfo[i].nChannel);
+		//	}
+		//}
 	}
 
 	return ret;
@@ -145,7 +153,7 @@ void DahuaNode::livestreamDataCallback(
 			if (node->polledDataCallback)
 			{
 				//平台的通道ID都从1开始
-				node->polledDataCallback(node->did, lRealHandle + 1, dwDataType, pBuffer, dwBufSize);
+				node->polledDataCallback(node->did, node->streams.at((int64_t)lRealHandle) + 1, dwDataType, pBuffer, dwBufSize);
 			}
 		}
 	}

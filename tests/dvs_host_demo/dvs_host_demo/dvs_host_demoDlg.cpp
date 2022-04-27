@@ -806,7 +806,7 @@ void CdvshostdemoDlg::OnMenuClickDeviceAdd()
 			o["port"] = (boost::format("%d") % dlg.port).str();
 			o["user"] = (boost::format("%d") % dlg.user).str();
 			o["passwd"] = (boost::format("%d") % dlg.passwd).str();
-			o["timestamp"] = (boost::format("%lld") % GetTickCount()).str();
+			o["timestamp"] = (boost::format("%llu") % GetTickCount()).str();
 			targetID = DVSHostID;
 		}
 		else
@@ -825,7 +825,7 @@ void CdvshostdemoDlg::OnMenuClickDeviceAdd()
 			o["longitude"] = (boost::format("%.7f") % dlg.longitude).str();
 			o["latitude"] = (boost::format("%.7f") % dlg.latitude).str();
 			o["elevation"] = (boost::format("%d") % dlg.elevation).str();
-			o["timestamp"] = (boost::format("%lld") % GetTickCount()).str();
+			o["timestamp"] = (boost::format("%llu") % GetTickCount()).str();
 			targetID = DatabaseHostID;
 		}
 		else
@@ -862,7 +862,7 @@ void CdvshostdemoDlg::OnMenuClickDeviceQuery()
 		o["command"] = "mec.db.rsu.query";
 	}
 
-	o["timestamp"] = (boost::format("%lld") % GetTickCount()).str();
+	o["timestamp"] = (boost::format("%llu") % GetTickCount()).str();
 	const std::string out{ boost::json::serialize(o) };
 	char request[128]{ 0 };
 	sprintf_s(request, 128, "config://%s?data=%s", DatabaseHostID, out.c_str());
@@ -947,7 +947,7 @@ void CdvshostdemoDlg::OnMenuClieckDeviceDelete()
 		}
 
 		o["id"] = did;
-		o["timestamp"] = (boost::format("%lld") % GetTickCount()).str();
+		o["timestamp"] = (boost::format("%llu") % GetTickCount()).str();
 		std::string out{ boost::json::serialize(o) };
 
 		char request[128]{ 0 };
@@ -979,7 +979,7 @@ void CdvshostdemoDlg::OnBnClickedXmqPositionSet()
 	o["longitude"] = d_longitude;
 	o["latitude"] = d_latitude;
 	o["elevation"] = d_elevation;
-	o["timestamp"] = (boost::format("%lld") % GetTickCount()).str();
+	o["timestamp"] = (boost::format("%llu") % GetTickCount()).str();
 	std::string out{ boost::json::serialize(o) };
 
 	char request[1024]{ 0 };
@@ -998,7 +998,7 @@ void CdvshostdemoDlg::OnBnClickedXmqPositionGet()
 
 	boost::json::object o;
 	o["command"] = "mec.db.position.query";
-	o["timestamp"] = (boost::format("%lld") % GetTickCount()).str();
+	o["timestamp"] = (boost::format("%llu") % GetTickCount()).str();
 	const std::string out{ boost::json::serialize(o) };
 
 	char request[128]{ 0 };

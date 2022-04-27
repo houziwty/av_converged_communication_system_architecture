@@ -3,7 +3,7 @@
 using namespace framework::utils::parser;
 #include "memory/xmem.h"
 using namespace framework::utils::memory;
-#include "log_host_server.h"
+#include "server.h"
 
 int main(int argc, char* argv[])
 {
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 		XMem().copy(log_name.c_str(), log_name.length(), conf.name, 128);
 		XMem().copy(xmq_addr.c_str(), xmq_addr.length(), conf.ip, 32);
 
-		LogHostServer svr{conf, log, (uint32_t)atoi(expire_days.c_str())};
+		Server svr{conf, log, (uint32_t)atoi(expire_days.c_str())};
 
         if(Error_Code_Success == svr.addNode(conf))
         {

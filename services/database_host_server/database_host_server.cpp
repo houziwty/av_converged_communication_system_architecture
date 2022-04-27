@@ -75,21 +75,12 @@ void DatabaseHostServer::afterFetchOnlineStatusNotification(const bool online)
     XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
 }
 
-void DatabaseHostServer::afterFetchServiceCapabilitiesNotification(
-    const ServiceInfo* infos/* = nullptr*/, 
-    const uint32_t number/* = 0*/)
+void DatabaseHostServer::afterFetchServiceCapabilitiesNotification(const char* names/* = nullptr*/)
 {
-    std::string text;
-
-    for (int i = 0; i != number; ++i)
-    {
-        text += ("[ " + std::string(infos[i].name) + " ]");
-    }
-
     const std::string log{
         (boost::format(
             "info://%s?command=add&severity=0&log=Fetch response message of service table [ %s ] notification.") 
-            % logid % text.c_str()).str()};
+            % logid % names).str()};
     XMQNode::send(modeconf.id, log.c_str(), log.length(), logid.c_str());
 }
 

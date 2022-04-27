@@ -155,21 +155,11 @@ void Server::afterFetchOnlineStatusNotification(const bool online)
 		online ? "online" : "offline");
 }
 
-void Server::afterFetchServiceCapabilitiesNotification(
-    const char** names/* = nullptr*/, 
-    const uint32_t number/* = 0*/)
+void Server::afterFetchServiceCapabilitiesNotification(const char* names/* = nullptr*/)
 {
-    std::string text;
-
-    for (int i = 0; i != number; ++i)
-    {
-        text += ("[ " + std::string(names[i]) + " ]");
-    }
-
 	log.write(
         SeverityLevel::SEVERITY_LEVEL_INFO,
-		"Fetch response message of service table [ %s ] notification.",
-        text.c_str());
+		"Fetch response message of service table [ %s ] notification.", names);
 }
 
 void Server::afterPolledXMQDataNotification(
@@ -179,7 +169,7 @@ void Server::afterPolledXMQDataNotification(
     const char* name/* = nullptr*/)
 {
     Url url;
-    int ret{url.parse((const char*)data)};
+    int ret{url.parse(data, bytes)};
 
     //Only configure message work.
     if(Error_Code_Success == ret)

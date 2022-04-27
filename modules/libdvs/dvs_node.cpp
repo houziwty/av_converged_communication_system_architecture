@@ -1,16 +1,16 @@
+#include "error_code.h"
 #include "dvs_node.h"
 using namespace module::device::dvs;
 
 DVSNode::DVSNode(
     PolledDataCallback data, 
     PolledExceptionCallback exception) 
-    : polledDataCallback{data}, polledExceptionCallback{exception}, 
-    did{0}, uid{-1}, module{DVSModuleType::DVS_MODULE_TYPE_NONE}
+    : polledDataCallback{data}, polledExceptionCallback{exception}, did{0}, uid{-1}
 {}
 
 DVSNode::~DVSNode()
 {
-    stop();
+//    stop();
 }
 
 int DVSNode::run(const DVSModeConf& conf)
@@ -24,17 +24,17 @@ int DVSNode::run(const DVSModeConf& conf)
 
         if (-1 < uid)
         {
-            if (Error_Code_Success == getChanNum(uid, chanNums))
-            {
+//            if (Error_Code_Success == getChanNum(uid, chanNums))
+//            {
                 for (int i = 0; i != chanNums.size(); ++i)
                 {
-                    int64_t sid{openRealplayStream(uid, chanNums[i])};
-                    if (-1 < sid)
+                    int64_t sid{openRealplay(uid, chanNums[i])};
+                    if (0 <= sid)
                     {
-                        sids.push_back(sid);
+                        streams.add(sid, chanNums[i]);
                     }
                 }
-            }
+//            }
             
             did = conf.id;
         }
@@ -53,14 +53,12 @@ int DVSNode::stop()
 
     if (Error_Code_Success == ret)
     {
-        for (int i = 0; i != sids.size(); ++i)
+        const std::vector<int64_t> handles{ streams.keies() };
+        for (int i = 0; i != handles.size(); ++i)
         {
-            if (-1 < sids[i])
-            {
-                closeRealplayStream(sids[i]);
-            }
+            closeRealplay(handles[i]);
         }
-        sids.clear();
+        streams.clear();
 
         ret = logout(uid);
         if (Error_Code_Success == ret)

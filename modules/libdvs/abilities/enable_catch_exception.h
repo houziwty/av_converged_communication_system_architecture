@@ -13,8 +13,6 @@
 #ifndef MODULE_DEVICE_DVS_ENABLE_CATCH_EXCEPTION_H
 #define MODULE_DEVICE_DVS_ENABLE_CATCH_EXCEPTION_H
 
-#include "error_code.h"
-
 namespace module
 {
 	namespace device
@@ -30,10 +28,7 @@ namespace module
 			public:
 				//捕获异常
 				//@Return : 错误码
-				virtual int catchException(void)
-				{
-					return Error_Code_Method_Not_Support;
-				}
+				virtual int catchException(void) = 0;
 			};//class EnableCatchException
 		}//namespace dvs
 	}//namespace device

@@ -1,4 +1,5 @@
 #include "boost/format.hpp"
+#include "boost/json.hpp"
 #include "zmq.h"
 #include "error_code.h"
 #include "thread/thread_pool.h"
@@ -109,19 +110,23 @@ void DataTask::pollDataThread()
 			}
 
 			Url url;
-			int ret{ url.parse(recvbuf)};
+			int ret{ url.parse(recvbuf, curpos)};
 
 			if(Error_Code_Success == ret)
 			{
+				const std::vector<Parameter> items{ url.parameters() };
+
 				if (!url.proto().compare("register"))
 				{
-					const std::vector<Parameter> items{url.parameters()};
-
 					for(int i = 0; i != items.size(); ++i)
 					{
-						if(!items[i].key.compare("timestamp"))
+						if(!items[i].key.compare("data"))
 						{
-							registerRepTickout = std::stoull(items[i].value);
+							auto o{ boost::json::parse(items[i].value).as_object() };
+							auto sequence{ o.at("sequence").as_int64() };
+							auto timestamp{ o.at("timestamp").as_int64() };
+
+							registerRepTickout = timestamp;
 							if(checkOnlineStatusCallback && XTime().tickcount() - registerRepTickout < 90000 && !online)
 							{
 								online = true;
@@ -131,44 +136,42 @@ void DataTask::pollDataThread()
 							if (online)
 							{
 								const std::string msg{
-									(boost::format("query://%s?timestamp=%lld") % XMQHostID % XTime().tickcount()).str()};
+									(boost::format("query://%s?data={\"timestamp\":%llu}") % XMQHostID % registerRepTickout).str()};
 								send(msg.c_str(), msg.length());
 							}
 							break;
 						}
 					}
 				}
-				else if (!url.proto().compare("query") && 
-						!url.host().compare(XMQHostID))
+				else if (!url.proto().compare("query") && !url.host().compare(XMQHostID))
 				{
-					const std::vector<Parameter> parameters{url.parameters()};
-					const std::size_t number{parameters.size()};
-
-					if (0 < number)
+					for(int i = 0; i != items.size(); ++i)
 					{
-						uint32_t count{0};
-						char* names[300]{0};
-
-						for (int i = 0; i != number; ++i)
+						if(!items[i].key.compare("data"))
 						{
-							if(!parameters[i].key.compare("name"))
+							auto o{ boost::json::parse(items[i].value).as_object() };
+							auto names{ o.at("services").as_string() };
+
+							if (serviceCapabilitiesNotificationCallback)
 							{
-								names[i] = (char*)parameters[i].value.c_str();
-								++count;
+								serviceCapabilitiesNotificationCallback(names.c_str());
 							}
-						}
-
-						if (serviceCapabilitiesNotificationCallback)
-						{
-							serviceCapabilitiesNotificationCallback((const char**)names, count);
 						}
 					}
 				}
 				else
 				{
-					if (polledDataCallback)
+					for (int i = 0; i != items.size(); ++i)
 					{
-						polledDataCallback(id, recvbuf, curpos, nullptr);
+						if (!items[i].key.compare("from"))
+						{
+							if (polledDataCallback)
+							{
+								polledDataCallback(id, recvbuf, curpos, items[i].value.c_str());
+							}
+
+							break;
+						}
 					}
 				}
 			}
@@ -180,7 +183,7 @@ void DataTask::pollDataThread()
 
 void DataTask::checkOnlineThread(const char* name/* = nullptr*/)
 {
-	int sequence{1};
+	uint64_t sequence{1};
 	uint64_t lastTickcount{0};
 	XTime xt;
 	Sock sock;
@@ -193,7 +196,7 @@ void DataTask::checkOnlineThread(const char* name/* = nullptr*/)
 		{
 			//Register and heartbeat
 			const std::string url{
-				(boost::format("register://%s?timestamp=%lld&sequence=%lld") % name % curTickcount % sequence++).str()};
+				(boost::format("register://%s?data={\"timestamp\":%llu, \"sequence\":%llu}") % name % curTickcount % sequence++).str()};
 
 			if(!url.empty())
 			{

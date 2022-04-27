@@ -9,7 +9,9 @@ Url::Url()
 Url::~Url()
 {}
 
-int Url::parse(const char* data/* = nullptr*/)
+int Url::parse(
+    const void* data/* = nullptr*/, 
+    const uint64_t bytes/* = 0*/)
 {
     int ret{data ? Error_Code_Success : Error_Code_Invalid_Param};
 
@@ -17,7 +19,7 @@ int Url::parse(const char* data/* = nullptr*/)
     {
         try
         {
-            const std::string str(data);
+            const std::string str{ (const char*)data, bytes };
             const std::size_t colonPos{str.find_first_of(':')};
             const std::size_t questionPos{str.find_first_of('?')};
             const std::size_t totalLength{str.length()};
@@ -26,7 +28,7 @@ int Url::parse(const char* data/* = nullptr*/)
             _proto = str.substr(0, colonPos);
             //主机
             const std::string host_path{ 
-                str.substr(colonPos + 3, -1 < questionPos ? questionPos - colonPos - 3 : totalLength - colonPos - 2) };
+                str.substr(colonPos + 3, std::string::npos != questionPos ? questionPos - colonPos - 3 : totalLength - colonPos - 2) };
             if (!host_path.empty())
             {
                 const int splashPos{static_cast<const int>(host_path.find_first_of('/'))};
@@ -38,7 +40,7 @@ int Url::parse(const char* data/* = nullptr*/)
                 }
             }
             //针对特定的URL解析而非通用URL格式
-            const std::string params{-1 < questionPos ? str.substr(questionPos + 1, totalLength - questionPos) : ""};
+            const std::string params{std::string::npos != questionPos ? str.substr(questionPos + 1, totalLength - questionPos) : ""};
             if (!params.empty())
             {
                 //from字段必须出现在data字段后面

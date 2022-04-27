@@ -32,8 +32,9 @@ public:
 	int stop(void);
 	int processRegisterRequest(
 		const char* name = nullptr, 
-		const uint64_t timestamp = 0);
-	const std::string processQueryRequest(void);
+		const uint64_t timestamp = 0, 
+		const uint64_t sequence = 0);
+	void processQueryRequest(std::vector<std::string>& names);
 	inline bool existed(const std::string name)
 	{
 		return 0 < onlineServices.at(name) ? true : false;

@@ -1,4 +1,5 @@
 #include "boost/format.hpp"
+#include "boost/json.hpp"
 #include "error_code.h"
 #include "url/url.h"
 using namespace framework::utils::data;
@@ -49,7 +50,7 @@ void Consumer::afterPolledXMQDataNotification(
     // 3. 在注册服务表中查找主机名称，如果存在，则执行转发消息，否则应答消息不可达错误。
     
     Url url;
-    int ret{ url.parse((const char*)data)};
+    int ret{ url.parse(data, bytes)};
 
     if(Error_Code_Success == ret)
     {
@@ -59,12 +60,24 @@ void Consumer::afterPolledXMQDataNotification(
 
             for(int i = 0; i != items.size(); ++i)
             {
-                if(!items[i].key.compare("timestamp"))
+                if(!items[i].key.compare("data"))
                 {
-                    server.processRegisterRequest(name, std::atoll(items[i].value.c_str()));
-                    const std::string rep{
-                        (boost::format("register://%s?timestamp=%lld") % XMQHostID % items[i].value).str()};
-                    send(modeconf.id, rep.c_str(), rep.length(), name);
+                    try
+                    {
+                        auto o{ boost::json::parse(items[i].value).as_object() };
+                        auto timestamp{ o.at("timestamp").as_int64() };
+                        auto sequence{ o.at("sequence").as_int64() };
+
+                        server.processRegisterRequest(name, timestamp, sequence);
+                        const std::string rep{
+                            (boost::format("register://%s?data={\"timestamp\":%llu, \"sequence\":%llu}") % XMQHostID % timestamp % sequence).str() };
+                        send(modeconf.id, rep.c_str(), rep.length(), name);
+                    }
+                    catch (...)
+                    {
+                        server.catchExceptionOfParsingUrl(data, bytes, name, ret);
+                    }
+                    
                     break;
                 }
             }
@@ -72,19 +85,37 @@ void Consumer::afterPolledXMQDataNotification(
         else if (!url.proto().compare("query") && 
                  !url.host().compare(XMQHostID))
         {
-            const std::vector<Parameter> parameters{url.parameters()};
-            const std::string names{server.processQueryRequest()};
-            std::string rep{
-                (boost::format("query://%s?%s") % XMQHostID % names).str()};
+            const std::vector<Parameter> items{url.parameters()};
 
-            for(int i = 0; i != parameters.size(); ++i)
+            for(int i = 0; i != items.size(); ++i)
             {
-                const std::string param{
-                    (boost::format("&%s=%s") % parameters[i].key % parameters[i].value).str()};
-                rep.append(param);
-            }
+                if (!items[i].key.compare("data"))
+                {
+                    try
+                    {
+                        auto o{ boost::json::parse(items[i].value).as_object() };
+                        std::vector<std::string> names;
+                        server.processQueryRequest(names);
+                        std::string services;
 
-            send(modeconf.id, rep.c_str(), rep.length(), name);
+                        for (int i = 0; i != names.size(); ++i)
+                        {
+                            services.append(names[i] + ";");
+                        }
+                        o["services"] = services;
+
+                        const std::string rep{
+                            (boost::format("query://%s?data=%s") % XMQHostID % boost::json::serialize(o)).str() };
+                        send(modeconf.id, rep.c_str(), rep.length(), name);
+                    }
+                    catch (...)
+                    {
+                        server.catchExceptionOfParsingUrl(data, bytes, name, ret);
+                    }
+
+                    break;
+                }
+            }
         }
         else
         {

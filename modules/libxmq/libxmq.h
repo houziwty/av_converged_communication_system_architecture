@@ -15,7 +15,7 @@
 #ifndef MODULE_NETWORK_XMQ_LIB_XMQ_H
 #define MODULE_NETWORK_XMQ_LIB_XMQ_H
 
-#include "defs.h"
+#include "libxmq_defs.h"
 
 namespace module
 {
@@ -71,12 +71,9 @@ namespace module
 				virtual void afterFetchOnlineStatusNotification(const bool online = false);
 
 				//在线服务名称通知
-				//@names [out] : 名称 
-				//@number [out] : 个数
+				//@names [out] : 名称
 				//@Comment : 间隔30秒触发
-				virtual void afterFetchServiceCapabilitiesNotification(
-					const char** names = nullptr, 
-					const uint32_t number = 0);
+				virtual void afterFetchServiceCapabilitiesNotification(const char* names = nullptr);
 			};//class Libxmq
 		}//namespace xmq
 	}//namespace network

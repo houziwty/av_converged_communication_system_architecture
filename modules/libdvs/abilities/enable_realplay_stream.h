@@ -13,8 +13,6 @@
 #ifndef MODULE_DEVICE_DVS_ENABLE_REALPLAY_STREAM_H
 #define MODULE_DEVICE_DVS_ENABLE_REALPLAY_STREAM_H
 
-#include "error_code.h"
-
 namespace module
 {
 	namespace device
@@ -32,20 +30,14 @@ namespace module
 				//@user [in] : 用户ID
     			//@bytes [in] : 通道
 				//@Return : 流ID
-				virtual int64_t openRealplayStream(
-					const int64_t uid = 0, 
-					const int32_t channel = -1)
-				{
-					return -1;
-				}
+				virtual int64_t openRealplay(
+					const int64_t uid = 0,
+					const int32_t channel = -1) = 0;
 
 				//关闭
 				//@sid [in] : 流ID
 				//@Return : 错误码
-				virtual int closeRealplayStream(const int64_t sid = 0)
-				{
-					return Error_Code_Method_Not_Support;
-				}
+				virtual int closeRealplay(const int64_t sid = 0) = 0;
 			};//class EnableRealplayStream
 		}//namespace dvs
 	}//namespace device

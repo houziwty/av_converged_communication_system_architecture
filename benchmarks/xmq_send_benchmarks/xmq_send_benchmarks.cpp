@@ -24,33 +24,32 @@ private:
 public:
 	void task_worker_thread(void)
 	{
-		// char buf[3 * 1024 * 1024]{ 0 };
-		// FILE* fd{ nullptr };
-		// fopen(&fd, "C:\\Users\\aaa\\OneDrive\\Desktop\\192.168.2.230_01_20220413082310260.jpeg", "rb+");
-		// const std::size_t bytes = fread(buf, 600 * 1024, 1, fd);
+		char buf[629270]{ 0 };
+		FILE* fd{ nullptr };
+#ifdef _WINDOWS
+		fopen_s(&fd, "D:\\av_converged_communication_system_architecture\\build\\192.168.2.164_01_20220424161253411.jpeg", "rb+");
+#else
+		fd = fopen("/mnt/d/av_converged_communication_system_architecture/build/192.168.2.164_01_20220424161253411.jpeg", "rb+");
+#endif//_WINDOWS
+		const std::size_t bytes = fread(buf, 629270, 1, fd);
 
 		uint64_t count{0};
-		const std::size_t bytes{ 800 * 1024 };
-		char* buf = new char[bytes]{0};
-		memset(buf, 0, bytes);
-		unsigned long long start{ XTime().tickcount() };
+		const std::size_t sndbytes{ 800 * 1024 };
+		char* sndbuf = new char[sndbytes]{0};
+		memset(sndbuf, 0, sndbytes);
+		printf(sndbuf, "config://xmq_send_benchmark?data={\"command\":\"send_test\",\"text\":%s}", buf);
+
 
 		while (!stopped)
 		{
-			uint64_t* number{(uint64_t*)buf};
-			*number = ++count;
-
-			int ret = Libxmq::send(0xF1, buf, bytes, nullptr);
-			unsigned long long stop{ XTime().tickcount() };
+			int ret = Libxmq::send(0xF1, sndbuf, sndbytes, nullptr);
 
 			if (ret)
 			{
-				std::cout << "Send result = " << count << ", expire = " << stop - start << std::endl;
+				std::cout << "Send result = " << ret << ", count = " << ++count << std::endl;
 			}
 
-			start = stop;
-
-			XTime().sleep(40);
+			XTime().sleep(1);
 		}
 	}
 
@@ -82,32 +81,25 @@ protected:
 		}
 	}
 
-	void afterFetchServiceCapabilitiesNotification(
-		const char** infos = nullptr,
-		const uint32_t number = 0)
+	void afterFetchServiceCapabilitiesNotification(const char* names = nullptr)
 	{
-		std::string text;
-		for (int i = 0; i != number; ++i)
-		{
-			text += ("[ " + std::string(infos[i]) + " ]");
-		}
-		std::cout << text << std::endl;
+		std::cout << names << std::endl;
 	}
 };
 
 int main(int argc, char* argv[])
 {
-	const std::string xmq_addr{ "192.168.2.172" };
+	const std::string xmq_addr{ "192.168.2.203" };
 	const std::string name{ "xmq_send_benchmark" };
 	XMQSendBenchmark benchmark;
 	XMQNodeConf conf{ 0 };
 	conf.id = 0xF1;
-	conf.port = 60931;
+	conf.port = 60531;
 	conf.type = XMQModuleType::XMQ_MODULE_TYPE_TASK;
 	XMem().copy(name.c_str(), name.length(), conf.name, 128);
 	XMem().copy(xmq_addr.c_str(), xmq_addr.length(), conf.ip, 32);
-	conf.opt.hwm = 3;
-	conf.opt.reconivl = 5000;
+	// conf.opt.hwm = 3;
+	// conf.opt.reconivl = 5000;
 
 	benchmark.addNode(conf);
 	getchar();

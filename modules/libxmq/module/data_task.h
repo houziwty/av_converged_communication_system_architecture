@@ -22,7 +22,7 @@ namespace module
 		namespace xmq
 		{
 			typedef boost::function<void(const bool)> CheckOnlineStatusCallback;
-			typedef boost::function<void(const char**, const uint32_t)> ServiceCapabilitiesNotificationCallback;
+			typedef boost::function<void(const char*)> ServiceCapabilitiesNotificationCallback;
 
 			class DataTask : public XMQNode
 			{
@@ -46,22 +46,6 @@ namespace module
 			protected:
 				void pollDataThread(void) override;
 				void checkOnlineThread(const char* name = nullptr);
-
-			private:
-				//注册应答处理
-				//@url [in] : 应答URL
-//				void processRegisterResponseMessage(void* url = nullptr);
-
-				//查询应答处理
-				//@url [in] : 应答URL
-//				void processQueryResponseMessage(void* url = nullptr);
-
-				//转发业务处理
-				//@data [in] : 数据
-				//@bytes [in] : 大小
-				// void processForwardCustomMessage(
-				// 	const void* data = nullptr, 
-				// 	const uint64_t bytes = 0);
 
 			private:
 				uint32_t id;

@@ -61,6 +61,7 @@ typedef struct tagExtendDrawInfo_t
     bool enable;
     uint32_t number;
     AVDrawParam* areas;
+    uint16_t lw;				        //线宽
 }ExtendDrawInfo;
 
 //AV流图角色配置

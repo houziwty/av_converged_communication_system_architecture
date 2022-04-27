@@ -38,10 +38,10 @@ namespace module
 					const char* passwd = nullptr) override;
 				int logout(const int64_t uid = -1) override;
 				int catchException(void) override;
-				int64_t openRealplayStream(
+				int64_t openRealplay(
 					const int64_t uid = 0, 
 					const int32_t channel = -1) override;
-				int closeRealplayStream(const int64_t sid = 0) override;
+				int closeRealplay(const int64_t sid = 0) override;
 				int getChanNum(
 					const int64_t uid, 
 					std::vector<int64_t>& chanNums) override;

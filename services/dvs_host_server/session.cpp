@@ -35,7 +35,7 @@ int Session::addTarget(const uint32_t sid/* = 0*/)
         {
             sids.push_back(sid);
         }
-        mtx.lock();
+        mtx.unlock();
     }
     
     return ret;
@@ -61,7 +61,7 @@ int Session::removeTarget(const uint32_t sid/* = 0*/)
                 ret = Error_Code_Object_Not_Exist;
             }
         }
-        mtx.lock();
+        mtx.unlock();
     }
     
     return ret;

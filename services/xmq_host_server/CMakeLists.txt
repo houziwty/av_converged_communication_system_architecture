@@ -5,7 +5,7 @@ project(xmq_host_server VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(XMQ_DIR ${MODULES_DIR}/libxmq)
 	set(FILELOG_DIR ${MODULES_DIR}/libfilelog)
-	set(DEPENDS libboost_program_options.a libboost_thread.a pthread xmq filelog)
+	set(DEPENDS libboost_program_options.a libboost_thread.a libboost_json.a pthread xmq filelog)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(BOOST_DIR ${3RDPART_DIR}/boost_1_78_0 ${3RDPART_DIR}/boost_1_78_0/stage/lib)
 	set(XMQ_DIR ${MODULES_DIR}/libxmq ${ROOT_DIR}/build/x64/modules/libxmq)
@@ -17,14 +17,18 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${BOOST_DIR}/libboost_chrono-vc143-mt-sgd-x64-1_78.lib 
 			${BOOST_DIR}/libboost_program_options-vc143-mt-sgd-x64-1_78.lib	
 			${BOOST_DIR}/libboost_serialization-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_json-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_container-vc143-mt-sgd-x64-1_78.lib 			
 			${XMQ_DIR}/${CMAKE_BUILD_TYPE}/xmq.lib 
-			${FILELOG_DIR}/${CMAKE_BUILD_TYPE}/filelog.lib)
+			${FILELOG_DIR}/${CMAKE_BUILD_TYPE}/filelog.lib) 
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(DEPENDS
 			${BOOST_DIR}/libboost_thread-vc143-mt-s-x64-1_78.lib 
 			${BOOST_DIR}/libboost_chrono-vc143-mt-s-x64-1_78.lib 
 			${BOOST_DIR}/libboost_program_options-vc143-mt-s-x64-1_78.lib	
 			${BOOST_DIR}/libboost_serialization-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_json-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_container-vc143-mt-sgd-x64-1_78.lib 
 			${XMQ_DIR}/${CMAKE_BUILD_TYPE}/xmq.lib 
 			${FILELOG_DIR}/${CMAKE_BUILD_TYPE}/filelog.lib)
 	endif()

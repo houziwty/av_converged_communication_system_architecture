@@ -44,9 +44,7 @@ protected:
         const uint64_t bytes = 0, 
         const char* from = nullptr) override;
 	void afterFetchOnlineStatusNotification(const bool online = false) override;
-	void afterFetchServiceCapabilitiesNotification(
-		const ServiceInfo* infos = nullptr, 
-		const uint32_t number = 0) override;
+	void afterFetchServiceCapabilitiesNotification(const char* names = nullptr) override;
 
 private:    
     //数据配置

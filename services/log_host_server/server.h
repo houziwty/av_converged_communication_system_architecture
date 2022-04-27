@@ -18,15 +18,15 @@ using namespace module::file::log;
 #include "libxmq.h"
 using namespace module::network::xmq;
 
-class LogHostServer final 
+class Server final 
     : public Libxmq
 {
 public:
-    LogHostServer(
+    Server(
         const XMQNodeConf& conf, 
         FileLog& flog, 
         const uint32_t expire = 0);
-    ~LogHostServer(void);
+    ~Server(void);
 
 protected:
 	void afterPolledXMQDataNotification(
@@ -35,14 +35,12 @@ protected:
         const uint64_t bytes = 0, 
         const char* name = nullptr) override;
 	void afterFetchOnlineStatusNotification(const bool online = false) override;
-	void afterFetchServiceCapabilitiesNotification(
-		const char** names = nullptr, 
-		const uint32_t number = 0) override;
+	void afterFetchServiceCapabilitiesNotification(const char* names = nullptr) override;
 
 private:
     const XMQNodeConf& modeconf;
     FileLog& log;
     const uint32_t expireDays;
-};//class LogHostServer
+};//class Server
 
 #endif//SERVICE_LOG_HOST_SERVER_H

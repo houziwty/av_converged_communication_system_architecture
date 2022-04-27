@@ -25,6 +25,7 @@ ID3DXLine* D3DLine::createNew(IDirect3DDevice9* device /* = NULL */)
 int D3DLine::draw(
 	const RECT& rect, 
 	ID3DXLine* line /* = nullptr */, 
+	const uint16_t lw /* = 5*/, 
 	const uint32_t color /* = D3DCOLOR_RGBA(255, 0, 0, 255) */)
 {
 	int ret{ line ? Error_Code_Success : Error_Code_Invalid_Param };
@@ -38,7 +39,7 @@ int D3DLine::draw(
 			{x+ w, y + h},
 			{x, y + h},
 			{x, y} };
-		line->SetWidth(5);
+		line->SetWidth(lw);
 		ret = (S_OK == line->Draw(vertex, 5, color) ? ret : Error_Code_Operate_Failure);
 	}
 

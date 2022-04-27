@@ -41,6 +41,7 @@ const char* FdfsStorage::upload(
 		const std::string fname{fileName};
 		if(!fname.empty())
 		{
+			//Append more.
 			if (!storage_append_by_filebuff(
 				(ConnectionInfo*)trackerConnectionInfo, &storageConnectionInfo, 
 				(const char*)data, bytes, groupName, fileName))
@@ -50,6 +51,7 @@ const char* FdfsStorage::upload(
 		}
 		else
 		{
+			//Create appender file.
 			if(!storage_upload_appender_by_filebuff(
 				(ConnectionInfo*)trackerConnectionInfo, &storageConnectionInfo, storePathIndex, 
 				(const char*)data, bytes, nullptr, nullptr, 0, groupName, fileName))

@@ -58,24 +58,6 @@ int DataDispatcher::send(
 
 void DataDispatcher::pollDataThread()
 {
-	// zmq_pollitem_t pollers[]{ 
-	// 	{ rso, 0, ZMQ_POLLIN, 0}, 
-	// 	{ dso, 0, ZMQ_POLLIN, 0} };
-
-	// while(rso && dso && !stopped) 
-	// {
-	// 	zmq_poll(pollers, 2, 1);
-
-	// 	if (pollers[0].revents & ZMQ_POLLIN)
-	// 	{
-	// 		Sock().forward(rso, dso);
-	// 	}
-	// 	else if (pollers[1].revents & ZMQ_POLLIN)
-	// 	{
-	// 		Sock().forward(dso, rso);
-	// 	}
-	// }
-
 	if (rso && dso)
 	{
 		zmq_proxy(rso, dso, nullptr);

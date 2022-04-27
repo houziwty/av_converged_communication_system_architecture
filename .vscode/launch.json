@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/services/dvs_host_server/dvs_host_server",
-            "args": ["--xmq_addr", "192.168.2.53", "--xmq_port", "60531"],
+            "args": ["--xmq_addr", "127.0.0.1", "--xmq_port", "60531"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
@@ -263,11 +263,11 @@
             "miDebuggerPath": "/usr/bin/gdb"
         },
         {
-            "name": "fdfs_host_server",
+            "name": "storage_host_server",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/services/fdfs_host_server/fdfs_host_server",
-            "args": ["--xmq_port", "60531", "--xmq_addr", "127.0.0.1", "--conf", "/mnt/d/av_converged_communication_system_architecture/conf/fastdfs/client.conf"],
+            "program": "${workspaceFolder}/build/services/storage_host_server/storage_host_server",
+            "args": ["--xmq_port", "60531", "--xmq_addr", "192.168.2.53", "--conf", "/mnt/d/av_converged_communication_system_architecture/conf/fastdfs/client.conf"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

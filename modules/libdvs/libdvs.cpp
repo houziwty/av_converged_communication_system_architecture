@@ -49,7 +49,7 @@ int Libdvs::addConf(const DVSModeConf& conf)
 
 			if (Error_Code_Success == ret)
 			{
-				dvss.replace(conf.id, dvs);
+				dvss.add(conf.id, dvs);
 			}
 		}
 	}
@@ -67,6 +67,7 @@ int Libdvs::removeConf(const uint32_t id/* = 0*/)
 
 		if (dvs)
 		{
+			dvs->stop();
 			dvss.remove(id);
 		}
 		else

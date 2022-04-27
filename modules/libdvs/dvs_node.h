@@ -15,10 +15,11 @@
 
 #include "boost/function.hpp"
 #include "libdvs_defs.h"
-#include "ability/enable_login_logout.h"
-#include "ability/enable_catch_exception.h"
-#include "ability/enable_realplay_stream.h"
-#include "ability/enable_config_camera.h"
+#include "abilities/enable_login_logout.h"
+#include "abilities/enable_catch_exception.h"
+#include "abilities/enable_realplay_stream.h"
+#include "abilities/enable_config_camera.h"
+#include "map/unordered_map.h"
 
 namespace module
 {
@@ -69,11 +70,10 @@ namespace module
 				}
 
 			protected:
-				DVSModuleType module;
 				uint32_t did;
 				int64_t uid;
 				std::vector<int64_t> chanNums;
-				std::vector<int64_t> sids;
+				UnorderedMap<int64_t, int32_t> streams;
 				PolledDataCallback polledDataCallback;
 				PolledExceptionCallback polledExceptionCallback;
 			};//class DVSNode

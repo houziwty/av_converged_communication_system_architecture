@@ -53,7 +53,7 @@ int Libxmq::addNode(const XMQNodeConf& conf)
 			node = boost::make_shared<DataTask>(
 				boost::bind(&Libxmq::afterPolledXMQDataNotification, this, _1, _2, _3, _4), 
 				boost::bind(&Libxmq::afterFetchOnlineStatusNotification, this, _1), 
-				boost::bind(&Libxmq::afterFetchServiceCapabilitiesNotification, this, _1, _2));
+				boost::bind(&Libxmq::afterFetchServiceCapabilitiesNotification, this, _1));
 		}
 		else if (XMQModuleType::XMQ_MODULE_TYPE_PUB == conf.type)
 		{
@@ -123,7 +123,5 @@ void Libxmq::afterPolledXMQDataNotification(
 void Libxmq::afterFetchOnlineStatusNotification(const bool online/* = false*/)
 {}
 
-void Libxmq::afterFetchServiceCapabilitiesNotification(
-    const char** infos/* = nullptr*/, 
-    const uint32_t number/* = 0*/)
+void Libxmq::afterFetchServiceCapabilitiesNotification(const char* names/* = nullptr*/)
 {}

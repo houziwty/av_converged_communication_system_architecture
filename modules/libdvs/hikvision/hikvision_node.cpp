@@ -39,6 +39,14 @@ int64_t HikvisionNode::login(
 		XStr().copy(spasswd.c_str(), spasswd.length(), logininfo.sPassword, NET_DVR_LOGIN_PASSWD_MAX_LEN);
 
 		uid = NET_DVR_Login_V40(&logininfo, &devinfo);
+
+		if (-1 < uid)
+		{
+			for (int i = 0; i != devinfo.struDeviceV30.byChanNum; ++i)
+			{
+				chanNums.push_back(devinfo.struDeviceV30.byStartChan + i);
+			}
+		}
 	}
 
 	return uid;
@@ -68,7 +76,7 @@ int HikvisionNode::catchException()
 		Error_Code_Operate_Failure;
 }
 
-int64_t HikvisionNode::openRealplayStream(
+int64_t HikvisionNode::openRealplay(
 	const int64_t uid/* = 0*/, 
 	const int32_t channel/* = -1*/)
 {
@@ -85,7 +93,7 @@ int64_t HikvisionNode::openRealplayStream(
 	return sid;
 }
 
-int HikvisionNode::closeRealplayStream(const int64_t sid/* = 0*/)
+int HikvisionNode::closeRealplay(const int64_t sid/* = 0*/)
 {
 	int ret{-1 < sid ? Error_Code_Success : Error_Code_Invalid_Param};
 
@@ -108,14 +116,6 @@ int HikvisionNode::getChanNum(
 		DWORD err{0};
 		NET_DVR_DEVICEINFO_V40 devinfo{0};
 		NET_DVR_IPPARACFG_V40 ipparamcfg{ 0 };
-		
-		if (NET_DVR_GetDVRConfig(uid, NET_DVR_GET_DEVICECFG_V40, 0, &devinfo, sizeof(NET_DVR_DEVICEINFO_V40), &err))
-		{
-			for(int i = 0; i != devinfo.struDeviceV30.byChanNum; ++i)
-			{
-				chanNums.push_back(devinfo.struDeviceV30.byStartChan + i);
-			}
-		}
 
 		if (NET_DVR_GetDVRConfig(uid, NET_DVR_GET_IPPARACFG_V40, 0, &ipparamcfg, sizeof(NET_DVR_IPPARACFG_V40), &err))
 		{
@@ -153,7 +153,7 @@ void HikvisionNode::livestreamDataCallback(
 		{
 			if (node->polledDataCallback)
 			{
-				node->polledDataCallback(node->did, lRealHandle, dwDataType, pBuffer, dwBufSize);
+				node->polledDataCallback(node->did, node->streams.at((int64_t)lRealHandle), dwDataType, pBuffer, dwBufSize);
 			}
 		}
 		else if (NET_DVR_AUDIOSTREAMDATA == dwDataType)

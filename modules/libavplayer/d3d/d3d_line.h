@@ -34,6 +34,7 @@ namespace module
 				int draw(
 					const RECT& rect, 
 					ID3DXLine* line = nullptr, 
+					const uint16_t lw = 5, 
 					const uint32_t color = D3DCOLOR_RGBA(255, 0, 0, 255));
 			};//class D3DLine
 		}//namespace stream

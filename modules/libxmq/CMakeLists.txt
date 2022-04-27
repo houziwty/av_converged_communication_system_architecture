@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5...3.16)
 project(xmq VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-	set(DEPENDS libboost_thread.a libzmq.a gnutls sodium bsd)
+	set(DEPENDS libboost_thread.a libboost_json.a libzmq.a gnutls sodium bsd)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(BOOST_DIR ${3RDPART_DIR}/boost_1_78_0 ${3RDPART_DIR}/boost_1_78_0/stage/lib)
 	set(ZMQ_DIR ${3RDPART_DIR}/libzmq-master/include ${3RDPART_DIR}/libzmq-master/build/x64/lib)
@@ -14,6 +14,8 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${BOOST_DIR}/libboost_serialization-vc143-mt-sgd-x64-1_78.lib 
 			${BOOST_DIR}/libboost_thread-vc143-mt-sgd-x64-1_78.lib 
 			${BOOST_DIR}/libboost_chrono-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_json-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_container-vc143-mt-sgd-x64-1_78.lib 
 			ws2_32.lib 
 			Iphlpapi.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
@@ -22,6 +24,8 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${BOOST_DIR}/libboost_serialization-vc143-mt-s-x64-1_78.lib 
 			${BOOST_DIR}/libboost_thread-vc143-mt-s-x64-1_78.lib 
 			${BOOST_DIR}/libboost_chrono-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_json-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_container-vc143-mt-s-x64-1_78.lib 
 			ws2_32.lib 
 			Iphlpapi.lib)
 	endif()

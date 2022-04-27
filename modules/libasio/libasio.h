@@ -15,7 +15,7 @@
 #ifndef MODULE_NETWORK_ASIO_LIB_ASIO_H
 #define MODULE_NETWORK_ASIO_LIB_ASIO_H
 
-#include "defs.h"
+#include "libasio_defs.h"
 
 namespace module
 {

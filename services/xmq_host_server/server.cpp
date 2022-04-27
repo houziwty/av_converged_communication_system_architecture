@@ -77,30 +77,31 @@ int Server::stop()
 
 int Server::processRegisterRequest(
     const char* name/* = nullptr*/, 
-    const uint64_t timestamp/* = 0*/)
+    const uint64_t timestamp/* = 0*/, 
+    const uint64_t sequence/* = 0*/)
 {
-    int ret{name && 0 < timestamp ? Error_Code_Success : Error_Code_Bad_RequestUrl};
+    int ret{name && 0 < timestamp && 0 < sequence ? Error_Code_Success : Error_Code_Bad_RequestUrl};
 
     if (Error_Code_Success == ret)
     {
         onlineServices.replace(name, timestamp);
+        log.write(
+            SeverityLevel::SEVERITY_LEVEL_INFO,
+            "Fetch request from server [ %s ] at timestamp [ %llu ] and sequence [ %llu ].", name, timestamp, sequence);
     }
 
     return ret;
 }
 
-const std::string Server::processQueryRequest()
+void Server::processQueryRequest(std::vector<std::string>& names)
 {
-    std::string out;
-    const std::vector<std::string> names{onlineServices.keies()};
+    names.clear();
+    const std::vector<std::string> items{onlineServices.keies()};
 
-    for(int i = 0; i != names.size(); ++i)
+    for(int i = 0; i != items.size(); ++i)
     {
-        out += (out.empty() ? "name=" : "&name=");
-        out += names[i];
+        names.push_back(items[i]);
     }
-    
-    return out;
 }
 
 void Server::servicesOfflineCheckThread()
@@ -125,7 +126,7 @@ void Server::servicesOfflineCheckThread()
                 onlineServices.remove(keies[i]);
 				log.write(
 					SeverityLevel::SEVERITY_LEVEL_WARNING,
-					"Remove service name [ %s ] while time out, diff [ %lld ].",
+					"Remove service name [ %s ] while time out, diff [ %llu ].",
                     keies[i].c_str(), diff);
             }
         }
@@ -146,7 +147,7 @@ void Server::catchExceptionOfParsingUrl(
 {
     const std::string text{ (const char*)data, bytes };
     log.write(
-        SeverityLevel::SEVERITY_LEVEL_WARNING,
+        SeverityLevel::SEVERITY_LEVEL_ERROR,
         "Parse request message [ %s ] from [ %s ] failed, result [ %d ].",
         text.c_str(), name, ret);
 }

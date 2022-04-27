@@ -40,6 +40,7 @@ namespace module
 				bool enable;
 				uint32_t number;
 				AVDrawParam* areas;
+				uint16_t lw;						//线宽
 			}ExtendDrawInfo;
 
 			class D3D : public AVPlayerNode
