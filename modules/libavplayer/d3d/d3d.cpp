@@ -150,7 +150,7 @@ int D3D::draw(const void* avpkt /* = nullptr */)
 				extendDrawInfo->areas[i].right,
 				extendDrawInfo->areas[i].bottom };
 			D3DLine().draw(
-				rc, d3dxLine, extendDrawInfo->lw, D3DCOLOR_RGBA(extendDrawInfo->areas[i].color[0], extendDrawInfo->areas[i].color[1], extendDrawInfo->areas[i].color[2], 0xFF));
+				rc, d3dxLine, extendDrawInfo->areas[i].lw, D3DCOLOR_RGBA(extendDrawInfo->areas[i].color[0], extendDrawInfo->areas[i].color[1], extendDrawInfo->areas[i].color[2], 0xFF));
 			D3DFont().text(
 				rc, extendDrawInfo->areas[i].text, d3dxFont, D3DCOLOR_RGBA(extendDrawInfo->areas[i].color[0], extendDrawInfo->areas[i].color[1], extendDrawInfo->areas[i].color[2], 0xFF));
 		}

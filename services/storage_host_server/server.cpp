@@ -1,3 +1,4 @@
+#include "boost/algorithm/string.hpp"
 #include "boost/format.hpp"
 #include "boost/json.hpp"
 #include "boost/make_shared.hpp"
@@ -172,7 +173,7 @@ void Server::afterPolledXMQDataNotification(
     int ret{url.parse(data, bytes)};
 
     //Only configure message work.
-    if(Error_Code_Success == ret)
+    if(Error_Code_Success == ret && !url.proto().compare("config"))
     {
         const std::vector<Parameter> params{url.parameters()};
 
@@ -232,16 +233,17 @@ uint32_t Server::afterFetchIOConnectedEventNotification(
     if (!e && user)
     {
         sessionid = ++sid;
-        const std::string id{(const char*)user};
-        const std::size_t pos{id.find_first_of('_')};
-        const std::string did{id.substr(0, pos)};
-        const std::string cid{id.substr(pos + 1, id.length())};
+
+        const std::string ids{(const char*)user};
+        std::vector<std::string> items;
+        boost::split(items, ids, boost::is_any_of("_"));
         UploadSessionPtr sess{
             boost::make_shared<UploadSession>(*this, sessionid)};
 
-        if (sess && Error_Code_Success == sess->run((uint32_t)atoi(did.c_str()), (uint32_t)atoi(cid.c_str())))
+        if (sess && Error_Code_Success == sess->run((uint32_t)atoi(items[1].c_str()), (uint32_t)atoi(items[2].c_str())))
         {
             uploadSessions.add(sessionid, sess);
+            taskSessions.add(items[0], sess);
         }
 
         boost::checked_array_delete(user);
@@ -292,12 +294,13 @@ void Server::processConfigRequest(
         auto command{o.at("command").as_string()}, timestamp{o.at("timestamp").as_string()};
         std::string out;
 
-        if (!command.compare("mec.realplay.add"))
+        if (!command.compare("mec.task.set"))
         {
-            auto did{o.at("id").as_string()}, 
-                channel{o.at("channel").as_string()};
+            auto did{o.at("camera_id").as_string()}, 
+                channel{o.at("camera_channels").as_string()}, 
+                tid{o.at("task_id").as_string()};
             const std::string id{
-                (boost::format("%s_%s") % did.c_str() % channel.c_str()).str()};
+                (boost::format("%s_%s_%s") % tid.c_str() % did.c_str() % channel.c_str()).str()};
 
             ASIOModeConf conf;
             conf.proto = ASIOProtoType::ASIO_PROTO_TYPE_TCP;
@@ -307,21 +310,12 @@ void Server::processConfigRequest(
             conf.tcp.user = XStr().alloc(id.c_str(), id.length());
             int ret{ Libasio::addConf(conf) };
 
-            //Reply
-            boost::json::object o;
-            o["command"] = "mec.realplay.add";
-            o["error"] = (boost::format("%d") % ret).str();
-            o["timestamp"] = timestamp;
-            const std::string out{boost::json::serialize(o)};
-            const std::string rep{
-                (boost::format("config://%s?data=%s") % name % out).str()};
-            Libxmq::send(xid, rep.c_str(), rep.length(), name);
-
+            //Don't reply
             log.write(
                 SeverityLevel::SEVERITY_LEVEL_INFO,
                 "Fetch request for creating realplay stream [ %d_%d ].", did.c_str(), channel.c_str());
         }
-        else if (!command.compare("mec.realplay.remove"))
+        else if (!command.compare("mec.task.remove"))
         {
             auto did{o.at("id").as_string()}, 
                 channel{o.at("channel").as_string()};

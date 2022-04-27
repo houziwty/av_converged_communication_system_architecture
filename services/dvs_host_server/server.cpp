@@ -494,15 +494,24 @@ void Server::afterParsedDataNotification(
         {
             if(!params[i].key.compare("data"))
             {
-                auto o{ boost::json::parse(params[i].value).as_object() };
-                auto channel{ o.at("channel").as_string() };
-                cid = atoi(channel.c_str());
-
-                const std::string sid{ (boost::format("%d_%d") % did % cid).str() };
-                SessionPtr sp{ sss.at(sid) };
-                if (sp)
+                try
                 {
-                    ret = sp->addTarget(id);
+                    auto o{ boost::json::parse(params[i].value).as_object() };
+                    auto channel{ o.at("channel").as_string() };
+                    cid = atoi(channel.c_str());
+
+                    const std::string sid{ (boost::format("%d_%d") % did % cid).str() };
+                    SessionPtr sp{ sss.at(sid) };
+                    if (sp)
+                    {
+                        ret = sp->addTarget(id);
+                    }
+                }
+                catch (...)
+                {
+                    log.write(
+                        SeverityLevel::SEVERITY_LEVEL_WARNING,
+                        "Bad play live stream request url [ %s ].", (const char*)(pkt->data()));
                 }
 
                 break;

@@ -28,6 +28,7 @@ using namespace module::file::storage;
 class UploadSession;
 using UploadSessionPtr = boost::shared_ptr<UploadSession>;
 using UploadSessions = UnorderedMap<const uint32_t, UploadSessionPtr>;
+using TaskSessions = UnorderedMap<const std::string, UploadSessionPtr>;
 
 class Server final 
     : protected Libxmq, protected Libfdfs, protected Libasio
@@ -83,6 +84,7 @@ private:
     const std::string logid;
     boost::atomic_uint32_t sid;
     UploadSessions uploadSessions;
+    TaskSessions taskSessions;
 };//class Server
 
 #endif//SERVICE_STORAGE_HOST_SERVER_H

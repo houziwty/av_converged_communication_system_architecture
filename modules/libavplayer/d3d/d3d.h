@@ -32,6 +32,7 @@ namespace module
 				uint32_t bottom;
 				uint8_t color[3];                   //RGB颜色值，0-R,1-G,2-B
 				char text[256];
+				uint16_t lw;						//线宽
 			}AVDrawParam;
 
 			//用户绘制参数
@@ -40,7 +41,6 @@ namespace module
 				bool enable;
 				uint32_t number;
 				AVDrawParam* areas;
-				uint16_t lw;						//线宽
 			}ExtendDrawInfo;
 
 			class D3D : public AVPlayerNode
