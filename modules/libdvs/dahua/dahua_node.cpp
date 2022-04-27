@@ -164,7 +164,7 @@ void DahuaNode::disconnectCallback(
 {
 	DahuaNode* node{ reinterpret_cast<DahuaNode*>(dwUser) };
 
-	if(node->enableException)
+	if(node && node->enableException)
 	{
 		node->polledExceptionCallback(node->did, Error_Code_Catch_Device_Exception);
 	}
@@ -175,7 +175,7 @@ void DahuaNode::reconnectedCallback(
 {
 	DahuaNode* node{ reinterpret_cast<DahuaNode*>(dwUser) };
 
-	if(node->enableException)
+	if(node && node->enableException)
 	{
 		node->polledExceptionCallback(node->did, Error_Code_Catch_Device_Exception_Resume);
 	}

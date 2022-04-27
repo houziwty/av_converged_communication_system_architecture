@@ -37,7 +37,7 @@ namespace module
 
 			//设备异常回调
 			//@_1 : 设备ID
-			//@_2 : 错误码
+			//@_3 : 错误码
 			typedef boost::function<void(const uint32_t, const int32_t)> PolledExceptionCallback;
 
 			class DVSNode : 

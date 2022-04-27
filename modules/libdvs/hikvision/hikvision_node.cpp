@@ -166,24 +166,17 @@ void HikvisionNode::exceptionCallBack(DWORD dwType, LONG lUserID, LONG lHandle, 
 {
 	HikvisionNode* node{ reinterpret_cast<HikvisionNode*>(pUser) };
 
-	if (node)
+	if (node && node->polledExceptionCallback)
 	{
-		int error{Error_Code_Catch_Device_Exception_Ignore};
-
 		if (EXCEPTION_PREVIEW == dwType || EXCEPTION_RECONNECT == dwType)
 		{
 			//Offline
-			error = Error_Code_Catch_Device_Exception;
+			node->polledExceptionCallback(node->did, Error_Code_Catch_Device_Exception);
 		}
-		else if(PREVIEW_RECONNECTSUCCESS == dwType)
+		else if (PREVIEW_RECONNECTSUCCESS == dwType)
 		{
 			//Online
-			error = Error_Code_Catch_Device_Exception_Resume;
-		}
-
-		if (node->polledExceptionCallback)
-		{
-			node->polledExceptionCallback(node->did, error);
+			node->polledExceptionCallback(node->did, Error_Code_Catch_Device_Exception_Resume);
 		}
 	}
 }

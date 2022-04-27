@@ -9,6 +9,8 @@ using namespace module::av::stream;
 #include "error_code.h"
 #include "memory/xmem.h"
 using namespace framework::utils::memory;
+#include "time/xtime.h"
+using namespace framework::utils::time;
 #include "url/url.h"
 using namespace framework::utils::data;
 #include "server.h"
@@ -452,11 +454,24 @@ void Server::afterPolledDVSExceptionNotification(
         SeverityLevel::SEVERITY_LEVEL_WARNING,
         "Fetch exception code [ %d ] from device [ %d ].", error, id);
 
+    const std::string desc{ 
+        Error_Code_Catch_Device_Exception == error ? "offline" : "online" };
+
+    //Push
+    const std::string info{
+        (boost::format(
+            "info://%s?data={\"id\":\"%s\",\"status\":\"%s\",\"timestamp\":\"%llu\"}")
+            % SystemInfoHostID 
+            % id 
+            % desc.c_str() 
+            % XTime().tickcount()).str()};
+    Libxmq::send(xid, info.c_str(), info.length(), SystemInfoHostID);
+
     //Log
     const std::string text{
         (boost::format(
-            "info://%s?data={\"command\":\"add\",\"severity\":1,\"text\":\"Fetch exception code [ %d ] from device [ %d ].\"}")
-            % logid % error % id).str() };
+            "info://%s?data={\"command\":\"add\",\"severity\":1,\"text\":\"Fetch exception status [ %s ] from device [ %d ].\"}")
+            % logid % desc.c_str() % id).str()};
     Libxmq::send(xid, text.c_str(), text.length(), logid.c_str());
 }
 
