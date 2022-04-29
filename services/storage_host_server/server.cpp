@@ -3,6 +3,8 @@
 #include "boost/json.hpp"
 #include "boost/make_shared.hpp"
 #include "error_code.h"
+#include "libavpkt.h"
+using namespace module::av::stream;
 #include "url/url.h"
 using namespace framework::utils::data;
 #include "time/xtime.h"
@@ -148,6 +150,32 @@ int Server::send(
     return ret;
 }
 
+int Server::update(const void* avpkt/* = nullptr*/)
+{
+    int ret{avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
+
+    if (Error_Code_Success == ret)
+    {
+        // Libavpkt* pkt{reinterpret_cast<Libavpkt*>(const_cast<void*>(avpkt))};
+        // const std::string fname{Libfdfs::upload(id, pkt->data(), pkt->bytes())};
+
+        // if (fname.compare(fileName))
+        // {
+        //     fileName = fname;
+            
+        // }
+
+        // const std::string url{
+        //     (boost::format("config://%s?data={\"name\":\"%s\"}") % DatabaseHostID % fname).str()};
+        // ret = Libxmq::send(xid, url.c_str(), url.length(), nullptr);
+        // log.write(
+        //     SeverityLevel::SEVERITY_LEVEL_INFO,
+        //     "Update file name [ %s ] to database.", fname.c_str());
+    }
+    
+    return ret;
+}
+
 void Server::afterFetchOnlineStatusNotification(const bool online)
 {
 	log.write(
@@ -244,6 +272,15 @@ uint32_t Server::afterFetchIOConnectedEventNotification(
         {
             uploadSessions.add(sessionid, sess);
             taskSessions.add(items[0], sess);
+            log.write(
+                SeverityLevel::SEVERITY_LEVEL_INFO,
+                "Add new upload session with ids [ %s ] successfully.", ids.c_str());
+        }
+        else
+        {
+            log.write(
+                SeverityLevel::SEVERITY_LEVEL_WARNING,
+                "Add new upload session with ids [ %s ] failed.", ids.c_str());
         }
 
         boost::checked_array_delete(user);
@@ -299,7 +336,7 @@ void Server::processConfigRequest(
             auto did{o.at("camera_id").as_string()}, 
                 channel{o.at("camera_channels").as_string()}, 
                 tid{o.at("task_id").as_string()};
-            const std::string id{
+            const std::string ids{
                 (boost::format("%s_%s_%s") % tid.c_str() % did.c_str() % channel.c_str()).str()};
 
             ASIOModeConf conf;
@@ -307,18 +344,35 @@ void Server::processConfigRequest(
             conf.port = 60820;
             conf.tcp.mode = ASIOModeType::ASIO_MODE_TYPE_CONNECT;
             conf.tcp.ip = "127.0.0.1";
-            conf.tcp.user = XStr().alloc(id.c_str(), id.length());
-            int ret{ Libasio::addConf(conf) };
+            conf.tcp.user = XStr().alloc(ids.c_str(), ids.length());
+            Libasio::addConf(conf);
 
             //Don't reply
             log.write(
                 SeverityLevel::SEVERITY_LEVEL_INFO,
-                "Fetch request for creating realplay stream [ %d_%d ].", did.c_str(), channel.c_str());
+                "Fetch request for creating task of realplay stream [ %s ].", ids.c_str());
         }
         else if (!command.compare("mec.task.remove"))
         {
-            auto did{o.at("id").as_string()}, 
-                channel{o.at("channel").as_string()};
+            auto tid{o.at("task_id").as_string()};
+
+            UploadSessionPtr ptr{taskSessions.at(tid.c_str())};
+            if (ptr)
+            {
+                ptr->stop();
+                uploadSessions.remove(ptr->sessionid());
+                taskSessions.remove(tid.c_str());
+
+                log.write(
+                    SeverityLevel::SEVERITY_LEVEL_INFO,
+                    "Fetch task id for removing realplay stream [ %s ] successfully.", tid.c_str());
+            }
+            else
+            {
+                log.write(
+                    SeverityLevel::SEVERITY_LEVEL_WARNING,
+                    "Fetch invalid task id for removing realplay stream [ %s ].", tid.c_str());
+            }
         }
     }
 }

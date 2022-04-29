@@ -12,7 +12,7 @@ extern "C" {
 using namespace module::network::xmq;
 
 DataSub::DataSub(PolledDataCallback callback) 
-	: XMQNode(callback), sso{nullptr}
+	: XMQNode(callback), sso{nullptr}, id{0}
 {}
 
 DataSub::~DataSub()
@@ -30,6 +30,7 @@ int DataSub::run(
 
 		if(sso)
 		{
+			id = conf.id;
 			ret = XMQNode::run(conf, ctx);
 		}
 	}
@@ -71,28 +72,17 @@ void DataSub::pollDataThread()
 		if (pollitems[0].revents & ZMQ_POLLIN)
 		{
 			bool more{true};
-			int pos{0};
+			int curpos{0};
 
-			while (more && pos < 1048576)
+			while (more)
 			{
-				int curpos{sock.recv(sso, recvbuf + pos, 1048576 - pos, more)};
-
-				if (0 < curpos)
-				{
-					pos += curpos;
-				}
+				curpos += sock.recv(sso, recvbuf + curpos, 1048576 - curpos, more);
 			}
-			
-			// if (Error_Code_Success == ret)
-			// {
-			// 	//只读第一段数据
-			// 	const Any* first{msg.msg()};
 
-			// 	if (polledDataCallback)
-			// 	{
-			// 		polledDataCallback(modeconf.id, first->data(), first->bytes(), nullptr);
-			// 	}
-			// }
+			if (polledDataCallback)
+			{
+				polledDataCallback(id, recvbuf, curpos, nullptr);
+			}
 		}
 	}
 }

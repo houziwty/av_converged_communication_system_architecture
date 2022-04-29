@@ -71,7 +71,7 @@ typedef struct tagAVModeConf_t
     AVModeType type;
     void* hwnd;                       //视频播放窗口
     ExtendDrawInfo* infos;            //仅当AV_MODE_TYPE_STREAM_PLAY == type时有效
-    AVFrameDataCallback callback;     //仅当AV_MODE_TYPE_GRAB_BRG24 == type时有效
+    AVFrameDataCallback callback;     //仅当AV_MODE_TYPE_GRAB_* == type时有效
 }AVModeConf;
 
 //AV过滤器名称

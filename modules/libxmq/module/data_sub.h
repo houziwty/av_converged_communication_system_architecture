@@ -41,6 +41,7 @@ namespace module
 				void pollDataThread(void) override;
 
 			private:
+				uint32_t id;
 				void* sso;
 			};//class DataSub
 		}//namespace xmq

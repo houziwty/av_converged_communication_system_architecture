@@ -4,28 +4,17 @@ using namespace framework::utils::time;
 #include "memory/xmem.h"
 using namespace framework::utils::memory;
 #include "error_code.h"
-#include "xmq_node.h"
+#include "libxmq.h"
 using namespace module::network::xmq;
 
-class TestXMQSub : public XMQNode
+class TestXMQSub : public Libxmq
 {
 public:
-  TestXMQSub() : XMQNode(){}
+  TestXMQSub() : Libxmq(){}
   ~TestXMQSub(){}
 
-public:
-	int run(void)
-  {
-    return XMQNode::run();
-  }
-
-	int stop(void) override
-  {
-    return XMQNode::stop();
-  }
-
 protected:
-	void afterPolledDataNotification(
+	void afterPolledXMQDataNotification(
 		const uint32_t id = 0, 
     const void* data = nullptr,  
     const uint64_t bytes = 0, 
@@ -36,6 +25,8 @@ protected:
     //     SeverityLevel::SEVERITY_LEVEL_INFO, 
     //     "Fetch forward data = [ %s ] from xmq sub service.", 
     //     msg.c_str());
+
+    printf("%s.\r\n", msg.c_str());
   }
 
 	void afterFetchOnlineStatusNotification(const bool online = false)
@@ -44,8 +35,7 @@ protected:
   }
 
 	void afterFetchServiceCapabilitiesNotification(
-		const ServiceInfo* infos = nullptr, 
-		const uint32_t number = 0)
+		const char** names = nullptr)
   {
     // fileLog.write(SeverityLevel::SEVERITY_LEVEL_INFO, "Fetch xmq sub service capabilities size = [ %d ].", number);
 
@@ -58,27 +48,18 @@ protected:
 
 int main(int argc, char* argv[])
 {
-  const std::string xmq_addr{"192.168.2.72"};
+  const std::string xmq_addr{"127.0.0.1"};
   const std::string name{"test_xmq_sub"};
-  boost::shared_ptr<XMQNode> node{
+  boost::shared_ptr<Libxmq> node{
       boost::make_shared<TestXMQSub>()};
-  XMQModeConf conf1{0};
-  conf1.id = 0xE1;
-  conf1.port = 60927;
-  conf1.type = XMQModeType::XMQ_MODE_TYPE_SUB;
-   XMem().copy(xmq_addr.c_str(), xmq_addr.length(), conf1.ip, 32);
-  XMem().copy(name.c_str(), name.length(), conf1.name, 128);
-  node->addConf(conf1);
-
-  XMQModeConf conf2{0};
-  conf2.id = 0xF1;
-  conf2.port = 60531;
-  conf2.type = XMQModeType::XMQ_MODE_TYPE_DEALER;
-  XMem().copy(name.c_str(), name.length(), conf2.name, 128);
-  XMem().copy(xmq_addr.c_str(), xmq_addr.length(), conf2.ip, 32);
-  node->addConf(conf2);
-  int ret{node->run()}, sequence{0};
+  XMQNodeConf conf{0};
+  conf.id = 0xF1;
+  conf.port = 60001;
+  conf.type = XMQModuleType::XMQ_MODULE_TYPE_SUB;
+  XMem().copy(name.c_str(), name.length(), conf.name, 128);
+  XMem().copy(xmq_addr.c_str(), xmq_addr.length(), conf.ip, 32);
+  int ret{node->addNode(conf)}, sequence{0};
   getchar();
-  node->stop();
+  node->removeNode(0xF1);
   return 0;
 }

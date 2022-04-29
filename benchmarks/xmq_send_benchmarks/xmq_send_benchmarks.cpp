@@ -10,6 +10,8 @@ using namespace framework::utils::thread;
 #include "libxmq.h"
 using namespace module::network::xmq;
 
+static const std::string trafficName{"traffic_cooperate_host_server"};
+
 class XMQSendBenchmark : public Libxmq
 {
 public:
@@ -25,36 +27,37 @@ public:
 	void task_worker_thread(void)
 	{
 		char buf[629270]{ 0 };
-		FILE* fd{ nullptr };
-#ifdef _WINDOWS
-		fopen_s(&fd, "D:\\av_converged_communication_system_architecture\\build\\192.168.2.164_01_20220424161253411.jpeg", "rb+");
-#else
-		fd = fopen("/mnt/d/av_converged_communication_system_architecture/build/192.168.2.164_01_20220424161253411.jpeg", "rb+");
-#endif//_WINDOWS
-		const std::size_t bytes = fread(buf, 629270, 1, fd);
+// 		FILE* fd{ nullptr };
+// #ifdef _WINDOWS
+// 		fopen_s(&fd, "D:\\av_converged_communication_system_architecture\\build\\192.168.2.164_01_20220424161253411.jpeg", "rb+");
+// #else
+// 		fd = fopen("/mnt/d/av_converged_communication_system_architecture/build/192.168.2.164_01_20220424161253411.jpeg", "rb+");
+// #endif//_WINDOWS
+// 		const std::size_t bytes = fread(buf, 629270, 1, fd);
 
 		uint64_t count{0};
-		const std::size_t sndbytes{ 800 * 1024 };
+		const std::size_t sndbytes{ 1024 };
 		char* sndbuf = new char[sndbytes]{0};
 		memset(sndbuf, 0, sndbytes);
-		printf(sndbuf, "config://xmq_send_benchmark?data={\"command\":\"send_test\",\"text\":%s}", buf);
-
+//		printf(sndbuf, "config://traffic_cooperate_host_server?data={\"command\":\"send_test\",\"text\":%s}", buf);
+		const std::string text{
+			"config://traffic_cooperate_host_server?data={\"command\":\"send_test\",\"text\":\"1234\"}"};
 
 		while (!stopped)
 		{
-			int ret = Libxmq::send(0xF1, sndbuf, sndbytes, nullptr);
+			int ret = Libxmq::send(0xF1, text.c_str(), text.length(), nullptr);
 
 			if (ret)
 			{
 				std::cout << "Send result = " << ret << ", count = " << ++count << std::endl;
 			}
 
-			XTime().sleep(1);
+			XTime().sleep(1000);
 		}
 	}
 
 protected:
-	void afterPolledDataNotification(
+	void afterPolledXMQDataNotification(
 		const uint32_t id = 0,
 		const void* data = nullptr,
 		const uint64_t bytes = 0,
@@ -89,14 +92,14 @@ protected:
 
 int main(int argc, char* argv[])
 {
-	const std::string xmq_addr{ "192.168.2.203" };
+	const std::string xmq_addr{ "192.168.2.53" };
 	const std::string name{ "xmq_send_benchmark" };
 	XMQSendBenchmark benchmark;
 	XMQNodeConf conf{ 0 };
 	conf.id = 0xF1;
 	conf.port = 60531;
 	conf.type = XMQModuleType::XMQ_MODULE_TYPE_TASK;
-	XMem().copy(name.c_str(), name.length(), conf.name, 128);
+	XMem().copy(trafficName.c_str(), trafficName.length(), conf.name, 128);
 	XMem().copy(xmq_addr.c_str(), xmq_addr.length(), conf.ip, 32);
 	// conf.opt.hwm = 3;
 	// conf.opt.reconivl = 5000;

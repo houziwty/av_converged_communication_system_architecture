@@ -46,7 +46,7 @@ namespace module
 				//@data [in] : 数据
 				//@bytes [in] : 大小
 				//@name [in] : 接收端名称
-				//@Return : 错误码
+				//@Return : >0表示发送字节数，<0表示错误码
 				virtual int send(
 					const uint32_t id = 0, 
 					const void* data = nullptr, 

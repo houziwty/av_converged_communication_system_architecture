@@ -47,6 +47,7 @@ public:
         const uint32_t sid = 0, 
         const void* data = nullptr, 
         const uint64_t bytes = 0);
+    int update(const void* avpkt = nullptr);
 
 protected:
 	void afterPolledXMQDataNotification(
