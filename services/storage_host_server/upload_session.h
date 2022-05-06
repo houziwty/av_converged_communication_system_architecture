@@ -4,7 +4,7 @@
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
 //		Date : 2022-04-21
-//		Description : 实时流视频数据上传会话
+//		Description : 存储服务数据上传会话
 //
 //		History:
 //					1. 2022-04-21 由王科威创建
@@ -13,42 +13,42 @@
 #ifndef SERVICE_STORAGE_UPLOAD_SESSION_H
 #define SERVICE_STORAGE_UPLOAD_SESSION_H
 
-#include "boost/atomic.hpp"
-#include "libav.h"
-using namespace module::av::stream;
+#include "session.h"
 
-class Server;
-
-class UploadSession : protected Libav
+class UploadSession : public Session
 {
 public:
-    //id [in] : 会话ID
-    UploadSession(Server& svr, const uint32_t id = 0);
+    //@svr [in] : 服务实例
+    //@sid [in] : 会话ID
+    //@did [in] : 设备ID
+    //@cid [in] : 通道ID
+    UploadSession(
+        Server& svr, 
+        const uint32_t sid = 0, 
+        const uint32_t did = 0, 
+        const uint32_t cid = 0);
     ~UploadSession(void);
 
 public:
-    int run(const uint32_t did = 0, const uint32_t cid = 0);
-    int stop(void);
-    int input(const void* data = nullptr, const uint64_t bytes = 0);
-    inline const uint32_t sessionid(void) const
-    {
-        return sid;
-    }
+    int run(void) override;
+    int stop(void) override;
+    int input(const void* data = nullptr, const uint64_t bytes = 0) override;
 
 private:
-    void sendRealplayRequestThread(
-        const uint32_t did = 0, 
-        const uint32_t cid = 0);
+    void sendRealplayRequestThread(void);
     void afterGrabPSFrameDataNotification(
-        const uint32_t id = 0, 
+        const uint32_t sid = 0, 
         const void* avpkt = nullptr);
 
 private:
-    Server& server;
-    const uint32_t sid;
-    boost::atomic_uint64_t sequence;
-    void* realplayThread;
+    const uint32_t deviceid;
+    const uint32_t channelid;
+    //实时流获取线程
+    void* thread;
     std::string fileName;
+    uint32_t frameNumber;
+    //Change file name in every 45000 frames or 30 minutes.
+    static const uint32_t maxFrameNumber = 45000;
 };//class UploadSession
 
 #endif//SERVICE_STORAGE_UPLOAD_SESSION_H

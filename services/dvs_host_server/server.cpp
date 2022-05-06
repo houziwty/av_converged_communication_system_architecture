@@ -486,7 +486,7 @@ void Server::afterParsedDataNotification(
 
     if(Error_Code_Success == ret)
     {
-        //realplay://1?command=1&channel=1&stream=0
+        //realplay://1?data={"command":"1","channel":"1","stream":"0"}
         did = atoi(url.host().c_str());
         const std::vector<Parameter> params{url.parameters()};
 
@@ -519,7 +519,7 @@ void Server::afterParsedDataNotification(
         }
     }
 
-     //Terminal
+    //Terminal
     if(Error_Code_Success == ret)
     {
         log.write(

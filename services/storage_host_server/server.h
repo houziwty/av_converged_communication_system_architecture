@@ -25,10 +25,10 @@ using namespace module::network::asio;
 using namespace module::file::storage;
 #include "map/unordered_map.h"
 
-class UploadSession;
-using UploadSessionPtr = boost::shared_ptr<UploadSession>;
-using UploadSessions = UnorderedMap<const uint32_t, UploadSessionPtr>;
-using TaskSessions = UnorderedMap<const std::string, UploadSessionPtr>;
+class Session;
+using SessionPtr = boost::shared_ptr<Session>;
+using Sessions = UnorderedMap<const uint32_t, SessionPtr>;
+using Tasks = UnorderedMap<const uint32_t, SessionPtr>;
 
 class Server final 
     : protected Libxmq, protected Libfdfs, protected Libasio
@@ -47,7 +47,11 @@ public:
         const uint32_t sid = 0, 
         const void* data = nullptr, 
         const uint64_t bytes = 0);
-    int update(const void* avpkt = nullptr);
+    //FDFS上传数据
+    int upload(
+        const uint32_t sid = 0, 
+        const void* avpkt = nullptr, 
+        const bool flag = false);
 
 protected:
 	void afterPolledXMQDataNotification(
@@ -84,8 +88,8 @@ private:
     uint32_t xid;
     const std::string logid;
     boost::atomic_uint32_t sid;
-    UploadSessions uploadSessions;
-    TaskSessions taskSessions;
+    Sessions sessions;
+    Tasks tasks;
 };//class Server
 
 #endif//SERVICE_STORAGE_HOST_SERVER_H

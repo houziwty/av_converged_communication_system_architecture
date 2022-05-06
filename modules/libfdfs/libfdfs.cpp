@@ -50,7 +50,8 @@ int Libfdfs::destroy()
 const char* Libfdfs::upload(
 	const uint32_t id/* = 0*/, 
 	const void* data/* = nullptr*/, 
-	const uint64_t bytes/* = 0*/)
+	const uint64_t bytes/* = 0*/, 
+	const bool append/* = false*/)
 {
 	char* ret{nullptr};
 	FdfsStoragePtr ptr{fdfsStorages.at(id)};
@@ -73,7 +74,7 @@ const char* Libfdfs::upload(
 
 	if (ptr)
 	{
-		ret = const_cast<char*>(ptr->upload((ConnectionInfo*)trackerConnectionInfo, data, bytes));
+		ret = const_cast<char*>(ptr->upload((ConnectionInfo*)trackerConnectionInfo, data, bytes, append));
 	}
 	
 	return ret;

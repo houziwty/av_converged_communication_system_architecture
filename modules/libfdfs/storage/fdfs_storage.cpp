@@ -32,14 +32,16 @@ int FdfsStorage::connect(const ConnectionInfo* trackerConnectionInfo/* = nullptr
 const char* FdfsStorage::upload(
 	const ConnectionInfo* trackerConnectionInfo/* = nullptr*/, 
 	const void* data/* = nullptr*/, 
-	const uint64_t bytes/* = 0*/)
+	const uint64_t bytes/* = 0*/, 
+	const bool append/* = false*/)
 {
 	char* ret{nullptr};
 
 	if (trackerConnectionInfo && data && 0 < bytes)
 	{
-		const std::string fname{fileName};
-		if(!fname.empty())
+		//Reset name of file while append is false.
+		
+		if(append)
 		{
 			//Append more.
 			if (!storage_append_by_filebuff(

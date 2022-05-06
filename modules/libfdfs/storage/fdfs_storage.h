@@ -38,11 +38,13 @@ namespace module
                 //@trackerConnectionInfo [in] : tacker连接实例
                 //@data [in] : 数据
                 //@bytes [in] : 大小
+                //@append [in] : 追加标识
                 //@Return : 文件名
                 const char* upload(
                     const ConnectionInfo* trackerConnectionInfo = nullptr, 
                     const void* data = nullptr, 
-                    const uint64_t bytes = 0);
+                    const uint64_t bytes = 0, 
+                    const bool append = false);
 
             private:
                 char groupName[FDFS_GROUP_NAME_MAX_LEN];

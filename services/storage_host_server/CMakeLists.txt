@@ -9,7 +9,8 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(FDFS_DIR ${MODULES_DIR}/libfdfs)
 	set(AV_DIR ${MODULES_DIR}/libav)
 	set(AVPKT_DIR ${MODULES_DIR}/libavpkt)
-	set(DEPENDS libboost_program_options.a libboost_filesystem.a libboost_json.a pthread xmq asio filelog fdfs av avpkt)
+	set(AVPARSER_DIR ${MODULES_DIR}/libavparser)
+	set(DEPENDS libboost_program_options.a libboost_filesystem.a libboost_json.a pthread xmq asio filelog fdfs av avpkt avparser)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(BOOST_DIR ${3RDPART_DIR}/boost_1_78_0 ${3RDPART_DIR}/boost_1_78_0/stage/lib)
 	set(FILELOG_DIR ${MODULES_DIR}/libfilelog ${ROOT_DIR}/build/x64/modules/libfilelog)
@@ -18,6 +19,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(FDFS_DIR  ${MODULES_DIR}/libfdfs ${ROOT_DIR}/build/x64/modules/libfdfs)
 	set(AV_DIR ${MODULES_DIR}/libav ${ROOT_DIR}/build/x64/modules/libav)
 	set(AVPKT_DIR ${MODULES_DIR}/libavpkt ${ROOT_DIR}/build/x64/modules/libavpkt)
+	set(AVPARSER_DIR ${MODULES_DIR}/libavparser ${ROOT_DIR}/build/x64/modules/libavparser)
 	
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(DEPENDS 
@@ -33,7 +35,8 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${ASIO_DIR}/${CMAKE_BUILD_TYPE}/asio.lib 
 			${FDFS_DIR}/${CMAKE_BUILD_TYPE}/fdfs.lib 
 			${AV_DIR}/${CMAKE_BUILD_TYPE}/av.lib 
-			${AVPKT_DIR}/${CMAKE_BUILD_TYPE}/avpkt.lib)
+			${AVPKT_DIR}/${CMAKE_BUILD_TYPE}/avpkt.lib 
+			${AVPKT_DIR}/${CMAKE_BUILD_TYPE}/avparser.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(DEPENDS 
 			${BOOST_DIR}/libboost_thread-vc143-mt-s-x64-1_78.lib 
@@ -48,13 +51,14 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 			${ASIO_DIR}/${CMAKE_BUILD_TYPE}/asio.lib 
 			${FDFS_DIR}/${CMAKE_BUILD_TYPE}/fdfs.lib 
 			${AV_DIR}/${CMAKE_BUILD_TYPE}/av.lib 
-			${AVPKT_DIR}/${CMAKE_BUILD_TYPE}/avpkt.lib)
+			${AVPKT_DIR}/${CMAKE_BUILD_TYPE}/avpkt.lib 
+			${AVPKT_DIR}/${CMAKE_BUILD_TYPE}/avparser.lib)
 	endif()
 	
-	add_definitions(-DUSE_MODULE_NETWORK_XMQ -DUSE_MODULE_NETWORK_ASIO -DUSE_MODULE_FILE_LOG -DUSE_MODULE_FILE_FDFS -DUSE_MODULE_AV -DUSE_MODULE_AV_PKT)
+	add_definitions(-DUSE_MODULE_NETWORK_XMQ -DUSE_MODULE_NETWORK_ASIO -DUSE_MODULE_FILE_LOG -DUSE_MODULE_FILE_FDFS -DUSE_MODULE_AV -DUSE_MODULE_AV_PKT -DUSE_MODULE_AV_PARSER)
 endif()
 
-include_directories(${INCLUDE_DIR} ${BOOST_DIR} ${XMQ_DIR} ${ASIO_DIR} ${FILELOG_DIR} ${FDFS_DIR} ${AV_DIR} ${AVPKT_DIR})
+include_directories(${INCLUDE_DIR} ${BOOST_DIR} ${XMQ_DIR} ${ASIO_DIR} ${FILELOG_DIR} ${FDFS_DIR} ${AV_DIR} ${AVPKT_DIR} ${AVPARSER_DIR})
 file(GLOB_RECURSE src 
 	"*.cpp" 
 	"${SOURCE_DIR}/commandline/*.cpp" 

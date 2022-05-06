@@ -48,14 +48,16 @@ namespace module
                 int destroy(void);
 
                 //块上传
-                //@id [in] : 用户自定义标识
+                //@id [in] : 上传ID
                 //@data [in] : 数据
                 //@bytes [in] : 大小
+                //@append [in] : 追加标识
                 //@Return : 文件名
                 const char* upload(
                     const uint32_t id = 0, 
                     const void* data = nullptr, 
-                    const uint64_t bytes = 0);
+                    const uint64_t bytes = 0, 
+                    const bool append = false);
 
                 //下载
                 int download();

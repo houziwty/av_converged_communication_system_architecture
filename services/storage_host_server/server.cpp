@@ -1,4 +1,5 @@
 #include "boost/algorithm/string.hpp"
+#include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/format.hpp"
 #include "boost/json.hpp"
 #include "boost/make_shared.hpp"
@@ -150,27 +151,31 @@ int Server::send(
     return ret;
 }
 
-int Server::update(const void* avpkt/* = nullptr*/)
+int Server::upload(
+    const uint32_t sid/* = 0*/, 
+    const void* avpkt/* = nullptr*/, 
+    const bool append/* = false*/)
 {
-    int ret{avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
+    int ret{0 < sid && avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
 
     if (Error_Code_Success == ret)
     {
-        // Libavpkt* pkt{reinterpret_cast<Libavpkt*>(const_cast<void*>(avpkt))};
-        // const std::string fname{Libfdfs::upload(id, pkt->data(), pkt->bytes())};
+        Libavpkt* pkt{reinterpret_cast<Libavpkt*>(const_cast<void*>(avpkt))};
+        const char* fname{
+            Libfdfs::upload(sid, pkt->data(), pkt->bytes(), append)};
 
-        // if (fname.compare(fileName))
-        // {
-        //     fileName = fname;
-            
-        // }
-
-        // const std::string url{
-        //     (boost::format("config://%s?data={\"name\":\"%s\"}") % DatabaseHostID % fname).str()};
-        // ret = Libxmq::send(xid, url.c_str(), url.length(), nullptr);
-        // log.write(
-        //     SeverityLevel::SEVERITY_LEVEL_INFO,
-        //     "Update file name [ %s ] to database.", fname.c_str());
+        //只有新增才记录数据库
+        if (append)
+        {
+            const std::string tm{
+                boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time())};
+            const std::string url{
+                (boost::format("config://%s?data={\"command\":\"mec.db.record.add\",\"name\":\"%s\",\"time\":\"%s\"}") % DatabaseHostID % fname % tm).str()};
+            ret = Libxmq::send(xid, url.c_str(), url.length(), nullptr);
+            log.write(
+                SeverityLevel::SEVERITY_LEVEL_INFO,
+                "Update file name [ %s ] and time [ %s ] to database.", fname, tm.c_str());
+        }
     }
     
     return ret;
@@ -236,9 +241,22 @@ uint32_t Server::afterFetchIOAcceptedEventNotification(
     if (!e)
     {
         sessionid = ++sid;
-        log.write(
-            SeverityLevel::SEVERITY_LEVEL_INFO,
-            "Fetch connection [ %d ] from remote [ %s : %u ] successfully.", sessionid, ip, port);
+        SessionPtr ptr{
+            boost::make_shared<UploadSession>(*this, sessionid)};
+
+        if (ptr && Error_Code_Success == ptr->run())
+        {
+            sessions.add(sessionid, ptr);
+            log.write(
+                SeverityLevel::SEVERITY_LEVEL_INFO,
+                "Add new download session from [ %s : %u ] successfully.", ip, port);
+        }
+        else
+        {
+            log.write(
+                SeverityLevel::SEVERITY_LEVEL_WARNING,
+                "Add new download session from [ %s : %u ] failed.", ip, port);
+        }
     }
     else
     {
@@ -261,17 +279,17 @@ uint32_t Server::afterFetchIOConnectedEventNotification(
     if (!e && user)
     {
         sessionid = ++sid;
-
         const std::string ids{(const char*)user};
         std::vector<std::string> items;
         boost::split(items, ids, boost::is_any_of("_"));
-        UploadSessionPtr sess{
-            boost::make_shared<UploadSession>(*this, sessionid)};
+        SessionPtr ptr{
+            boost::make_shared<UploadSession>(
+                *this, sessionid, (uint32_t)atoi(items[1].c_str()), (uint32_t)atoi(items[2].c_str()))};
 
-        if (sess && Error_Code_Success == sess->run((uint32_t)atoi(items[1].c_str()), (uint32_t)atoi(items[2].c_str())))
+        if (ptr && Error_Code_Success == ptr->run())
         {
-            uploadSessions.add(sessionid, sess);
-            taskSessions.add(items[0], sess);
+            sessions.add(sessionid, ptr);
+            tasks.add((uint32_t)atoi(items[0].c_str()), ptr);
             log.write(
                 SeverityLevel::SEVERITY_LEVEL_INFO,
                 "Add new upload session with ids [ %s ] successfully.", ids.c_str());
@@ -283,7 +301,7 @@ uint32_t Server::afterFetchIOConnectedEventNotification(
                 "Add new upload session with ids [ %s ] failed.", ids.c_str());
         }
 
-        boost::checked_array_delete(user);
+        boost::checked_array_delete((char*)user);
     }
 
     return sessionid;
@@ -299,7 +317,7 @@ void Server::afterPolledIOReadDataNotification(
     {
         if (0 < id && data && 0 < bytes)
         {
-            UploadSessionPtr ptr{uploadSessions.at(id)};
+            SessionPtr ptr{sessions.at(id)};
 
             if (ptr)
             {
@@ -309,7 +327,7 @@ void Server::afterPolledIOReadDataNotification(
     }
     else
     {
-        uploadSessions.remove(id);
+        sessions.remove(id);
     }
 }
 
@@ -356,12 +374,13 @@ void Server::processConfigRequest(
         {
             auto tid{o.at("task_id").as_string()};
 
-            UploadSessionPtr ptr{taskSessions.at(tid.c_str())};
+            SessionPtr ptr{tasks.at((uint32_t)atoi(tid.c_str()))};
             if (ptr)
             {
+                const uint32_t sid{ptr->id()};
                 ptr->stop();
-                uploadSessions.remove(ptr->sessionid());
-                taskSessions.remove(tid.c_str());
+                sessions.remove(sid);
+                tasks.remove(sid);
 
                 log.write(
                     SeverityLevel::SEVERITY_LEVEL_INFO,
