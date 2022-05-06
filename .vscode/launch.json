@@ -177,7 +177,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/services/log_host_server/log_host_server",
-            "args": ["--xmq_addr", "192.168.2.160", "--xmq_port", "60531", "--name", "dvs_host_server_log", "--file_dir", "${workspaceFolder}/build/services/log_host_server/", "--expire", "0"],
+            "args": ["--xmq_addr", "192.168.2.160", "--xmq_port", "60531", "--name", "dvs222_host_server_log", "--file_dir", "${workspaceFolder}/build/services/log_host_server/", "--expire", "0"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/services/log_host_server/",
             "environment": [],

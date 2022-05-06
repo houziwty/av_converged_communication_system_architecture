@@ -13,6 +13,7 @@ using namespace framework::utils::time;
 #include "memory/xstr.h"
 using namespace framework::utils::memory;
 #include "upload_session.h"
+#include "download_session.h"
 #include "server.h"
 
 Server::Server(FileLog& flog)
@@ -181,6 +182,42 @@ int Server::upload(
     return ret;
 }
 
+int Server::download(
+    const uint32_t sid/* = 0*/, 
+    const char* filename/* = nullptr*/)
+{
+    int ret{0 < sid && filename ? Error_Code_Success : Error_Code_Invalid_Param};
+
+    if (Error_Code_Success == ret)
+    {
+        char* buffer{nullptr};
+        int64_t bytes{0};
+        ret = Libfdfs::download(sid, filename, buffer, &bytes);
+
+        if (!ret && buffer && 0 < bytes)
+        {
+            ret = Libasio::send(sid, buffer, bytes);
+            boost::checked_array_delete(buffer);
+        }
+    }
+
+    return ret;
+}
+
+int Server::remove(
+    const uint32_t sid/* = 0*/, 
+    const char* filename/* = nullptr*/)
+{
+    int ret{0 < sid && filename ? Error_Code_Success : Error_Code_Invalid_Param};
+
+    if (Error_Code_Success == ret)
+    {
+        ret = Libfdfs::remove(sid, filename);
+    }
+
+    return ret;
+}
+
 void Server::afterFetchOnlineStatusNotification(const bool online)
 {
 	log.write(
@@ -242,7 +279,7 @@ uint32_t Server::afterFetchIOAcceptedEventNotification(
     {
         sessionid = ++sid;
         SessionPtr ptr{
-            boost::make_shared<UploadSession>(*this, sessionid)};
+            boost::make_shared<DownloadSession>(*this, sessionid)};
 
         if (ptr && Error_Code_Success == ptr->run())
         {

@@ -72,7 +72,7 @@ const char* Libfdfs::upload(
 		}
 	}
 
-	if (ptr)
+	if (ptr && trackerConnectionInfo)
 	{
 		ret = const_cast<char*>(ptr->upload((ConnectionInfo*)trackerConnectionInfo, data, bytes, append));
 	}
@@ -80,7 +80,70 @@ const char* Libfdfs::upload(
 	return ret;
 }
 
-int Libfdfs::download()
+int Libfdfs::download(
+	const uint32_t id/* = 0*/, 
+	const char* filename/* = nullptr*/, 
+	char* buffer/* = nullptr*/, 
+	int64_t* bytes/* = nullptr*/)
 {
-	return Error_Code_Success;
+	int ret{Error_Code_Bad_New_Object};
+	FdfsStoragePtr ptr{fdfsStorages.at(id)};
+
+	if (!ptr)
+	{
+		ptr = boost::make_shared<FdfsStorage>();
+		if (ptr)
+		{
+			if (Error_Code_Success == ptr->connect((ConnectionInfo*)trackerConnectionInfo))
+			{
+				fdfsStorages.add(id, ptr);
+			}
+			else
+			{
+				ptr.reset();
+			}
+		}
+	}
+
+	if (ptr && trackerConnectionInfo)
+	{
+		ret = ptr->download((ConnectionInfo*)trackerConnectionInfo, filename, buffer, bytes);
+	}
+	
+	return ret;
+}
+
+int Libfdfs::remove(
+	const uint32_t id/* = 0*/, 
+	const char* filename/* = nullptr*/)
+{
+	int ret{trackerConnectionInfo && filename ? Error_Code_Success : Error_Code_Invalid_Param};
+
+	if (Error_Code_Success == ret)
+	{
+		FdfsStoragePtr ptr{fdfsStorages.at(id)};
+
+		if (!ptr)
+		{
+			ptr = boost::make_shared<FdfsStorage>();
+			if (ptr)
+			{
+				if (Error_Code_Success == ptr->connect((ConnectionInfo*)trackerConnectionInfo))
+				{
+					fdfsStorages.add(id, ptr);
+				}
+				else
+				{
+					ptr.reset();
+				}
+			}
+		}
+
+		if (ptr && trackerConnectionInfo)
+		{
+			ret = ptr->remove((ConnectionInfo*)trackerConnectionInfo, filename);
+		}
+	}
+	
+	return ret;
 }

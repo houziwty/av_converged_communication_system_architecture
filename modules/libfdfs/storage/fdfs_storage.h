@@ -46,6 +46,26 @@ namespace module
                     const uint64_t bytes = 0, 
                     const bool append = false);
 
+                //文件下载
+                //@trackerConnectionInfo [in] : tacker连接实例
+                //@filename [in] : 文件名
+                //@buffer [out] : 数据
+                //@bytes [out] : 大小
+                //@Return : 错误码
+                int download(
+                    const ConnectionInfo* trackerConnectionInfo = nullptr, 
+                    const char* filename = nullptr, 
+                    char* buffer = nullptr, 
+                    int64_t* bytes = nullptr);
+
+                //文件删除
+                //@trackerConnectionInfo [in] : tacker连接实例
+                //@filename [in] : 文件名
+                //@Return ：错误码
+                int remove(
+                    const ConnectionInfo* trackerConnectionInfo = nullptr, 
+                    const char* filename = nullptr);
+                    
             private:
                 char groupName[FDFS_GROUP_NAME_MAX_LEN];
                 char fileName[FDFS_TRUNK_FILENAME_LENGTH];

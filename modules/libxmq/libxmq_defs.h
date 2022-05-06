@@ -96,6 +96,7 @@ static const char* StorageHostID = "storage_host_server";
 static const char* LidarHostID = "lidar_host_server";
 static const char* SensorHostID = "sensor_host_server";
 static const char* SystemInfoHostID = "system_info_host_server";
+static const char* IotHostID = "iot_host_server";
 static const char* VideoAnalysisHostID = "video_analysis_host_server";
 static const char* TrafficCooperateHostID = "traffic_cooperate_host_server";
 static const char* LidarPointCloudCacheID = "lidar_point_cloud_cache_server";

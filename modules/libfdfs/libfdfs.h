@@ -60,7 +60,24 @@ namespace module
                     const bool append = false);
 
                 //下载
-                int download();
+                //@id [in] : 下载ID
+                //@filename [in] : 文件名
+                //@buffer [out] : 数据
+                //@bytes [out] : 大小
+                //@Return : 错误码
+                int download(
+                    const uint32_t id = 0, 
+                    const char* filename = nullptr, 
+                    char* buffer = nullptr, 
+                    int64_t* bytes = nullptr);
+
+                //删除
+                //@id [in] : 删除ID
+                //@filename [in] : 文件名
+                //@Return : 错误码
+                int remove(
+                    const uint32_t id = 0, 
+                    const char* filename = nullptr);
             };//class Libfdfs
         }//namespace storage
     }//namespace file

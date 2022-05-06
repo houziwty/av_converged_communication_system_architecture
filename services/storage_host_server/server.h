@@ -52,6 +52,14 @@ public:
         const uint32_t sid = 0, 
         const void* avpkt = nullptr, 
         const bool flag = false);
+    //FDFS下载数据
+    int download(
+        const uint32_t sid = 0, 
+        const char* filename = nullptr);
+    //FDFS文件删除
+    int remove(
+        const uint32_t sid = 0, 
+        const char* filename = nullptr);
 
 protected:
 	void afterPolledXMQDataNotification(

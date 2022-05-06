@@ -74,6 +74,7 @@ void DownloadSession::afterParsedDataNotification(
     if(Error_Code_Success == ret)
     {
         //download://client_id?data={"command":"mec.record.download","name":"ABCD1234","timestamp":"123456"}
+        //download://client_id?data={"command":"mec.record.remove","name":"ABCD1234","timestamp":"123456"}
         const std::vector<Parameter> params{url.parameters()};
 
         for(int i  = 0; i != params.size(); ++i)
@@ -83,7 +84,17 @@ void DownloadSession::afterParsedDataNotification(
                 try
                 {
                     auto o{ boost::json::parse(params[i].value).as_object() };
-                    auto name{ o.at("name").as_string() };
+                    auto name{ o.at("name").as_string() }, command{o.at("command").as_string()};
+                    const std::string cmd{command.c_str()}, fname{name.c_str()};
+
+                    if (!cmd.compare("mec.record.download") && !fname.empty())
+                    {
+                        server.download(sessionid, fname.c_str());
+                    }
+                    if (!cmd.compare("mec.record.remove") && !fname.empty())
+                    {
+                        server.remove(sessionid, fname.c_str());
+                    }
                 }
                 catch (...)
                 {

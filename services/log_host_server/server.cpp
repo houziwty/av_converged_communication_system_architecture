@@ -23,6 +23,9 @@ void Server::afterFetchOnlineStatusNotification(const bool online)
         log.write(
             SeverityLevel::SEVERITY_LEVEL_INFO,
             "Fetch log host server online status [ %s ].", online ? "online" : "offline");
+
+        const std::string msg{"config://dvs222_host_server_log?data={\"command\":\"mec.perception.add\"}"};
+        Libxmq::send(modeconf.id, msg.c_str(), msg.length());
     }
     else
     {
@@ -48,100 +51,109 @@ void Server::afterPolledXMQDataNotification(
     Url url;
     int ret{url.parse(data, bytes)};
 
-    if(Error_Code_Success == ret && !url.proto().compare("info"))
+    try
     {
-        const std::vector<Parameter> params{url.parameters()};
-
-        for (int i = 0; i != params.size(); ++i)
+        if(Error_Code_Success == ret && !url.proto().compare("info"))
         {
-            if (!params[i].key.compare("data"))
+            const std::vector<Parameter> params{url.parameters()};
+
+            for (int i = 0; i != params.size(); ++i)
             {
-                auto o{boost::json::parse(params[i].value).as_object()};
-                auto command{o.at("command").as_string()};
-                auto severity{o.at("severity").as_int64()};
-                auto text{o.at("text").as_string()};
-
-                if(!command.compare("add"))
+                if (!params[i].key.compare("data"))
                 {
-                    SeverityLevel sl{(SeverityLevel)severity};
-                    if (SeverityLevel::SEVERITY_LEVEL_INFO == sl || 
-                        SeverityLevel::SEVERITY_LEVEL_WARNING == sl || 
-                        SeverityLevel::SEVERITY_LEVEL_ERROR == sl)
-                    {
-                        log.write(sl, text.c_str());
-                    }
-                }
-                else if(!command.compare("query"))
-                {
-                    auto begin{o.at("begin").as_string()}; 
-                    auto end{o.at("end").as_string()};
-                    std::string filenames;
-                    const uint32_t start_time{ (uint32_t)atoi(begin.c_str()) }, stop_time{ (uint32_t)atoi(end.c_str()) };
-                    boost::filesystem::path path(log.dir());
-                    boost::filesystem::directory_iterator last;
+                    auto o{boost::json::parse(params[i].value).as_object()};
+                    auto command{o.at("command").as_string()};
+                    auto severity{o.at("severity").as_int64()};
+                    auto text{o.at("text").as_string()};
 
-                    for (boost::filesystem::directory_iterator it(path); it != last; ++it)
+                    if(!command.compare("add"))
                     {
-                        if (!boost::filesystem::is_directory(*it))
+                        SeverityLevel sl{(SeverityLevel)severity};
+                        if (SeverityLevel::SEVERITY_LEVEL_INFO == sl || 
+                            SeverityLevel::SEVERITY_LEVEL_WARNING == sl || 
+                            SeverityLevel::SEVERITY_LEVEL_ERROR == sl)
                         {
-                            const std::string filename{ it->path().filename().string() };
-                            const uint32_t current_time{ (uint32_t)atoi(filename.c_str())};
+                            log.write(sl, text.c_str());
+                        }
+                    }
+                    else if(!command.compare("query"))
+                    {
+                        auto begin{o.at("begin").as_string()}; 
+                        auto end{o.at("end").as_string()};
+                        std::string filenames;
+                        const uint32_t start_time{ (uint32_t)atoi(begin.c_str()) }, stop_time{ (uint32_t)atoi(end.c_str()) };
+                        boost::filesystem::path path(log.dir());
+                        boost::filesystem::directory_iterator last;
 
-                            if (start_time <= current_time && stop_time >= current_time)
+                        for (boost::filesystem::directory_iterator it(path); it != last; ++it)
+                        {
+                            if (!boost::filesystem::is_directory(*it))
                             {
-                                filenames += (filename + ";");
+                                const std::string filename{ it->path().filename().string() };
+                                const uint32_t current_time{ (uint32_t)atoi(filename.c_str())};
+
+                                if (start_time <= current_time && stop_time >= current_time)
+                                {
+                                    filenames += (filename + ";");
+                                }
                             }
                         }
+
+                        const std::string msg{
+                            (boost::format("info://%s?data={\"command\":\"query\",\"files\":%s}") % name % filenames).str() };
+                        Libxmq::send(modeconf.id, msg.c_str(), msg.length());
                     }
-
-                    const std::string msg{
-                        (boost::format("info://%s?data={\"command\":\"query\",\"files\":%s}") % name % filenames).str() };
-                    Libxmq::send(modeconf.id, msg.c_str(), msg.length());
-                }
-                else if(!command.compare("fetch"))
-                {
-                    FILE* fd{ nullptr };
-                    uint64_t fdbytes{0};
-                    char* text{ nullptr };
-                    std::string msg;
-                    auto date{o.at("date").as_string()};
-
-#ifdef _WINDOWS
-                    const std::string filename{ std::string(log.dir()) + "\\" + date.c_str()};
-                    fopen_s(&fd, filename.c_str(), "rb+");
-#else
-                    const std::string filename{ std::string(log.dir()) + "/" + date.c_str() };
-                    fd = fopen(filename.c_str(), "rb+");
-#endif//_WINDOWS
-
-                    if (fd)
+                    else if(!command.compare("fetch"))
                     {
-                        fseek(fd, 0, SEEK_END);
-                        fdbytes = ftell(fd);
-                        text = new(std::nothrow) char[fdbytes];
-                        if (text)
-                        {
+                        FILE* fd{ nullptr };
+                        uint64_t fdbytes{0};
+                        char* text{ nullptr };
+                        std::string msg;
+                        auto date{o.at("date").as_string()};
+
 #ifdef _WINDOWS
-                            fread_s(text, fdbytes, fdbytes, 1, fd);
+                        const std::string filename{ std::string(log.dir()) + "\\" + date.c_str()};
+                        fopen_s(&fd, filename.c_str(), "rb+");
 #else
-                            fread(text, fdbytes, 1, fd);
+                        const std::string filename{ std::string(log.dir()) + "/" + date.c_str() };
+                        fd = fopen(filename.c_str(), "rb+");
 #endif//_WINDOWS
-                            msg = (boost::format("info://%s?data={\"command\":\"fetch\",\"text\":%s}") % name % text).str();
-                        }
-                        else
+
+                        if (fd)
                         {
-                            msg = (boost::format("info://%s?data={\"command\":\"fetch\",\"text\":""}") % name).str();
+                            fseek(fd, 0, SEEK_END);
+                            fdbytes = ftell(fd);
+                            text = new(std::nothrow) char[fdbytes];
+                            if (text)
+                            {
+#ifdef _WINDOWS
+                                fread_s(text, fdbytes, fdbytes, 1, fd);
+#else
+                                fread(text, fdbytes, 1, fd);
+#endif//_WINDOWS
+                                msg = (boost::format("info://%s?data={\"command\":\"fetch\",\"text\":%s}") % name % text).str();
+                            }
+                            else
+                            {
+                                msg = (boost::format("info://%s?data={\"command\":\"fetch\",\"text\":""}") % name).str();
+                            }
+
+                            fclose(fd);
+                            boost::checked_array_delete(text);
                         }
 
-                        fclose(fd);
-                        boost::checked_array_delete(text);
+                        Libxmq::send(modeconf.id, msg.c_str(), msg.length());
                     }
 
-                    Libxmq::send(modeconf.id, msg.c_str(), msg.length());
+                    break;
                 }
-
-                break;
             }
         }
+    }
+    catch(...)
+    {
+        log.write(
+            SeverityLevel::SEVERITY_LEVEL_ERROR,
+            "Catch exception from [ %s ] and data [ %s ].", name, (const char*)data);
     }
 }

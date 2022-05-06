@@ -65,3 +65,41 @@ const char* FdfsStorage::upload(
 
 	return ret;
 }
+
+int FdfsStorage::download(
+	const ConnectionInfo* trackerConnectionInfo/* = nullptr*/, 
+	const char* filename/* = nullptr*/, 
+	char* buffer/* = nullptr*/, 
+	int64_t* bytes/* = nullptr*/)
+{
+	int ret{trackerConnectionInfo && filename ? Error_Code_Success : Error_Code_Invalid_Param};
+
+	if (Error_Code_Success == ret)
+	{
+		if (0 != storage_download_file_to_buff(
+			(ConnectionInfo*)trackerConnectionInfo, &storageConnectionInfo, groupName, filename, &buffer, bytes))
+		{
+			ret = Error_Code_Operate_Failure;
+		}
+	}
+
+	return ret;
+}
+
+int FdfsStorage::remove(
+	const ConnectionInfo* trackerConnectionInfo/* = nullptr*/, 
+	const char* filename/* = nullptr*/)
+{
+	int ret{filename ? Error_Code_Success : Error_Code_Invalid_Param};
+
+	if (Error_Code_Success == ret)
+	{
+		if (0 != storage_delete_file(
+			(ConnectionInfo*)trackerConnectionInfo, &storageConnectionInfo, groupName, filename))
+		{
+			ret = Error_Code_Operate_Failure;
+		}
+	}
+
+	return ret;
+}
