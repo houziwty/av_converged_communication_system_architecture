@@ -13,20 +13,20 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(DEPENDS 
-			${BOOST_LINK_DIR}/libboost_thread-vc143-mt-sgd-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-sgd-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-sgd-x64-1_78.lib	
-			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-sgd-x64-1_78.lib 		
-			${XMQ_DIR}/xmq.lib 
-			${FILELOG_DIR}/${CMAKE_BUILD_TYPE}/filelog.lib)
+			${BOOST_DIR}/libboost_thread-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_chrono-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_program_options-vc143-mt-sgd-x64-1_78.lib	
+			${BOOST_DIR}/libboost_serialization-vc143-mt-sgd-x64-1_78.lib 		
+			${FILELOG_DIR}/${CMAKE_BUILD_TYPE}/filelog.lib 
+			${XMQ_DIR}/${CMAKE_BUILD_TYPE}/xmq.lib )
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(DEPENDS 
-			${BOOST_LINK_DIR}/libboost_thread-vc143-mt-s-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_chrono-vc143-mt-s-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_program_options-vc143-mt-s-x64-1_78.lib	
-			${BOOST_LINK_DIR}/libboost_serialization-vc143-mt-s-x64-1_78.lib 		
-			${XMQ_DIR}/xmq.lib 
-			${FILELOG_DIR}/${CMAKE_BUILD_TYPE}/filelog.lib)
+			${BOOST_DIR}/libboost_thread-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_chrono-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_program_options-vc143-mt-s-x64-1_78.lib	
+			${BOOST_DIR}/libboost_serialization-vc143-mt-s-x64-1_78.lib 		
+			${FILELOG_DIR}/${CMAKE_BUILD_TYPE}/filelog.lib 
+			${XMQ_DIR}/${CMAKE_BUILD_TYPE}/xmq.lib )
 	endif()
 	add_definitions(-DUSE_MODULE_FILE_LOG -DUSE_MODULE_NETWORK_XMQ)
 endif()

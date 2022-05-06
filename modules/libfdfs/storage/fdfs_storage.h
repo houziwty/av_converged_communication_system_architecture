@@ -14,7 +14,11 @@
 #define MODULE_FILE_STORAGE_FDFS_STORAGE_H
 
 #include <cstdint>
+#ifdef _WINDOWS
+#include "fdfs_client.h"
+#else
 #include "fastdfs/fdfs_client.h"
+#endif//_WINDOWS
 
 namespace module
 {
