@@ -147,3 +147,24 @@ int Libfdfs::remove(
 	
 	return ret;
 }
+
+int Libfdfs::close(const uint32_t id/* = 0*/)
+{
+	int ret{0 < id ? Error_Code_Success : Error_Code_Invalid_Param};
+
+	if (Error_Code_Success == ret)
+	{
+		FdfsStoragePtr ptr{fdfsStorages.at(id)};
+
+		if (ptr)
+		{
+			fdfsStorages.remove(id);
+		}
+		else
+		{
+			ret = Error_Code_Object_Not_Exist;
+		}
+	}
+	
+	return ret;
+}

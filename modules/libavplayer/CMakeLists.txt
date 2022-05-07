@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 3.5...3.16)
 
 project(avplayer VERSION "${BUILD_VERSION_STRING}" LANGUAGES CXX)
 
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(BOOST_DIR ${3RDPART_DIR}/boost_1_78_0 ${3RDPART_DIR}/boost_1_78_0/stage/lib)
 	set(D3D_DIR ${3RDPART_DIR}/d3d/include ${3RDPART_DIR}/d3d/lib)
 	set(AVPKT_DIR ${MODULES_DIR}/libavpkt ${ROOT_DIR}/build/x64/modules/libavpkt)
@@ -26,13 +25,10 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	endif()
 	
 	add_definitions(-DUSE_MODULE_AV_PKT)
-endif()
-
-set(LIB_DIR ${MODULES_DIR}/libavplayer)
-include_directories(${INCLUDE_DIR} ${BOOST_DIR} ${D3D_DIR} ${AVPKT_DIR} ${LIB_DIR})
-file(GLOB_RECURSE src "*.cpp")
-
-if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+	set(LIB_DIR ${MODULES_DIR}/libavplayer)
+	include_directories(${INCLUDE_DIR} ${BOOST_DIR} ${D3D_DIR} ${AVPKT_DIR} ${LIB_DIR})
+	file(GLOB_RECURSE src "*.cpp")
+	
 	add_library(${PROJECT_NAME} SHARED ${src})
 	target_link_libraries(${PROJECT_NAME} PRIVATE ${DEPENDS})
 endif()

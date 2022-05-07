@@ -70,6 +70,18 @@ namespace module
 					const uint32_t id = 0, 
 					const void* avpkt = nullptr);
 
+				//播放控制
+				//@id [in] : AV流程图ID
+				//@type [in] : 类型
+				//@param [in] : 参数
+				//				1.当PLAY_CONTROL_TYPE_PLAY == type时，0表示正常播放,>0表示快进,<0表示慢放
+				//				2.当PLAY_CONTROL_TYPE_SEEK == type时，>0表示定位值
+				//@Return : 错误码
+				virtual int control(
+					const uint32_t id = 0,
+					const PlayControlType type = PlayControlType::PLAY_CONTROL_TYPE_NONE,
+					const int32_t param = 0);
+
 			protected:
 				const AVFilterType filterType;
 				AVPinPtrs avpins;

@@ -7,10 +7,10 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 		${3RDPART_DIR}/fastdfs-master/client/libfdfsclient.a 
 		${3RDPART_DIR}/libfastcommon-master/src/libfastcommon.a
 		dl)
+		
+	include_directories(${INCLUDE_DIR} ${BOOST_DIR} ${FDFS_DIR})
+	file(GLOB_RECURSE src "*.cpp")
+
+	add_library(${PROJECT_NAME} SHARED ${src})
+	target_link_libraries(${PROJECT_NAME} PRIVATE ${DEPENDS})
 endif()
-
-include_directories(${INCLUDE_DIR} ${BOOST_DIR} ${FDFS_DIR})
-file(GLOB_RECURSE src "*.cpp")
-
-add_library(${PROJECT_NAME} SHARED ${src})
-target_link_libraries(${PROJECT_NAME} PRIVATE ${DEPENDS})

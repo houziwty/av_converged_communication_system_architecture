@@ -37,6 +37,7 @@ typedef struct tagAVParserModeConf_t
 {
 	uint32_t id;                   //>0，由调用者分配
 	AVParserType type;
+	uint32_t cache;					//缓存大小
 }AVParserModeConf;
 
 #endif//MODULE_AV_STREAM_AV_PARSER_DEFS_H

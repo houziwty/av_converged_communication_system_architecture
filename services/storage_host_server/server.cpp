@@ -4,8 +4,6 @@
 #include "boost/json.hpp"
 #include "boost/make_shared.hpp"
 #include "error_code.h"
-#include "libavpkt.h"
-using namespace module::av::stream;
 #include "url/url.h"
 using namespace framework::utils::data;
 #include "time/xtime.h"
@@ -154,18 +152,17 @@ int Server::send(
 
 int Server::upload(
     const uint32_t sid/* = 0*/, 
-    const void* avpkt/* = nullptr*/, 
+    const void* data/* = nullptr*/, 
+    const uint64_t bytes/* = 0*/, 
     const bool append/* = false*/)
 {
-    int ret{0 < sid && avpkt ? Error_Code_Success : Error_Code_Invalid_Param};
+    int ret{0 < sid && data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
 
     if (Error_Code_Success == ret)
     {
-        Libavpkt* pkt{reinterpret_cast<Libavpkt*>(const_cast<void*>(avpkt))};
-        const char* fname{
-            Libfdfs::upload(sid, pkt->data(), pkt->bytes(), append)};
+        const char* fname{Libfdfs::upload(sid, data, bytes, append)};
 
-        //只有新增才记录数据库
+        //只有新增才记录文件名到数据库
         if (append)
         {
             const std::string tm{
@@ -213,6 +210,18 @@ int Server::remove(
     if (Error_Code_Success == ret)
     {
         ret = Libfdfs::remove(sid, filename);
+    }
+
+    return ret;
+}
+
+int Server::close(const uint32_t sid/* = 0*/)
+{
+    int ret{0 < sid ? Error_Code_Success : Error_Code_Invalid_Param};
+
+    if (Error_Code_Success == ret)
+    {
+        ret = Libfdfs::close(sid);
     }
 
     return ret;
@@ -393,12 +402,13 @@ void Server::processConfigRequest(
                 tid{o.at("task_id").as_string()};
             const std::string ids{
                 (boost::format("%s_%s_%s") % tid.c_str() % did.c_str() % channel.c_str()).str()};
-
+            const std::string localhost{"127.0.0.1"};
+            
             ASIOModeConf conf;
             conf.proto = ASIOProtoType::ASIO_PROTO_TYPE_TCP;
             conf.port = 60820;
             conf.tcp.mode = ASIOModeType::ASIO_MODE_TYPE_CONNECT;
-            conf.tcp.ip = "127.0.0.1";
+            conf.tcp.ip = const_cast<char*>(localhost.c_str());
             conf.tcp.user = XStr().alloc(ids.c_str(), ids.length());
             Libasio::addConf(conf);
 

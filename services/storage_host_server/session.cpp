@@ -6,4 +6,6 @@ Session::Session(Server& svr, const uint32_t sid/* = 0*/)
 {}
 
 Session::~Session()
-{}
+{
+    server.close(sessionid);
+}

@@ -50,7 +50,8 @@ public:
     //FDFS上传数据
     int upload(
         const uint32_t sid = 0, 
-        const void* avpkt = nullptr, 
+        const void* data = nullptr, 
+        const uint64_t bytes = 0, 
         const bool flag = false);
     //FDFS下载数据
     int download(
@@ -60,6 +61,8 @@ public:
     int remove(
         const uint32_t sid = 0, 
         const char* filename = nullptr);
+    //关闭FDFS
+    int close(const uint32_t sid = 0);
 
 protected:
 	void afterPolledXMQDataNotification(

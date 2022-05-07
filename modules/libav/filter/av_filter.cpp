@@ -89,3 +89,11 @@ int AVFilter::input(
 	
 	return ret;
 }
+
+int AVFilter::control(
+	const uint32_t id/* = 0*/,
+	const PlayControlType type/* = PlayControlType::PLAY_CONTROL_TYPE_NONE*/,
+	const int32_t param/* = 0*/)
+{
+	return Error_Code_Operate_Not_Support;
+}

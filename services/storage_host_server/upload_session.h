@@ -36,9 +36,6 @@ public:
 
 private:
     void sendRealplayRequestThread(void);
-    void afterGrabPSFrameDataNotification(
-        const uint32_t sid = 0, 
-        const void* avpkt = nullptr);
 
 private:
     const uint32_t deviceid;

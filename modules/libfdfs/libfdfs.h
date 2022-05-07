@@ -78,6 +78,11 @@ namespace module
                 int remove(
                     const uint32_t id = 0, 
                     const char* filename = nullptr);
+
+                //关闭
+                //@id [in] : upload/download/remove ID
+                //@Return : 错误码
+                int close(const uint32_t id = 0);
             };//class Libfdfs
         }//namespace storage
     }//namespace file

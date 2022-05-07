@@ -14,12 +14,10 @@
 #define SERVICE_STORAGE_SESSION_H
 
 #include "boost/atomic.hpp"
-#include "libav.h"
-using namespace module::av::stream;
 
 class Server;
 
-class Session : protected Libav
+class Session
 {
 public:
     //@svr [in] : 服务实例

@@ -32,7 +32,8 @@ int Libavparser::addConf(const AVParserModeConf& conf)
 		{
 			node = boost::make_shared<BufferParser>(
 				boost::bind(&Libavparser::afterParsedDataNotification, this, _1, _2), 
-				conf.id);
+				conf.id, 
+				conf.cache);
 		}
 		else if (AVParserType::AV_PARSER_TYPE_PS_PARSER == conf.type)
 		{

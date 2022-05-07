@@ -44,6 +44,16 @@ typedef enum class tagAVModeType_t : uint32_t
     AV_MODE_TYPE_DOWNLOAD
 }AVModeType;
 
+//播放控制类型
+typedef enum class tagPlayControlType_t : uint32_t
+{
+    PLAY_CONTROL_TYPE_NONE = 0,
+    PLAY_CONTROL_TYPE_PLAY,
+    PLAY_CONTROL_TYPE_PAUSE,
+    PLAY_CONTROL_TYPE_STOP,
+    PLAY_CONTROL_TYPE_SEEK
+}PlayControlType;
+
 //绘制参数
 typedef struct tagAVDrawParam_t
 {
@@ -81,6 +91,7 @@ static const char* av_frame_decoder_filter_name = "av_frame_decoder_filter";
 static const char* av_frame_encoder_filter_name = "av_frame_encoder_filter";
 static const char* av_frame_converter_filter_name = "av_frame_converter_filter";
 static const char* av_frame_player_filter_name = "av_frame_player_filter";
+static const char* av_frame_play_controller_filter_name = "av_frame_play_controller_filter";
 
 //AV针脚名称
 static const char* av_input_pin_name = "av_input_pin";

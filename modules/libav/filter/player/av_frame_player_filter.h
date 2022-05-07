@@ -13,7 +13,6 @@
 #ifndef MODULE_AV_STREAM_FRAME_PLAYER_FILTER_H
 #define MODULE_AV_STREAM_FRAME_PLAYER_FILTER_H
 
-#ifdef _WINDOWS
 #include "libavplayer.h"
 #include "filter/av_filter.h"
 
@@ -45,6 +44,5 @@ namespace module
 		}//namespace stream
 	}//namespace av
 }//namespace module
-#endif//_WINDOWS
 
 #endif//MODULE_AV_STREAM_FRAME_PLAY_FILTER_H

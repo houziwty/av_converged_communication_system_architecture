@@ -11,9 +11,7 @@ XMQNode::XMQNode(PolledDataCallback callback)
 {}
 
 XMQNode::~XMQNode()
-{
-	stop();
-}
+{}
 
 int XMQNode::run(
 	const XMQNodeConf& conf, 
