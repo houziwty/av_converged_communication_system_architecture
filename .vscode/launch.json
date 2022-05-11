@@ -303,6 +303,27 @@
             ],
             "preLaunchTask": "Build",
             "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "media_host_server",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/services/media_host_server/media_host_server",
+            "args": ["--xmq_port", "60531", "--xmq_addr", "127.0.0.1"],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build",
+            "miDebuggerPath": "/usr/bin/gdb"
         }
     ]
 }

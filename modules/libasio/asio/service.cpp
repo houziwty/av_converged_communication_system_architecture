@@ -1,10 +1,12 @@
 #include "error_code.h"
+#include "time/xtime.h"
+using namespace framework::utils::time;
 #include "service.h"
 using namespace module::network::asio;
 
 Service::Service() 
-	: idle{ 0 }, 
-	ctxs{std::thread::hardware_concurrency()}, works{ ctxs.size() }
+	: idle{ 0 }, works{ ctxs.size() }, 
+	ctxs{std::thread::hardware_concurrency()}
 {}
 
 Service::~Service()
@@ -42,6 +44,17 @@ int Service::stop()
 		boost::checked_delete(work);
 	}
 
+	for (auto& ctx : ctxs)
+	{
+		if (ctx)
+		{
+			ctx->stop();
+			XTime().sleep(20);
+		}
+		
+		boost::checked_delete(ctx);
+	}
+
 	for (auto& thread : threads)
 	{
 		//Forbidden waiting
@@ -51,16 +64,6 @@ int Service::stop()
 		}
 
 		boost::checked_delete(thread);
-	}
-
-	for (auto& ctx : ctxs)
-	{
-		if (ctx)
-		{
-			ctx->stop();
-		}
-		
-		boost::checked_delete(ctx);
 	}
 
 	ctxs.clear();
