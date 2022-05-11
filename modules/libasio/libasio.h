@@ -4,9 +4,7 @@
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
 //		Date : 2022-01-21
-//		Description : ASIO库
-//					  1.动态创建角色
-//					  2.多角色并行
+//		Description : 异步网络通信库
 //
 //		History:
 //					1. 2022-01-21 由王科威创建
@@ -47,7 +45,7 @@ namespace module
 				//@ip [in] : 远程IP
 				//@port [in] : 远程端口号
 				//@Return : 错误码
-				//@Comment : ip和port参数仅当UDP会话时有效
+				//@Comment : ip和port参数仅当UDP时有效
 				virtual int send(
 					const uint32_t id = 0, 
 					const void* data = nullptr, 

@@ -20,7 +20,10 @@ endif()
 
 set(LIB_DIR ${MODULES_DIR}/libasio)
 include_directories(${INCLUDE_DIR} ${BOOST_DIR} ${LIB_DIR})
-file(GLOB_RECURSE src *.cpp)
+file(GLOB_RECURSE 
+	src 
+	*.cpp 
+	"${SOURCE_DIR}/time/xtime.cpp")
 
 add_library(${PROJECT_NAME} SHARED ${src})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${DEPENDS})

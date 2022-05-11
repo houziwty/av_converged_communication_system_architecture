@@ -1330,6 +1330,14 @@
 
    >>> + apt update & apt upgrade
    
+
+   ## 10.2 依赖库
+   ### 10.2.1 openssl
+   >>> + apt install libssl-dev
+
+   ### 10.2.2 srtp
+   >>> + apt install libsrtp2-dev
+   
    # Linux
    >>> + ./configure --prefix=/usr/local --enable-gpl --enable-static --enable-shared --enable-small --disable-swscale-alpha --disable-programs --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-avdevice --disable-avfilter --disable-network --disable-vaapi --disable-vdpau --disable-everything --enable-decoder=h264 --enable-asm --enable-mmx --enable-mmxext --enable-sse --enable-sse2 --enable-sse3 --enable-ssse3 --enable-sse4 --enable-sse42 --enable-avx --enable-avx2 --enable-inline-asm --enable-x86asm --disable-iconv --disable-debug --enable-fma3 --enable-fma4 --enable-pic --extra-cflags=-fPIC --extra-cxxflags=-fPIC
 
