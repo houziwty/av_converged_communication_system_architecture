@@ -13,7 +13,7 @@
 #ifndef FRAMEWORK_NETWORK_SESSION_SESSION_H
 #define FRAMEWORK_NETWORK_SESSION_SESSION_H
 
-#include <stdint>
+#include <stdint.h>
 
 namespace framework
 {

@@ -14,7 +14,7 @@
 #define MODULE_NETWORK_ASIO_TCP_SESSION_H
 
 #include "boost/enable_shared_from_this.hpp"
-#include "session/session.h"
+#include "../session/session.h"
 
 namespace module
 {

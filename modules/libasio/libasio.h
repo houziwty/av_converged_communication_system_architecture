@@ -33,7 +33,7 @@ namespace module
 				//@Return : 错误码
 				int addConf(const ASIOModeConf& conf);
 
-				//删除配置
+				//删除会话
 				//@id [in] : 会话ID
 				//@Return : 错误码
 				int removeConf(const uint32_t id = 0);
@@ -55,13 +55,15 @@ namespace module
 			
 			protected:
 				//监听事件通知
-				//@ip [out] : 远程IP
-				//@port [out] : 远程端口号
+				//@remoteIP [out] : 远程IP
+				//@remotePort [out] : 远程端口号
+				//@localPort [out] : 本地端口号
 				//@e [out] : 错误码
 				//@Return : 会话ID，>0有效
 				virtual uint32_t afterFetchIOAcceptedEventNotification(
-					const char* ip = nullptr, 
-					const uint16_t port = 0, 
+					const char* remoteIP = nullptr, 
+					const uint16_t remotePort = 0, 
+					const uint16_t localPort = 0, 
 					const int32_t e = 0) = 0;
 
 				//连接事件通知
@@ -91,7 +93,7 @@ namespace module
 					const uint32_t id = 0, 
 					const uint64_t bytes = 0, 
 					const int32_t e = 0) = 0;
-			};//class ASIONode
+			};//class Libasio
 		}//namespace asio
 	}//namespace network
 }//namespace module

@@ -13,7 +13,7 @@
 #ifndef MODULE_NETWORK_ASIO_UDP_SESSION_H
 #define MODULE_NETWORK_ASIO_UDP_SESSION_H
 
-#include "session/session.h"
+#include "../session/session.h"
 
 namespace module
 {

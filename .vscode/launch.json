@@ -311,7 +311,7 @@
             "program": "${workspaceFolder}/build/services/media_host_server/media_host_server",
             "args": ["--xmq_port", "60531", "--xmq_addr", "127.0.0.1"],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}/build/services/media_host_server/",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",

@@ -276,8 +276,9 @@ void Server::afterPolledXMQDataNotification(
 }
 
 uint32_t Server::afterFetchIOAcceptedEventNotification(
-    const char* ip/* = nullptr*/, 
-    const uint16_t port/* = 0*/, 
+    const char* remoteIP/* = nullptr*/, 
+    const uint16_t remotePort/* = 0*/, 
+    const uint16_t localPort/* = 0*/, 
     const int32_t e/* = 0*/)
 {
     //创建存储服务客户端连接会话
@@ -295,20 +296,20 @@ uint32_t Server::afterFetchIOAcceptedEventNotification(
             sessions.add(sessionid, ptr);
             log.write(
                 SeverityLevel::SEVERITY_LEVEL_INFO,
-                "Add new download session from [ %s : %u ] successfully.", ip, port);
+                "Add new download session from [ %s : %u ] successfully.", remoteIP, remotePort);
         }
         else
         {
             log.write(
                 SeverityLevel::SEVERITY_LEVEL_WARNING,
-                "Add new download session from [ %s : %u ] failed.", ip, port);
+                "Add new download session from [ %s : %u ] failed.", remoteIP, remotePort);
         }
     }
     else
     {
         log.write(
             SeverityLevel::SEVERITY_LEVEL_WARNING,
-            "Fetch connection [ %d ] from remote [ %s : %u ] failed, result = [ %d ].", sessionid, ip, port, e);
+            "Fetch connection [ %d ] from remote [ %s : %u ] failed, result = [ %d ].", sessionid, remoteIP, remotePort, e);
     }
     
     return sessionid;

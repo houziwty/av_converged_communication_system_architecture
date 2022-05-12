@@ -54,9 +54,10 @@ static const int Error_Code_Out_Of_Range = -3002;
 
 //文件
 static const int Error_Code_File_Open_Failure = -4000;
-static const int Error_Code_File_Existed = -4001;
-static const int Error_Code_File_Not_Exist = -4002;
-static const int Error_Code_Directory_Not_Exist = -4003;
+static const int Error_Code_File_Close_Failure = -4001;
+static const int Error_Code_File_Existed = -4002;
+static const int Error_Code_File_Not_Exist = -4003;
+static const int Error_Code_Directory_Not_Exist = -4004;
 
 //数据库
 static const int Error_Code_Invalid_Value_Of_Key = -5000;

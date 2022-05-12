@@ -166,8 +166,9 @@ void Server::afterFetchServiceCapabilitiesNotification(const char* names/* = nul
 }
 
 uint32_t Server::afterFetchIOAcceptedEventNotification(
-    const char* ip/* = nullptr*/, 
-    const uint16_t port/* = 0*/,  
+    const char* remoteIP/* = nullptr*/, 
+    const uint16_t remotePort/* = 0*/, 
+    const uint16_t localPort/* = 0*/, 
     const int32_t e/* = 0*/)
 {
     const uint32_t sessionid{++sid};
@@ -176,13 +177,13 @@ uint32_t Server::afterFetchIOAcceptedEventNotification(
     {
         log.write(
             SeverityLevel::SEVERITY_LEVEL_INFO,
-            "Fetch connection [ %d ] from remote [ %s : %u ] successfully.", sessionid, ip, port);
+            "Fetch connection [ %d ] from remote [ %s : %u ] successfully.", sessionid, remoteIP, remotePort);
     }
     else
     {
         log.write(
             SeverityLevel::SEVERITY_LEVEL_WARNING,
-            "Fetch connection [ %d ] from remote [ %s : %u ] failed, result = [ %d ].", sessionid, ip, port, e);
+            "Fetch connection [ %d ] from remote [ %s : %u ] failed, result = [ %d ].", sessionid, remoteIP, remotePort, e);
     }
     
     return sessionid;

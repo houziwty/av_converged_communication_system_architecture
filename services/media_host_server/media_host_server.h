@@ -28,8 +28,9 @@ public:
 
 protected:
     uint32_t afterFetchIOAcceptedEventNotification(
-        const char* ip = nullptr, 
-        const uint16_t port = 0, 
+        const char* remoteIP = nullptr, 
+        const uint16_t remotePort = 0, 
+        const uint16_t localPort = 0, 
         const int32_t e = 0) override;
     uint32_t afterFetchIOConnectedEventNotification(
         const int32_t e = 0, 
@@ -46,7 +47,7 @@ protected:
 
 private:
     FileLog& flog;
-    boost::atomic_uint32_t sessionid;
+    boost::atomic_uint32_t sessionIDNumber;
 };//class MediaHostServer
 
 #endif//SERVICE_MEDIA_HOST_SERVER_H
