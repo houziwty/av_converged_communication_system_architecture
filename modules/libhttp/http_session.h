@@ -13,8 +13,7 @@
 #ifndef MODULE_NETWORK_HTTP_HTTP_SESSION_H
 #define MODULE_NETWORK_HTTP_HTTP_SESSION_H
 
-#include "defs.h"
-#include "http/http-server-internal.h"
+#include "libhttp_defs.h"
 
 namespace module
 {
@@ -22,12 +21,10 @@ namespace module
 	{
 		namespace http
 		{
-			class HttpSessionNode;
-
 			class HttpSession
 			{
 			public:
-				HttpSession(HttpSessionNode& node, const uint32_t id = 0);
+				HttpSession(void);
 				virtual ~HttpSession(void);
 
 			public:
@@ -49,26 +46,21 @@ namespace module
 				//@bytes [in] : 应答体字节数
 				//@Return : 错误码
 				//@Comment : 数据通过该方法构建HTTP请求再由方法发送
-				int response(
-					const uint32_t id = 0, 
-					const int32_t code = 0, 
-					const char* status = nullptr, 
-					const HttpResponseHeader* headers = nullptr, 
-					const uint32_t number = 0, 
-					const void* data = nullptr, 
-					const uint64_t bytes = 0);
+				// int response(
+				// 	const uint32_t id = 0, 
+				// 	const int32_t code = 0, 
+				// 	const char* status = nullptr, 
+				// 	const HttpResponseHeader* headers = nullptr, 
+				// 	const uint32_t number = 0, 
+				// 	const void* data = nullptr, 
+				// 	const uint64_t bytes = 0);
 
 			private:
-				static int afterHttpReadDataNotification(
-					void* ctx = nullptr, 
-					http_session_t* session = nullptr, 
-					const char* method = nullptr, 
-					const char* path = nullptr);
-
-			private:
-				HttpSessionNode& httpnode;
-				const uint32_t sid;
-				struct http_session_t* session;
+				// static int afterHttpReadDataNotification(
+				// 	void* ctx = nullptr, 
+				// 	http_session_t* session = nullptr, 
+				// 	const char* method = nullptr, 
+				// 	const char* path = nullptr);
 			};//class HttpSession
 		}//namespace http
 	}//namespace network

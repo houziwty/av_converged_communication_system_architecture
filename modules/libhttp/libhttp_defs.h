@@ -10,8 +10,8 @@
 //					1. 2021-12-07 由王科威创建
 //
 
-#ifndef MODULE_NETWORK_HTTP_DEFS_H
-#define MODULE_NETWORK_HTTP_DEFS_H
+#ifndef MODULE_NETWORK_LIB_HTTP_DEFS_H
+#define MODULE_NETWORK_LIB_HTTP_DEFS_H
 
 #include <cstdint>
 
@@ -43,4 +43,4 @@ typedef struct tagHttpResponseHeader_t
     };
 }HttpResponseHeader;
 
-#endif//MODULE_NETWORK_HTTP_DEFS_H
+#endif//MODULE_NETWORK_LIB_HTTP_DEFS_H

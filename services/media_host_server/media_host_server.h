@@ -14,17 +14,32 @@
 #define SERVICE_MEDIA_HOST_SERVER_H
 
 #include "boost/atomic.hpp"
+#include "boost/shared_ptr.hpp"
 #include "libasio.h"
 using namespace module::network::asio;
+#include "libhttp.h"
+using namespace module::network::http;
 #include "libfilelog.h"
 using namespace module::file::log;
+#include "session/session.h"
+using namespace framework::network::session;
+using SessionPtr = boost::shared_ptr<Session>;
+#include "map/unordered_map.h"
 
 class MediaHostServer final 
-    : public Libasio
+    : public Libasio, protected Libhttp
 {
 public:
     MediaHostServer(FileLog& log);
     ~MediaHostServer(void);
+
+public:
+    //添加协议
+    //@name : 协议名称
+    //@port : 端口号
+    //@Return ：错误码
+    //@Comment ：服务接收远程连接时通过端口确定协议类型
+    int addProtoSupport(const std::string name, const uint16_t port = 0);
 
 protected:
     uint32_t afterFetchIOAcceptedEventNotification(
@@ -46,8 +61,14 @@ protected:
         const int32_t e = 0) override;
 
 private:
+    //创建会话
+    int createNewSession(const uint16_t port = 0, const uint32_t id = 0);
+
+private:
     FileLog& flog;
     boost::atomic_uint32_t sessionIDNumber;
+    UnorderedMap<const uint16_t, std::string> protos;
+    UnorderedMap<const uint32_t, SessionPtr> sessions;
 };//class MediaHostServer
 
 #endif//SERVICE_MEDIA_HOST_SERVER_H

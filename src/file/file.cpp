@@ -19,15 +19,17 @@ File::File() : fd{nullptr}
 {}
 
 File::~File()
-{}
+{
+	close();
+}
 
-int File::read(const char* name, char*& buf, uint64_t& bytes)
+int File::read(const char* name, char* buf, uint64_t& bytes)
 {
 	int ret{open(name, "rb+")};
 
 	if (Error_Code_Success == ret)
 	{
-		//按照指定缓存大小读取
+		//按照指定字节大小读取
 #ifdef _WINDOWS
 		bytes = fread_s(buf, bytes, bytes, 1, fd);
 #else

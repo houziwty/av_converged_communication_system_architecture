@@ -2,28 +2,28 @@
 #include "error_code.h"
 #include "map/unordered_map.h"
 #include "http_session.h"
-#include "http_session_node.h"
+#include "libhttp.h"
 using namespace module::network::http;
 
 using HttpSessionPtr = boost::shared_ptr<HttpSession>;
 using HttpSessionPtrs = UnorderedMap<const uint32_t, HttpSessionPtr>;
 static HttpSessionPtrs httpSessionPtrs;
 
-HttpSessionNode::HttpSessionNode()
+Libhttp::Libhttp()
 {}
 
-HttpSessionNode::~HttpSessionNode()
+Libhttp::~Libhttp()
 {
     httpSessionPtrs.clear();
 }
 
-int HttpSessionNode::add(const uint32_t id/* = 0*/)
+int Libhttp::addSession(const uint32_t id/* = 0*/)
 {
     int ret{0 < id ? Error_Code_Success : Error_Code_Invalid_Param};
 
     if (Error_Code_Success == ret)
     {
-        HttpSessionPtr session{boost::make_shared<HttpSession>(*this, id)};
+        HttpSessionPtr session{boost::make_shared<HttpSession>()};
 
         if (session)
         {
@@ -38,7 +38,7 @@ int HttpSessionNode::add(const uint32_t id/* = 0*/)
     return ret;
 }
 
-int HttpSessionNode::remove(const uint32_t id/* = 0*/)
+int Libhttp::removeSession(const uint32_t id/* = 0*/)
 {
     int ret{0 < id ? Error_Code_Success : Error_Code_Invalid_Param};
 
@@ -59,7 +59,7 @@ int HttpSessionNode::remove(const uint32_t id/* = 0*/)
     return ret;
 }
 
-int HttpSessionNode::request(
+int Libhttp::request(
 	const uint32_t id/* = 0*/, 
 	const void* data/* = nullptr*/, 
 	const uint64_t bytes/* = 0*/)
@@ -69,15 +69,7 @@ int HttpSessionNode::request(
 	if(Error_Code_Success == ret)
 	{
 		HttpSessionPtr session{httpSessionPtrs.at(id)};
-
-		if (session)
-		{
-			ret = session->request(data, bytes);
-		}
-		else
-		{
-			ret = Error_Code_Object_Not_Exist;
-		}
+        ret = (session ? session->request(data, bytes) : Error_Code_Object_Not_Exist);
 	}
 
 	return ret;

@@ -8,13 +8,25 @@ MediaHostServer::MediaHostServer(FileLog& log)
 MediaHostServer::~MediaHostServer()
 {}
 
+int MediaHostServer::addProtoSupport(const std::string name, const uint16_t port/* = 0*/)
+{
+    int ret{!name.empty() && 0 < port ? Error_Code_Success : Error_Code_Invalid_Param};
+
+    if (Error_Code_Success == ret)
+    {
+        protos.add(port, name);
+    }
+    
+    return ret;
+}
+
 uint32_t MediaHostServer::afterFetchIOAcceptedEventNotification(
     const char* remoteIP/* = nullptr*/, 
     const uint16_t remotePort/* = 0*/, 
     const uint16_t localPort/* = 0*/, 
     const int32_t e/* = 0*/)
 {
-    int currentSID{0};
+    uint32_t currentSID{0};
 
     if (!e)
     {
@@ -34,7 +46,7 @@ uint32_t MediaHostServer::afterFetchIOAcceptedEventNotification(
 
     if (0 < currentSID)
     {
-        /* code */
+        createNewSession(localPort, currentSID);
     }
     
     return currentSID;
@@ -61,4 +73,40 @@ void MediaHostServer::afterPolledIOSendDataNotification(
     const int32_t e/* = 0*/)
 {
 
+}
+
+int MediaHostServer::createNewSession(const uint16_t port/* = 0*/, const uint32_t id/* = 0*/)
+{
+    int ret{0 < port && 0 < id ? Error_Code_Success : Error_Code_Invalid_Param};
+
+    if (Error_Code_Success == ret)
+    {
+        const std::string name{protos.at(port)};
+        SessionPtr ptr;
+        
+        if (!name.compare("http") || !name.compare("https"))
+        {
+            ret = Libhttp::addSession(id);
+        }
+        else if (!name.compare("rtsp") || !name.compare("rtsps"))
+        {
+            /* code */
+        }
+        else if (!name.compare("rtmp") || !name.compare("rtmps"))
+        {
+            /* code */
+        }
+        else if (!name.compare("rtp"))
+        {
+            /* code */
+        }
+    }
+    else
+    {
+        flog.write(
+            SeverityLevel::SEVERITY_LEVEL_WARNING, 
+            "创建会话[ %u:%u ]失败", port, id);
+    }
+
+    return ret;
 }

@@ -49,6 +49,7 @@ int Libasio::addConf(const ASIOModeConf& conf)
 								afterFetchIOAcceptedEventNotification(
 									so->remote_endpoint().address().to_string().c_str(), 
 									so->remote_endpoint().port(), 
+									so->local_endpoint().port(), 
 									e)};
 
 							if (0 < sid)

@@ -48,7 +48,7 @@ namespace framework
 				//@Return : 错误码
 				int read(
 					const char* name, 
-					char*& buf, 
+					char* buf, 
 					uint64_t& bytes);
 
 				//写
