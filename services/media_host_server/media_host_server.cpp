@@ -65,6 +65,34 @@ void MediaHostServer::afterPolledIOReadDataNotification(
     const uint64_t bytes/* = 0*/, 
     const int32_t e/* = 0*/)
 {
+    if (e)
+    {
+        sessions.remove(id);
+        flog.write(
+            SeverityLevel::SEVERITY_LEVEL_WARNING, 
+            "捕获会话[ %u ]数据读取异常，错误码=[ %d ]", id, e);
+    }
+    else if (data && 0 < bytes && 0 < id)
+    {
+        const std::string name{sessions.at(id)};
+        
+        if (!name.compare("http") || !name.compare("https"))
+        {
+            Libhttp::request(id, data, bytes);
+        }
+        else if (!name.compare("rtsp") || !name.compare("rtsps"))
+        {
+            /* code */
+        }
+        else if (!name.compare("rtmp") || !name.compare("rtmps"))
+        {
+            /* code */
+        }
+        else if (!name.compare("rtp"))
+        {
+            /* code */
+        }
+    }
 }
 
 void MediaHostServer::afterPolledIOSendDataNotification(
@@ -82,7 +110,6 @@ int MediaHostServer::createNewSession(const uint16_t port/* = 0*/, const uint32_
     if (Error_Code_Success == ret)
     {
         const std::string name{protos.at(port)};
-        SessionPtr ptr;
         
         if (!name.compare("http") || !name.compare("https"))
         {
@@ -99,6 +126,14 @@ int MediaHostServer::createNewSession(const uint16_t port/* = 0*/, const uint32_
         else if (!name.compare("rtp"))
         {
             /* code */
+        }
+
+        if (Error_Code_Success == ret)
+        {
+            sessions.add(id, name);
+            flog.write(
+                SeverityLevel::SEVERITY_LEVEL_INFO, 
+                "创建[ %s ]会话[ %u ]", name, id);
         }
     }
     else

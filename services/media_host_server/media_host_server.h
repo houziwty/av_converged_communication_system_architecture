@@ -14,17 +14,13 @@
 #define SERVICE_MEDIA_HOST_SERVER_H
 
 #include "boost/atomic.hpp"
-#include "boost/shared_ptr.hpp"
 #include "libasio.h"
 using namespace module::network::asio;
 #include "libhttp.h"
 using namespace module::network::http;
 #include "libfilelog.h"
 using namespace module::file::log;
-#include "session/session.h"
-using namespace framework::network::session;
-using SessionPtr = boost::shared_ptr<Session>;
-#include "map/unordered_map.h"
+#include "map/unrodered_map.h"
 
 class MediaHostServer final 
     : public Libasio, protected Libhttp
@@ -67,8 +63,10 @@ private:
 private:
     FileLog& flog;
     boost::atomic_uint32_t sessionIDNumber;
+    //<端口号,协议名称>
     UnorderedMap<const uint16_t, std::string> protos;
-    UnorderedMap<const uint32_t, SessionPtr> sessions;
+    //<会话ID,协议名称>
+    UnorderedMap<const uint32_t, std::string> sessions;
 };//class MediaHostServer
 
 #endif//SERVICE_MEDIA_HOST_SERVER_H
