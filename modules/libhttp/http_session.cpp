@@ -2,7 +2,7 @@
 #include "http_session.h"
 using namespace module::network::http;
 
-HttpSession::HttpSession()
+HttpSession::HttpSession() : HttpRequestSplitter()
 {}
 
 HttpSession::~HttpSession()
