@@ -13,7 +13,7 @@
 #ifndef MODULE_NETWORK_HTTP_HTTP_SESSION_H
 #define MODULE_NETWORK_HTTP_HTTP_SESSION_H
 
-#include "libhttp_defs.h"
+#include "splitter/http_request_splitter.h"
 
 namespace module
 {
@@ -21,20 +21,16 @@ namespace module
 	{
 		namespace http
 		{
-			class HttpSession
+			class HttpSession : protected HttpRequestSplitter
 			{
 			public:
 				HttpSession(void);
 				virtual ~HttpSession(void);
 
 			public:
-				//处理HTTP请求
-				//@data [in] : 请求消息
-				//@bytes [in] : 大小
-				//@Return : 错误码
-				int request(
-					const void* data = nullptr, 
-					const uint64_t bytes = 0);
+				int input(
+					const char* data = nullptr, 
+                    const std::size_t len = std::string::npos) override;
 
 				//处理HTTP应答
 				//@id [in] : 节点ID
