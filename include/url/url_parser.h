@@ -14,7 +14,6 @@
 #define FRAMEWORK_UTILS_URL_URL_PARSER_H
 
 #include <string>
-#include <vector>
 
 namespace framework
 {
@@ -39,6 +38,11 @@ namespace framework
                 //@data [in] : 数据
                 //@Return : >0表示已解析数据大小,<=0表示错误码
                 int parseOneLine(const char* line = nullptr);
+
+            private:
+                std::string method;
+                std::string api;
+                std::string proto;
             };//class UrlParser
         }//namespace data
     }//namespace utils
