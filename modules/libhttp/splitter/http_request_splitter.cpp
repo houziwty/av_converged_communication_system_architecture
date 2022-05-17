@@ -1,11 +1,12 @@
-﻿#include "error_code.h"
+﻿#include <cstring>
+#include "error_code.h"
 #include "http_request_splitter.h"
 using namespace module::network::http;
 
 const std::size_t HttpRequestSplitter::kMaxCacheSize = 1 * 1024 * 1024;
 
 HttpRequestSplitter::HttpRequestSplitter() 
-    : buffer_bytes{0}, content_bytes{0}
+    : buffer(nullptr), buffer_bytes{0}, content_bytes{0}
 {}
 
 HttpRequestSplitter::~HttpRequestSplitter()
@@ -13,7 +14,7 @@ HttpRequestSplitter::~HttpRequestSplitter()
 
 int HttpRequestSplitter::input(
     const char* data/* = nullptr*/, 
-    const std::size_t len/* = std::string::npos*/)
+    std::size_t len/* = std::string::npos*/)
 {
     int ret{data && 0 < len ? Error_Code_Success : Error_Code_Invalid_Param};
 
@@ -27,7 +28,7 @@ int HttpRequestSplitter::input(
         }
 
         const char* ptr{data};
-        if(!_remain_data.empty())
+        if(!buffer.empty())
         {
             buffer.append(data,len);
             data = ptr = buffer.data();
@@ -66,14 +67,14 @@ int HttpRequestSplitter::input(
             std::size_t header_size = index - ptr;
             ptr = index;
             buffer_bytes = (len - (ptr - data));
-            _content_len = afterRecvHttpHeaderNotification(header_ptr, header_size);
+            content_bytes = afterRecvHttpHeaderNotification(header_ptr, header_size);
         }
 
         if(0 >= buffer_bytes)
         {
             //没有剩余数据，清空缓存
-            buffer.clear();
-            return;
+            buffer.reset();
+            return Error_Code_Success;
         }
 
         /*
@@ -117,20 +118,21 @@ int HttpRequestSplitter::input(
                 goto splitPacket;
             }
 
-            buffer.clear();
+            buffer.reset();
             return Error_Code_Success;
         }
 
         //_content_len < 0;数据按照不固定长度content处理
         afterRecvHttpContentNotification(ptr, buffer_bytes);//消费掉所有剩余数据
-        buffer.clear();
+        buffer.reset();
     }
 
     return ret;
 }
 
 void HttpRequestSplitter::afterRecvHttpContentNotification(
-                    const char* data/* = nullptr*/, const std::size_t bytes/* = 0*/)
+    const char* data/* = nullptr*/, 
+    const std::size_t bytes/* = 0*/)
 {}
 
 void HttpRequestSplitter::reset()

@@ -6,8 +6,12 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 endif()
 
-include_directories(${INCLUDE_DIR})
-file(GLOB_RECURSE src "*.cpp")
+set(LIB_DIR ${MODULES_DIR}/libhttp)
+include_directories(${INCLUDE_DIR} ${LIB_DIR})
+file(GLOB_RECURSE src 
+	"*.cpp" 
+	"${SOURCE_DIR}/memory/*.cpp" 
+	"${SOURCE_DIR}/url/*.cpp")
 
 add_library(${PROJECT_NAME} SHARED ${src})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${DEPENDS})

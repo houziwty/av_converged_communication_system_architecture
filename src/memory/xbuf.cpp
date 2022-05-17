@@ -1,15 +1,18 @@
-﻿#include "boost/checked_delete.hpp"
+﻿#ifdef _WINDOWS
+#include <string.h>
+#else
+#include <cstring>
+#endif//WINDOWS
+#include "boost/checked_delete.hpp"
 #include "error_code.h"
 #include "memory/xbuf.h"
 using namespace framework::utils::memory;
 
-XBuffer::XBuffer(const uint64_t bytes/* = 3 * 1024 * 1024*/) 
+XBuffer::XBuffer() 
     : capacity_bytes{0}, buf{nullptr}, buf_bytes{0}
-{
-    capacity(bytes);
-}
+{}
 
-XBuffer::XBuffer()
+XBuffer::~XBuffer()
 {
     reset();
 }
@@ -126,7 +129,9 @@ StringBuffer& StringBuffer::operator=(const StringBuffer& sb)
     return *this;
 }
 
-StringBuffer& StringBuffer::erase(const size_t pos/* = 0*/, const size_t n/* = std::string::npos*/)
+StringBuffer& StringBuffer::erase(
+    const size_t pos/* = 0*/, 
+    const size_t n/* = std::string::npos*/)
 {
     if (pos == 0)
     {
@@ -187,7 +192,9 @@ StringBuffer& StringBuffer::append(const char* data/* = nullptr*/)
     return append(data, strlen(data));
 }
 
-StringBuffer& StringBuffer::append(const char* data/* = nullptr*/, const std::size_t len/* = 0*/)
+StringBuffer& StringBuffer::append(
+    const char* data/* = nullptr*/, 
+    const std::size_t len/* = 0*/)
 {
     if (data && 0 < len)
     {
@@ -244,7 +251,9 @@ StringBuffer& StringBuffer::assign(const char* str/* = nullptr*/)
     return assign(str, strlen(str));
 }
 
-StringBuffer& StringBuffer::assign(const char* str/* = nullptr*/, const std::size_t len/* = 0*/)
+StringBuffer& StringBuffer::assign(
+    const char* str/* = nullptr*/, 
+    const std::size_t len/* = 0*/)
 {
     if (str && 0 < len)
     {
@@ -274,7 +283,7 @@ void StringBuffer::reset()
     stringbuf.clear();
 }
 
-char& StringBuffer::operator[](const std::size_t pos/* = std::string::npos*/);
+char& StringBuffer::operator[](const std::size_t pos)
 {
     char c;
     
@@ -286,12 +295,12 @@ char& StringBuffer::operator[](const std::size_t pos/* = std::string::npos*/);
     return c;
 }
 
-const char& StringBuffer::operator[](const std::size_t pos/* = std::string::npos*/) const;
+const char& StringBuffer::operator[](const std::size_t pos) const
 {
     return (*const_cast<StringBuffer*>(this))[pos];
 }
 
-void StringBuffer::reserve(const std::size_t n/* = std::string::npos*/);
+void StringBuffer::reserve(const std::size_t n)
 {
     if (std::string::npos != n)
     {
@@ -299,19 +308,19 @@ void StringBuffer::reserve(const std::size_t n/* = std::string::npos*/);
     }
 }
 
-void StringBuffer::resize(const std::size_t n/* = std::string::npos*/, const char c/* = 0*/);
+void StringBuffer::resize(const std::size_t n, const char c)
 {
     if (std::string::npos != n)
     {
-        StringBuffer.resize(n, c);
+        stringbuf.resize(n, c);
         head = 0;
         tail = 0;
     }
 }
 
 const std::string StringBuffer::substr(
-    const std::size_t pos/* = std::string::npos*/, 
-    const std::size_t n/* = std::string::npos*/) const;
+    const std::size_t pos, 
+    const std::size_t n) const
 {
     std::string str;
 

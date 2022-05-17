@@ -69,7 +69,7 @@ int Libhttp::request(
 	if(Error_Code_Success == ret)
 	{
 		HttpSessionPtr session{httpSessionPtrs.at(id)};
-        ret = (session ? session->request(data, bytes) : Error_Code_Object_Not_Exist);
+        ret = (session ? session->input((const char*)data, bytes) : Error_Code_Object_Not_Exist);
 	}
 
 	return ret;

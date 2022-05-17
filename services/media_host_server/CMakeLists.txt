@@ -31,7 +31,9 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 endif()
 
 include_directories(${INCLUDE_DIR} ${BOOST_DIR} ${ASIO_DIR} ${FILELOG_DIR} ${HTTP_DIR})
-file(GLOB_RECURSE src "*.cpp" "${SOURCE_DIR}/file/*.cpp")
+file(GLOB_RECURSE src 
+	"*.cpp" 
+	"${SOURCE_DIR}/file/*.cpp")
 
 add_executable(${PROJECT_NAME} ${src})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${DEPENDS})

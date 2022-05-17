@@ -27,7 +27,7 @@ namespace framework
             {
             public:
                 //@bytes : 缓存容量大小
-                XBuffer(const uint64_t bytes = 3 * 1024 * 1024);
+                XBuffer(void);
                 virtual ~XBuffer(void);
 
             public:
@@ -116,8 +116,8 @@ namespace framework
                 void reset(void);
 
                 //获取字符
-                char& operator[](const std::size_t pos = std::string::npos);
-                const char& operator[](const std::size_t pos = std::string::npos) const;
+                char& operator[](const std::size_t pos);
+                const char& operator[](const std::size_t pos) const;
 
                 inline const std::size_t capacity() const
                 {

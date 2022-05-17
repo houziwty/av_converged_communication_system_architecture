@@ -4,7 +4,10 @@
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
 //		Date : 2022-05-16
-//		Description : HTTP请求行分割
+//		Description : HTTP请求行分割器
+//                    1.HTTP头
+//                    2.HTTP内容
+//                    3.逐行分割
 //
 //		History:
 //					1. 05-16 由王科威创建
@@ -35,7 +38,7 @@ namespace module
 				//@Return : 错误码
                 virtual int input(
                     const char* data = nullptr, 
-                    const std::size_t len = std::string::npos);
+                    std::size_t len = std::string::npos);
 
                 //重置
                 void reset(void);
@@ -70,7 +73,8 @@ namespace module
                  //@data [out] : 数据
                  //@bytes [out] : 大小
                 virtual void afterRecvHttpContentNotification(
-                    const char* data = nullptr, const std::size_t bytes = 0);
+                    const char* data = nullptr, 
+                    const std::size_t bytes = 0);
 
                  //判断数据中是否有行结束符通知
                  //@data [in] : 数据

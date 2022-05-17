@@ -65,6 +65,9 @@ void MediaHostServer::afterPolledIOReadDataNotification(
     const uint64_t bytes/* = 0*/, 
     const int32_t e/* = 0*/)
 {
+    flog.write(
+        SeverityLevel::SEVERITY_LEVEL_INFO, 
+        "\r\n%s", (const char*)data);
     if (e)
     {
         sessions.remove(id);
@@ -133,7 +136,7 @@ int MediaHostServer::createNewSession(const uint16_t port/* = 0*/, const uint32_
             sessions.add(id, name);
             flog.write(
                 SeverityLevel::SEVERITY_LEVEL_INFO, 
-                "创建[ %s ]会话[ %u ]", name, id);
+                "创建[ %s ]会话[ %u ]", name.c_str(), id);
         }
     }
     else
