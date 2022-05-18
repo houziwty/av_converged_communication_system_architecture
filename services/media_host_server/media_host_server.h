@@ -55,6 +55,11 @@ protected:
         const uint32_t id = 0, 
         const uint64_t bytes = 0, 
         const int32_t e = 0) override;
+    void afterFetchHttpResponseNotification(
+        const uint32_t id = 0, 
+        const void* data = nullptr, 
+        const uint64_t bytes = 0, 
+        const bool close = false) override;
 
 private:
     //创建会话

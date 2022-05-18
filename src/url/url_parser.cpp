@@ -11,7 +11,6 @@ UrlParser::~UrlParser()
 int UrlParser::parse(const char* data/* = nullptr*/)
 {
     int ret{data ? Error_Code_Success : Error_Code_Invalid_Param};
-    int parsed_bytes{0};
 
     if (Error_Code_Success == ret)
     {
@@ -28,8 +27,13 @@ int UrlParser::parse(const char* data/* = nullptr*/)
             {
                 const std::string line{str.substr(0, pos)};
                 pos += splash.length();
-                parsed_bytes += pos;
-                parseOneLine(line.c_str());
+                ret = parseOneLine(line.c_str());
+                //解析异常就退出
+                if (Error_Code_Success != ret)
+                {
+                    break;
+                }
+                
                 str = str.substr(pos, str.length() - pos);
             }
             else
@@ -39,7 +43,20 @@ int UrlParser::parse(const char* data/* = nullptr*/)
         }
     }
     
-    return 0 < parsed_bytes ? parsed_bytes : ret;
+    return ret;
+}
+
+const std::vector<std::string> UrlParser::value(const std::string& key)
+{
+    std::vector<std::string> values;
+    auto range{_headers.equal_range(key)};
+
+    for (auto i = range.first; i != range.second; ++i)
+    {
+        values.push_back(i->second);
+    }
+    
+    return std::move(values);
 }
 
 int UrlParser::parseOneLine(const char* line/* = nullptr*/)
@@ -50,17 +67,25 @@ int UrlParser::parseOneLine(const char* line/* = nullptr*/)
     {
         const std::string str{line};
 
-        if (0 < str.find("HTTP"))
+        if (std::string::npos != str.find("HTTP"))
         {
             //解析HTTP命令、URL和类型
             const std::size_t first{str.find_first_of(" ")}, last{str.find_last_of(" ")};
-            method = str.substr(0, first);
-            api = str.substr(first + 1, last - first - 1);
-            proto = str.substr(last + 1, str.length() - last);
+            _method = str.substr(0, first);
+            _url = str.substr(first + 1, last - first - 1);
+            _proto = str.substr(last + 1, str.length() - last);
+        }
+        else if (std::string::npos != str.find(": "))
+        {
+            //解析消息头参数
+            const std::size_t pos{str.find_first_of(": ")};
+            const std::string key{str.substr(0, pos)};
+            const std::string value{str.substr(pos + 2, str.length() - pos - 2)};
+            _headers.insert(std::make_pair(key, value));
         }
         else
         {
-            //解析消息头参数
+            ret = Error_Code_Bad_RequestUrl;
         }
     }
     

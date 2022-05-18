@@ -38,15 +38,27 @@ namespace module
 				//@Return : 错误码
 				int removeSession(const uint32_t id = 0);
 
-				//请求
+				//输入数据
 				//@id [in] : 会话ID
 				//@data [in] : 数据
 				//@bytes [in] : 大小
 				//@Return : 错误码
-				int request(
+				int input(
 					const uint32_t id = 0, 
 					const void* data = nullptr, 
 					const uint64_t bytes = 0);
+
+			protected:
+				//HTTP服务应答通知
+				//@id [out] : 会话ID
+				//@data [out] : 数据
+				//@bytes [out] : 大小
+				//@close [out] : 会话关闭标识
+				virtual void afterFetchHttpResponseNotification(
+					const uint32_t id = 0, 
+					const void* data = nullptr, 
+					const uint64_t bytes = 0, 
+					const bool close = false) = 0;
 			};//class Libhttp
 		}//namespace http
 	}//namespace network

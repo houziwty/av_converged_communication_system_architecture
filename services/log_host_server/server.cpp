@@ -63,12 +63,14 @@ void Server::afterPolledXMQDataNotification(
                 {
                     auto o{boost::json::parse(params[i].value).as_object()};
                     auto command{o.at("command").as_string()};
-                    auto severity{o.at("severity").as_int64()};
-                    auto text{o.at("text").as_string()};
+                    auto timestamp{ o.at("timestamp").as_string() };
 
                     if(!command.compare("add"))
                     {
+                        auto severity{ o.at("severity").as_int64() };
+                        auto text{ o.at("text").as_string() };
                         SeverityLevel sl{(SeverityLevel)severity};
+
                         if (SeverityLevel::SEVERITY_LEVEL_INFO == sl || 
                             SeverityLevel::SEVERITY_LEVEL_WARNING == sl || 
                             SeverityLevel::SEVERITY_LEVEL_ERROR == sl)
@@ -100,7 +102,7 @@ void Server::afterPolledXMQDataNotification(
                         }
 
                         const std::string msg{
-                            (boost::format("info://%s?data={\"command\":\"query\",\"files\":%s}") % name % filenames).str() };
+                            (boost::format("info://%s?data={\"command\":\"query\",\"timestamp\":\"%s\",\"error\":\"0\",\"files\":\"%s\"}") % name % timestamp.c_str() % filenames).str() };
                         Libxmq::send(modeconf.id, msg.c_str(), msg.length());
                     }
                     else if(!command.compare("fetch"))
@@ -123,7 +125,9 @@ void Server::afterPolledXMQDataNotification(
                         {
                             fseek(fd, 0, SEEK_END);
                             fdbytes = ftell(fd);
-                            text = new(std::nothrow) char[fdbytes];
+                            fseek(fd, 0, SEEK_SET);
+                            text = new(std::nothrow) char[fdbytes + 1];
+                            text[fdbytes] = 0;
                             if (text)
                             {
 #ifdef _WINDOWS
@@ -131,11 +135,11 @@ void Server::afterPolledXMQDataNotification(
 #else
                                 fread(text, fdbytes, 1, fd);
 #endif//_WINDOWS
-                                msg = (boost::format("info://%s?data={\"command\":\"fetch\",\"text\":%s}") % name % text).str();
+                                msg = (boost::format("info://%s?data={\"command\":\"fetch\",\"timestamp\":\"%s\",\"error\":\"0\",\"text\":\"%s\"}") % name % timestamp.c_str() % text).str();
                             }
                             else
                             {
-                                msg = (boost::format("info://%s?data={\"command\":\"fetch\",\"text\":""}") % name).str();
+                                msg = (boost::format("info://%s?data={\"command\":\"fetch\",\"timestamp\":\"%s\",\"error\":\"0\",\"text\":\"\"}") % name % timestamp.c_str()).str();
                             }
 
                             fclose(fd);

@@ -1,3 +1,5 @@
+#include "boost/bind/bind.hpp"
+using namespace boost::placeholders;
 #include "boost/make_shared.hpp"
 #include "error_code.h"
 #include "map/unordered_map.h"
@@ -23,7 +25,10 @@ int Libhttp::addSession(const uint32_t id/* = 0*/)
 
     if (Error_Code_Success == ret)
     {
-        HttpSessionPtr session{boost::make_shared<HttpSession>()};
+        HttpSessionPtr session{
+            boost::make_shared<HttpSession>(
+                id, 
+                boost::bind(&Libhttp::afterFetchHttpResponseNotification, this, _1, _2, _3, _4))};
 
         if (session)
         {
@@ -59,7 +64,7 @@ int Libhttp::removeSession(const uint32_t id/* = 0*/)
     return ret;
 }
 
-int Libhttp::request(
+int Libhttp::input(
 	const uint32_t id/* = 0*/, 
 	const void* data/* = nullptr*/, 
 	const uint64_t bytes/* = 0*/)

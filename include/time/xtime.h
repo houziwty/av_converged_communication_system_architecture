@@ -31,6 +31,12 @@ namespace framework
 
 				//@interval [in] : 时间间隔，单位：毫秒
 				void sleep(const unsigned long long interval = 1);
+
+				//获取GMT格式化时间
+				const char* gmt(void) const;
+
+			private:
+				char fmtgmt[64];
 			};//class XTime
 		}//namespace time
 	}//namespace utils

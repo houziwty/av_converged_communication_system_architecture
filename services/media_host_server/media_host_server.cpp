@@ -68,6 +68,7 @@ void MediaHostServer::afterPolledIOReadDataNotification(
     flog.write(
         SeverityLevel::SEVERITY_LEVEL_INFO, 
         "\r\n%s", (const char*)data);
+
     if (e)
     {
         sessions.remove(id);
@@ -81,7 +82,7 @@ void MediaHostServer::afterPolledIOReadDataNotification(
         
         if (!name.compare("http") || !name.compare("https"))
         {
-            Libhttp::request(id, data, bytes);
+            Libhttp::input(id, data, bytes);
         }
         else if (!name.compare("rtsp") || !name.compare("rtsps"))
         {
@@ -147,4 +148,50 @@ int MediaHostServer::createNewSession(const uint16_t port/* = 0*/, const uint32_
     }
 
     return ret;
+}
+
+void MediaHostServer::afterFetchHttpResponseNotification(
+    const uint32_t id/* = 0*/, 
+    const void* data/* = nullptr*/, 
+    const uint64_t bytes/* = 0*/, 
+    const bool close/* = false*/)
+{
+    if (0 < id && data && 0 < id)
+    {
+        //发送应答
+        int ret{Libasio::send(id, data, bytes)};
+
+        if (Error_Code_Success == ret)
+        {
+            flog.write(
+                SeverityLevel::SEVERITY_LEVEL_INFO, 
+                "发送HTTP会话[ %u ]应答数据成功\r\n%s", id, (const char*)data);
+        }
+        else
+        {
+            flog.write(
+                SeverityLevel::SEVERITY_LEVEL_ERROR, 
+                "发送HTTP会话[ %u ]应答数据失败,错误码=[ %d ]\r\n%s", id, ret, (const char*)data);
+        }
+
+        //根据会话关闭标识控制会话是否关闭
+        if (close)
+        {
+            ret = Libasio::removeConf(id);
+
+            if (Error_Code_Success == ret)
+            {
+                ret = Libhttp::removeSession(id);
+                flog.write(
+                    SeverityLevel::SEVERITY_LEVEL_INFO, 
+                    "删除HTTP会话[ %u ]成功", id);
+            }
+            else
+            {
+                flog.write(
+                    SeverityLevel::SEVERITY_LEVEL_WARNING, 
+                    "删除HTTP会话[ %u ]失败,错误码=[ %d ]", id, ret);
+            }
+        }
+    }
 }
