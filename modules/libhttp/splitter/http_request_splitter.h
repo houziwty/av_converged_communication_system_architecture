@@ -59,15 +59,14 @@ namespace module
 
             protected:
                  //接收请求头通知
-                 //@data [out] : 数据
-                 //@bytes [out] : 大小
-                 //@Return : 请求头后的content长度,
-                 //             <0 : 代表后面所有数据都是content，此时后面的content将分段通过onRecvContent函数回调出去
+                 //@header [out] : 数据
+                 //@content_bytes [out] : 大小
+                 //             <0 : 代表后面所有数据都是content，此时后面的content将分段通过afterRecvHttpContentNotification函数回调
                  //             =0 : 代表为后面数据还是请求头,
-                 //             >0 : 代表后面数据为固定长度content,此时将缓存content并等到所有content接收完毕一次性通过onRecvContent函数回调出去
-                virtual const std::size_t afterRecvHttpHeaderNotification(
-                    const char* data = nullptr, 
-                    const std::size_t bytes = 0) = 0;
+                 //             >0 : 代表后面数据为固定长度content,此时将缓存content并等到所有content接收完毕一次性通过onRecvContent函数回调
+                virtual void afterRecvHttpHeaderNotification(
+                    const char* header, 
+                    std::size_t& content_length) = 0;
 
                  //接收content分片或全部数据通知
                  //@data [out] : 数据

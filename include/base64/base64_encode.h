@@ -9,25 +9,32 @@
 //		History: 2021-11-15 由王科威创建
 //
 
-#ifndef FRAMEWORK_CODEC_BASE64_ENCODE_H
-#define FRAMEWORK_CODEC_BASE64_ENCODE_H
+#ifndef FRAMEWORK_ENCRYPT_CODEC_BASE64_ENCODE_H
+#define FRAMEWORK_ENCRYPT_CODEC_BASE64_ENCODE_H
 
 namespace framework
 {
-	namespace codec
+	namespace encrypt
 	{
-		class Base64Encode
+		namespace codec
 		{
-		public:
-			Base64Encode(void);
-			~Base64Encode(void);
+			class Base64Encode
+			{
+			public:
+				Base64Encode(void);
+				~Base64Encode(void);
 
-		public:
-			int encode(
-				const char* data = nullptr,
-				const int bytes = 0);
-		};//class Base64Encode
-	}//namespace codec
+			public:
+				//Base64编码
+				//@data [in] : 原始数据
+				//@Return : 编码数据
+				const char* encode(const char* data = nullptr);
+
+			private:
+				char* base64;
+			};//class Base64Encode
+		}//namespace codec
+	}//namespace encrypt
 }//namespace framework
 
-#endif//FRAMEWORK_CODEC_BASE64_ENCODE_H
+#endif//FRAMEWORK_ENCRYPT_CODEC_BASE64_ENCODE_H

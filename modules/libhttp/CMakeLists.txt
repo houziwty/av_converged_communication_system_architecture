@@ -11,7 +11,8 @@ include_directories(${INCLUDE_DIR} ${LIB_DIR})
 file(GLOB_RECURSE src 
 	"*.cpp" 
 	"${SOURCE_DIR}/memory/*.cpp" 
-	"${SOURCE_DIR}/url/*.cpp")
+	"${SOURCE_DIR}/url/*.cpp" 
+	"${SOURCE_DIR}/base64/*.cpp")
 
 add_library(${PROJECT_NAME} SHARED ${src})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${DEPENDS})

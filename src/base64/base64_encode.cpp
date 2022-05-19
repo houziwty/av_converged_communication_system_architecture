@@ -3,46 +3,41 @@
 #include "boost/archive/iterators/base64_from_binary.hpp"
 #include "boost/archive/iterators/binary_from_base64.hpp"
 #include "boost/archive/iterators/transform_width.hpp"
-//#include "error_code.h"
-#include "codec/base64_encode.h"
-using namespace framework::codec;
+#include "boost/checked_delete.hpp"
+#include "error_code.h"
+#include "memory/xmem.h"
+using namespace framework::utils::memory;
+#include "base64/base64_encode.h"
+using namespace framework::encrypt::codec;
 
-Base64Encode::Base64Encode()
+Base64Encode::Base64Encode() : base64{nullptr}
 {}
 
 Base64Encode::~Base64Encode()
-{}
-
-int Base64Encode::encode(
-	const char* data /* = nullptr */, 
-	const int bytes /* = 0 */)
 {
-	int ret{ data && 0 < bytes ? 0 : -1 };
+	boost::checked_array_delete(base64);
+}
 
-	if (!ret)
+const char* Base64Encode::encode(const char* data /* = nullptr */)
+{
+	if (data)
 	{
+		const std::string i{data};
+		std::stringstream o;
 		typedef boost::archive::iterators::base64_from_binary<
 			boost::archive::iterators::transform_width<std::string::const_iterator, 6, 8>> Base64EncodeIterator;
-		std::string inputData((const char*)data, bytes);
-		std::stringstream outputData;
-		copy(Base64EncodeIterator(inputData.begin()), Base64EncodeIterator(inputData.end()), std::ostream_iterator<char>(outputData));
-		size_t equal_count = (3 - inputData.length() % 3) % 3;
+		std::copy(Base64EncodeIterator(i.begin()), Base64EncodeIterator(i.end()), std::ostream_iterator<char>(o));
+		std::size_t equal_count = (3 - i.length() % 3) % 3;
 		for (size_t i = 0; i < equal_count; i++)
 		{
-			outputData.put('=');
+			o.put('=');
 		}
-		outputData.put('\0');
+		o.put('\0');
 
-		const std::string s{ outputData.str() };
-
-		FILE* fd{nullptr};
-		if(!fd)
-		{
-			fd = fopen("/mnt/build/test.jpg", "wb+");
-		}
-		fwrite(data, bytes, 1, fd);
-		fclose(fd);
+		const std::string base64String{o.str()};
+		const std::size_t base64Length{base64String.length()};
+		base64 = reinterpret_cast<char*>(XMem().alloc(base64String.c_str(), base64Length));
 	}
 
-	return ret;
+	return base64;
 }

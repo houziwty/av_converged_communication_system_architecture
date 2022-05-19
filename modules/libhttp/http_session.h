@@ -45,9 +45,9 @@ namespace module
                     const std::size_t len = std::string::npos) override;
 
 			protected:
-				const std::size_t afterRecvHttpHeaderNotification(
-                    const char* data = nullptr, 
-                    const std::size_t bytes = 0) override;
+				void afterRecvHttpHeaderNotification(
+                    const char* header, 
+                    std::size_t& content_length) override;
 				void afterRecvHttpContentNotification(
                     const char* data = nullptr, 
                     const std::size_t bytes = 0) override;
@@ -64,10 +64,21 @@ namespace module
 
 				//处理OPTIONS命令
 				void fetchHttpRequestOptions(void);
+				//处理HEAD命令
+				void fetchHttpRequestHead(void);
+				//处理POST命令
+				void fetchHttpRequestPost(void);
+				//处理GET命令
+				void fetchHttpRequestGet(void* parser = nullptr);
+
+				//尝试升级为Websocket
+				//@Return : true表示成功,false表示失败
+				bool tryUpgradeWebsocket(void* parser = nullptr);
 
 			private:
 				const uint32_t sid;
 				AfterFetchHttpResponseCallback afterFetchHttpResponseCallback;
+				bool wsFlag;
 			};//class HttpSession
 		}//namespace http
 	}//namespace network

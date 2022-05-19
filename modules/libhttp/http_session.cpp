@@ -1,8 +1,11 @@
+#include "boost/compute/detail/sha1.hpp"
 #include "error_code.h"
 #include "time/xtime.h"
 using namespace framework::utils::time;
 #include "url/url_parser.h"
 using namespace framework::utils::url;
+#include "base64/base64_encode.h"
+using namespace framework::encrypt::codec;
 #include "const/http_const.h"
 #include "http_session.h"
 using namespace module::network::http;
@@ -10,7 +13,8 @@ using namespace module::network::http;
 HttpSession::HttpSession(
 	const uint32_t id/* = 0*/, 
 	AfterFetchHttpResponseCallback callback/* = nullptr*/) 
-	: HttpRequestSplitter(), sid{id}, afterFetchHttpResponseCallback{callback}
+	: HttpRequestSplitter(), sid{id}, afterFetchHttpResponseCallback{callback}, 
+	wsFlag{false}
 {}
 
 HttpSession::~HttpSession()
@@ -30,37 +34,41 @@ int HttpSession::input(
 	return ret;
 }
 
-const std::size_t HttpSession::afterRecvHttpHeaderNotification(
-	const char* data/* = nullptr*/, 
-	const std::size_t bytes/* = 0*/)
+void HttpSession::afterRecvHttpHeaderNotification(
+	const char* header, 
+	std::size_t& content_length)
 {
-    int ret{0 < data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
+    int ret{header ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
 		UrlParser parser;
 
-		if (Error_Code_Success == parser.parse(data))
+		//HTTP请求解析
+		if (Error_Code_Success == parser.parse(header))
 		{
-			//HTTP请求解析成功
+			//获取消息体大小
+			std::vector<std::string> content_length_field{parser.value("Content_Length")};
+			content_length = (0 < content_length_field.size() ? atoi(content_length_field[0].c_str()) : 0);
+
 			//处理HTTP请求并应答
 			const std::string& method{parser.method()};
 
 			if (!method.compare("GET"))
 			{
-				/* code */
+				fetchHttpRequestGet(&parser);
 			}
 			else if (!method.compare("POST"))
 			{
-				/* code */
+				fetchHttpRequestPost();
 			}
 			else if (!method.compare("HEAD"))
 			{
-				/* code */
+				fetchHttpRequestHead();
 			}
-			else if (!method.compare("OPTION"))
+			else if (!method.compare("OPTIONS"))
 			{
-				/* code */
+				fetchHttpRequestOptions();
 			}
 			else
 			{
@@ -73,8 +81,6 @@ const std::size_t HttpSession::afterRecvHttpHeaderNotification(
 			response(500);
 		}
 	}
-
-	return ret;
 }
 
 void HttpSession::afterRecvHttpContentNotification(
@@ -102,15 +108,16 @@ void HttpSession::response(
 	std::multimap<std::string, std::string>::iterator it{headerOut.find("Content-Length")};
 	bool close{true};
 
-	if (headerOut.end() == it)
-	{
-        //http-flv直播是Keep-Alive类型
-        close = false;
-    } else if (body_bytes >= SIZE_MAX || body_bytes < 0)
-	{
-        //不固定长度的body，那么发送完body后应该关闭socket，以便浏览器做下载完毕的判断
-        close = true;
-    }
+	// if (headerOut.end() == it)
+	// {
+    //     //http-flv直播是Keep-Alive类型
+    //     close = false;
+    // } 
+	// else if (body_bytes >= SIZE_MAX || body_bytes < 0)
+	// {
+    //     //不固定长度的body，那么发送完body后应该关闭socket，以便浏览器做下载完毕的判断
+    //     close = true;
+    // }
 
     headerOut.emplace("Date", XTime().gmt());
     headerOut.emplace("Server", "MediaServer");
@@ -174,4 +181,67 @@ void HttpSession::response(
 
 		afterFetchHttpResponseCallback(sid, resp.c_str(), resp.length(), close);
 	}
+}
+
+void HttpSession::fetchHttpRequestOptions()
+{
+	std::multimap<std::string, std::string> header;
+    header.emplace("Allow", "GET, POST, HEAD, OPTIONS");
+    header.emplace("Access-Control-Allow-Origin", "*");
+    header.emplace("Access-Control-Allow-Credentials", "true");
+    header.emplace("Access-Control-Request-Methods", "GET, POST, HEAD, OPTIONS");
+    header.emplace("Access-Control-Request-Headers", "Accept,Accept-Language,Content-Language,Content-Type");
+
+    response(200, header);
+}
+
+void HttpSession::fetchHttpRequestHead()
+{
+	//暂时全部返回200 OK，因为HTTP GET存在按需生成流的操作，所以不能按照HTTP GET的流程返回
+    //如果直接返回404，那么又会导致按需生成流的逻辑失效，所以HTTP HEAD在静态文件或者已存在资源时才有效
+    //对于按需生成流的直播场景并不适用
+    response(200);
+}
+
+void HttpSession::fetchHttpRequestPost()
+{}
+
+void HttpSession::fetchHttpRequestGet(void* parser/* = nullptr*/)
+{
+	//先尝试升级为Websocket
+	if (tryUpgradeWebsocket(parser))
+	{
+		return;
+	}
+	
+}
+
+bool HttpSession::tryUpgradeWebsocket(void* parser/* = nullptr*/)
+{
+	bool ret{parser ? true : false};
+
+	if (ret)
+	{
+		UrlParser* _parser{reinterpret_cast<UrlParser*>(parser)};
+		const std::vector<std::string> sec_ws_key{_parser->value("Sec-WebSocket-Key")};
+
+		if (0 < sec_ws_key.size())
+		{
+			const std::string sec_ws_accept{
+				Base64Encode().encode(
+					std::string(boost::compute::detail::sha1(
+						sec_ws_key[0] + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")).c_str())};
+			if (!sec_ws_accept.empty())
+			{
+				sec_ws_accept.length();
+			}
+			
+		}
+		else
+		{
+			ret = false;
+		}
+	}
+	
+	return ret;
 }

@@ -67,7 +67,7 @@ int HttpRequestSplitter::input(
             std::size_t header_size = index - ptr;
             ptr = index;
             buffer_bytes = (len - (ptr - data));
-            content_bytes = afterRecvHttpHeaderNotification(header_ptr, header_size);
+            afterRecvHttpHeaderNotification(header_ptr, content_bytes);
         }
 
         if(0 >= buffer_bytes)
@@ -89,9 +89,7 @@ int HttpRequestSplitter::input(
             buffer.assign(ptr, buffer_bytes);
             return Error_Code_Operate_Failure;
         }
-
-        //已经找到http头了
-        if(0 < content_bytes)
+        else
         {
             //数据按照固定长度content处理
             if(buffer_bytes < content_bytes)
