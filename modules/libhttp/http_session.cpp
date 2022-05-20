@@ -1,20 +1,25 @@
+#include "boost/checked_delete.hpp"
 #include "boost/compute/detail/sha1.hpp"
 #include "error_code.h"
 #include "time/xtime.h"
 using namespace framework::utils::time;
 #include "url/url_parser.h"
 using namespace framework::utils::url;
-#include "base64/base64_encode.h"
-using namespace framework::encrypt::codec;
+#include "base64/encoder.h"
+using namespace framework::codec::base64;
+#include "sha1/encryptor.h"
+using namespace framework::encrypt::sha1;
 #include "const/http_const.h"
 #include "http_session.h"
 using namespace module::network::http;
 
 HttpSession::HttpSession(
 	const uint32_t id/* = 0*/, 
-	AfterFetchHttpResponseCallback callback/* = nullptr*/) 
-	: HttpRequestSplitter(), sid{id}, afterFetchHttpResponseCallback{callback}, 
-	wsFlag{false}
+	AfterFetchHttpResponseCallback resp_cbf/* = nullptr*/, 
+	AfterFetchHttpApiEventCallback api_cbf/* = nullptr*/) 
+	: HttpRequestSplitter(), sid{id}, websocket{false}, 
+	afterFetchHttpResponseCallback{resp_cbf}, 
+	afterFetchHttpApiEventCallback{api_cbf}
 {}
 
 HttpSession::~HttpSession()
@@ -87,6 +92,12 @@ void HttpSession::afterRecvHttpContentNotification(
 	const char* data/* = nullptr*/, 
 	const std::size_t bytes/* = 0*/)
 {
+	//暂时处理由HTTP GET的消息体
+	//GET没有消息体，只处理Websocket的消息
+	if (websocket && data && 0 < bytes)
+	{
+		/* code */
+	}	
 }
 
 void HttpSession::response(
@@ -179,7 +190,7 @@ void HttpSession::response(
 			resp += "\r\n";
 		}
 
-		afterFetchHttpResponseCallback(sid, resp.c_str(), resp.length(), close);
+		afterFetchHttpResponseCallback(sid, resp.c_str(), close);
 	}
 }
 
@@ -204,44 +215,48 @@ void HttpSession::fetchHttpRequestHead()
 }
 
 void HttpSession::fetchHttpRequestPost()
-{}
+{
+	//暂时不处理POST方法
+	response(501);
+}
 
 void HttpSession::fetchHttpRequestGet(void* parser/* = nullptr*/)
 {
-	//先尝试升级为Websocket
-	if (tryUpgradeWebsocket(parser))
+	//尝试升级为Websocket
+	tryUpgradeWebsocket(parser);
+
+	//解析HTTP API并执行API事件通知
+	UrlParser* _parser{reinterpret_cast<UrlParser*>(parser)};
+	const std::string api{_parser->url()};
+	if (!api.empty() && afterFetchHttpApiEventCallback)
 	{
-		return;
+		int e{200};
+		char* body{nullptr};
+		afterFetchHttpApiEventCallback(sid, api.c_str(), e, body);
+		response(e, std::multimap<std::string, std::string>(), body);
+		boost::checked_array_delete(body);
 	}
-	
 }
 
-bool HttpSession::tryUpgradeWebsocket(void* parser/* = nullptr*/)
+void HttpSession::tryUpgradeWebsocket(void* parser/* = nullptr*/)
 {
-	bool ret{parser ? true : false};
-
-	if (ret)
+	if (parser)
 	{
 		UrlParser* _parser{reinterpret_cast<UrlParser*>(parser)};
-		const std::vector<std::string> sec_ws_key{_parser->value("Sec-WebSocket-Key")};
+		const std::vector<std::string> key{_parser->value("Sec-WebSocket-Key")};
+		const std::vector<std::string> proto{_parser->value("Sec-WebSocket-Protocol")};
+		const std::vector<std::string> version{_parser->value("Sec-WebSocket-Version")};
 
-		if (0 < sec_ws_key.size())
+		//HTTP消息头包含Sec-WebSocket-Key字段就升级Websocket请求
+		if (0 < key.size() && 0 < proto.size() && 0 < version.size())
 		{
-			const std::string sec_ws_accept{
-				Base64Encode().encode(
-					std::string(boost::compute::detail::sha1(
-						sec_ws_key[0] + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")).c_str())};
-			if (!sec_ws_accept.empty())
-			{
-				sec_ws_accept.length();
-			}
-			
-		}
-		else
-		{
-			ret = false;
+			websocket = true;
+			std::multimap<std::string, std::string> headerOut;
+			headerOut.emplace("Upgrade", "websocket");
+			headerOut.emplace("Connection", "Upgrade");
+			headerOut.emplace("Sec-WebSocket-Accept", std::string(Base64Encoder().encode(Sha1Encryptor().encrypt(key[0].c_str()))));
+			headerOut.emplace("Sec-WebSocket-Protocol", proto[0]);
+			headerOut.emplace("Sec-WebSocket-Version", version[0]);
 		}
 	}
-	
-	return ret;
 }

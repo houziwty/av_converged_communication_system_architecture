@@ -1,4 +1,10 @@
+#include "boost/bind/bind.hpp"
+using namespace boost::placeholders;
+#include "boost/format.hpp"
+#include "boost/json.hpp"
 #include "error_code.h"
+#include "memory/xmem.h"
+using namespace framework::utils::memory;
 #include "media_host_server.h"
 
 MediaHostServer::MediaHostServer(FileLog& log)
@@ -8,7 +14,7 @@ MediaHostServer::MediaHostServer(FileLog& log)
 MediaHostServer::~MediaHostServer()
 {}
 
-int MediaHostServer::addProtoSupport(const std::string name, const uint16_t port/* = 0*/)
+int MediaHostServer::addPort(const std::string name, const uint16_t port/* = 0*/)
 {
     int ret{!name.empty() && 0 < port ? Error_Code_Success : Error_Code_Invalid_Param};
 
@@ -18,6 +24,15 @@ int MediaHostServer::addProtoSupport(const std::string name, const uint16_t port
     }
     
     return ret;
+}
+
+int MediaHostServer::loadApi()
+{
+    apis.add(
+        "/api/v1/getapilist", 
+        boost::bind(&MediaHostServer::afterFetchApiEventGetApiList, this, _1, _2, _3));
+    
+    return Error_Code_Success;
 }
 
 uint32_t MediaHostServer::afterFetchIOAcceptedEventNotification(
@@ -152,26 +167,26 @@ int MediaHostServer::createNewSession(const uint16_t port/* = 0*/, const uint32_
 
 void MediaHostServer::afterFetchHttpResponseNotification(
     const uint32_t id/* = 0*/, 
-    const void* data/* = nullptr*/, 
-    const uint64_t bytes/* = 0*/, 
+    const char* response/* = nullptr*/, 
     const bool close/* = false*/)
 {
-    if (0 < id && data && 0 < id)
+    if (0 < id && response)
     {
+        const std::string responseStr{response};
         //发送应答
-        int ret{Libasio::send(id, data, bytes)};
+        int ret{Libasio::send(id, response, responseStr.length())};
 
         if (Error_Code_Success == ret)
         {
             flog.write(
                 SeverityLevel::SEVERITY_LEVEL_INFO, 
-                "发送HTTP会话[ %u ]应答数据成功\r\n%s", id, (const char*)data);
+                "发送HTTP会话[ %u ]应答数据成功\r\n%s", id, response);
         }
         else
         {
             flog.write(
                 SeverityLevel::SEVERITY_LEVEL_ERROR, 
-                "发送HTTP会话[ %u ]应答数据失败,错误码=[ %d ]\r\n%s", id, ret, (const char*)data);
+                "发送HTTP会话[ %u ]应答数据失败,错误码=[ %d ]\r\n%s", id, ret, response);
         }
 
         //根据会话关闭标识控制会话是否关闭
@@ -193,5 +208,53 @@ void MediaHostServer::afterFetchHttpResponseNotification(
                     "删除HTTP会话[ %u ]失败,错误码=[ %d ]", id, ret);
             }
         }
+    }
+}
+
+void MediaHostServer::afterFetchHttpApiEventNotification(const uint32_t id, const char* api, int& e, char*& body)
+{
+    if (0 < id && api)
+    {
+        const std::string temp{api};
+        const std::size_t pos{temp.find_first_of('?')};
+        const std::string command{temp.substr(0, pos)};
+        std::string parameters;
+
+        if (std::string::npos != pos)
+        {
+            parameters = temp.substr(pos + 1, temp.length() - pos - 1);
+        }
+
+        AfterFetchApiEventNotification notification{apis.at(command)};
+        if (notification)
+        {
+            notification(!parameters.empty() ? nullptr : parameters.c_str(), e, body);
+        }
+        else
+        {
+            flog.write(
+                SeverityLevel::SEVERITY_LEVEL_WARNING, 
+                "接收HTTP会话[ %u ]不支持的API请求[ %s ]", id, command);
+        }
+    }
+}
+
+void MediaHostServer::afterFetchApiEventGetApiList(const char* params, int& e, char*& body)
+{
+    e = 200;
+    const std::vector<std::string> apilist{apis.keies()};
+    boost::json::object o;
+    
+    for (int i = 0; i != apilist.size(); ++i)
+    {
+        const std::string key{(boost::format("%d") % (i + 1)).str()};
+        o[key] = apilist[i]; 
+    }
+
+    const std::string out{boost::json::serialize(o)};
+    const std::size_t len{out.length()};
+    if (!out.empty())
+    {
+        body = reinterpret_cast<char*>(XMem().alloc(out.c_str(), len));
     }
 }

@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
     int ret{Error_Code_Success};
     char* localhost{"0.0.0.0"};
     //读取服务端口配置信息
-    const std::string path{Path().path() + "/media_port.conf"};
+    const std::string path{Path().path() + "/media_host_server.conf"};
     boost::property_tree::ptree root;
     //创建服务
     boost::shared_ptr<Libasio> media{
@@ -26,8 +26,10 @@ int main(int argc, char* argv[])
         try
         {
             boost::property_tree::read_json(path, root);
+            boost::shared_ptr<MediaHostServer> mediaHostServer{
+                boost::dynamic_pointer_cast<MediaHostServer>(media)};
 
-            BOOST_FOREACH(const boost::property_tree::ptree::value_type& v, root.get_child("ports"))
+            BOOST_FOREACH(const boost::property_tree::ptree::value_type& v, root.get_child("port"))
             {
                 const std::string proto{v.first};
                 const uint16_t port{v.second.get_value<uint16_t>()};
@@ -45,11 +47,11 @@ int main(int argc, char* argv[])
                     ret = media->addConf(conf);
                     if (Error_Code_Success == ret)
                     {
-                        log.write(SeverityLevel::SEVERITY_LEVEL_INFO, "启动[%s:%u] over TCP服务成功", proto.c_str(), conf.port);
+                        log.write(SeverityLevel::SEVERITY_LEVEL_INFO, "启动[ %s:%u ] over TCP服务成功", proto.c_str(), conf.port);
                     }
                     else
                     {
-                        log.write(SeverityLevel::SEVERITY_LEVEL_WARNING, "启动[%s:%u]服务失败，错误码=[%d]", proto.c_str(),conf.port, ret);
+                        log.write(SeverityLevel::SEVERITY_LEVEL_WARNING, "启动[ %s:%u ]服务失败，错误码=[ %d ]", proto.c_str(),conf.port, ret);
                     }
                 }
                 
@@ -64,27 +66,27 @@ int main(int argc, char* argv[])
                     ret = media->addConf(conf);
                     if (Error_Code_Success == ret)
                     {
-                        log.write(SeverityLevel::SEVERITY_LEVEL_INFO, "启动[%s:%u] over UDP服务成功", proto.c_str(), conf.port);
+                        log.write(SeverityLevel::SEVERITY_LEVEL_INFO, "启动[ %s:%u ] over UDP服务成功", proto.c_str(), conf.port);
                     }
                     else
                     {
-                        log.write(SeverityLevel::SEVERITY_LEVEL_WARNING, "启动[%s:%u] over UDP服务失败，错误码=[%d]", proto.c_str(), conf.port, ret);
+                        log.write(SeverityLevel::SEVERITY_LEVEL_WARNING, "启动[ %s:%u ] over UDP服务失败，错误码=[ %d ]", proto.c_str(), conf.port, ret);
                     }
                 }
 
                 if (Error_Code_Success == ret)
                 {
-                    boost::shared_ptr<MediaHostServer> ptr{
-                        boost::dynamic_pointer_cast<MediaHostServer>(media)};
-                    ptr->addProtoSupport(proto, port);
+                    mediaHostServer->addPort(proto, port);
                 }
             }
+
+            mediaHostServer->loadApi();
         }
         catch(const std::exception& e)
         {
             log.write(
                 SeverityLevel::SEVERITY_LEVEL_ERROR, 
-                "解析media_port.conf配置[%s]异常，错误描述=[%s]", 
+                "解析配置文件[ %s ]异常，错误描述=[ %s ]", 
                 path.c_str(), e.what());
         }
     }

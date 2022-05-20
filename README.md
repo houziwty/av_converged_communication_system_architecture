@@ -102,22 +102,18 @@
    
    ```HTTP/1.1 200 OK```
 
+   #### 3.2.1.5 查询平台API接口
+   ```GET　/api/v1/getapilist```
+   
+   ```HTTP/1.1 200 OK```
+
 |参数名称|规则|类型|说明||
 |-|-|-|-|-|
-| author| 必选 | String | 授权对象|
-| hardware| 必选 | String | 硬件信息|
-| interfaceversion| 必选 | String | 接口版本|
-| apiauth| 必选 | Boolean | 是否接口鉴权|
-| remaindays| 必选 | String | 授权剩余时间，单位：天|
-| runtime| 必选 | String | 运行时间|
-| servicetime| 必选 | String | 系统时间|
-| starttime| 必选 | String | 服务启动时间|
-| server| 必选 | String | 软件信息|
-| preferstreamfmt| 必选 | String | 首选播放格式|
-| channelcount| 必选 | Number | 通道总数|
-| copyrighttext| 必选 | String | 版权信息|
+| ApiList | 必选 | Array | API接口列表 |
+| - Name | 必选 | String | 接口名称 |
+| - Comment | 必选 | String | 接口描述 |
 
-   #### 3.2.1.5 修改密码
+   #### 3.2.1.6 修改密码
    ```GET　/streamapi/v1/system/modifypassword```
 |参数名称|规则|类型|说明||
 |-|-|-|-|-|
@@ -130,7 +126,7 @@
 |-|-|-|-|-|
 | timeout| 必选 | String | token超时，单位：秒|
 
-   #### 3.2.1.6 重启服务
+   #### 3.2.1.7 重启服务
    ```GET　/streamapi/v1/system/restart```
    
    ```HTTP/1.1 200 OK```

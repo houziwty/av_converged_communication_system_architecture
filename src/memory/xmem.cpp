@@ -40,11 +40,12 @@ void* XMem::alloc(
     const void* src/* = nullptr*/, 
     const uint64_t bytes/* = 0*/)
 {
-    void* dest{nullptr};
+    char* dest{nullptr};
 
     if (src && 0 < bytes)
     {
-        dest = new(std::nothrow) uint8_t[bytes];
+        dest = new(std::nothrow) char[bytes + 1];
+        dest[bytes] = 0;
         
         if (dest)
         {

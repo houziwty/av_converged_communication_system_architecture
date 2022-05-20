@@ -27,16 +27,23 @@ namespace module
 			//HTTP服务应答回调
 			//@_1 [out] : 会话ID
 			//@_2 [out] : 数据
-			//@_3 [out] : 大小
-			//@_4 [out] : 会话关闭标识
-			typedef boost::function<void(const uint32_t, const void*, const uint64_t, const bool)> AfterFetchHttpResponseCallback;
+			//@_3 [out] : 会话关闭标识
+			typedef boost::function<void(const uint32_t, const char*, const bool)> AfterFetchHttpResponseCallback;
+
+			//HTTP服务API事件回调
+			//@_1 [out] : 会话ID
+			//@_2 [out] : API请求
+			//@_3 [out] : HTTP错误码
+			//@_4 [out] : 应答消息体
+			typedef boost::function<void(const uint32_t, const char*, int&, char*&)> AfterFetchHttpApiEventCallback;
 
 			class HttpSession : protected HttpRequestSplitter
 			{
 			public:
 				HttpSession(
 					const uint32_t id = 0, 
-					AfterFetchHttpResponseCallback callback = nullptr);
+					AfterFetchHttpResponseCallback resp_cbf = nullptr, 
+					AfterFetchHttpApiEventCallback api_cbf = nullptr);
 				virtual ~HttpSession(void);
 
 			public:
@@ -71,14 +78,15 @@ namespace module
 				//处理GET命令
 				void fetchHttpRequestGet(void* parser = nullptr);
 
-				//尝试升级为Websocket
-				//@Return : true表示成功,false表示失败
-				bool tryUpgradeWebsocket(void* parser = nullptr);
+				//尝试升级会话为Websocket
+				void tryUpgradeWebsocket(void* parser = nullptr);
 
 			private:
 				const uint32_t sid;
 				AfterFetchHttpResponseCallback afterFetchHttpResponseCallback;
-				bool wsFlag;
+				AfterFetchHttpApiEventCallback afterFetchHttpApiEventCallback;
+				//是否升级为Websocket会话
+				bool websocket;
 			};//class HttpSession
 		}//namespace http
 	}//namespace network

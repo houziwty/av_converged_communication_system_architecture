@@ -51,14 +51,23 @@ namespace module
 			protected:
 				//HTTP服务应答通知
 				//@id [out] : 会话ID
-				//@data [out] : 数据
-				//@bytes [out] : 大小
+				//@response [out] : 应答数据
 				//@close [out] : 会话关闭标识
 				virtual void afterFetchHttpResponseNotification(
 					const uint32_t id = 0, 
-					const void* data = nullptr, 
-					const uint64_t bytes = 0, 
+					const char* response = nullptr, 
 					const bool close = false) = 0;
+
+				//HTTP服务API事件通知
+				//@id [out] : 会话ID
+				//@api [out] : API数据
+				//@e [in/out] : HTTP错误码
+				//@body [in/out] : 应答消息体
+				virtual void afterFetchHttpApiEventNotification(
+					const uint32_t id, 
+					const char* api, 
+					int& e, 
+					char*& body) = 0;
 			};//class Libhttp
 		}//namespace http
 	}//namespace network
