@@ -1,5 +1,6 @@
 #include "boost/checked_delete.hpp"
 #include "boost/compute/detail/sha1.hpp"
+#include "boost/format.hpp"
 #include "error_code.h"
 #include "time/xtime.h"
 using namespace framework::utils::time;
@@ -151,7 +152,7 @@ void HttpSession::response(
         headerOut.emplace("Access-Control-Allow-Credentials", "true");
     }
 
-    if (headerOut.end() != it && body_bytes >= 0 && body_bytes < SIZE_MAX)
+    if (headerOut.end() == it && body_bytes >= 0 && body_bytes < SIZE_MAX)
 	{
         //文件长度为固定值,且不是http-flv强制设置Content-Length
 		headerOut.emplace("Content-Length", std::to_string(body_bytes));
@@ -232,9 +233,16 @@ void HttpSession::fetchHttpRequestGet(void* parser/* = nullptr*/)
 	{
 		int e{200};
 		char* body{nullptr};
-		afterFetchHttpApiEventCallback(sid, api.c_str(), e, body);
-		response(e, std::multimap<std::string, std::string>(), body);
+		char* type{nullptr};
+		afterFetchHttpApiEventCallback(sid, api.c_str(), e, body, type);
+
+		//应答
+		std::multimap<std::string, std::string> header;
+		header.emplace("Content-Type", type);
+		// header.emplace("Content-Length", (boost::format("%u") % std::string(body).length()).str());
+		response(e, header, body);
 		boost::checked_array_delete(body);
+		boost::checked_array_delete(type);
 	}
 }
 

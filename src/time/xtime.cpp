@@ -31,6 +31,6 @@ void XTime::sleep(const unsigned long long interval /* = 1 */)
 const char* XTime::gmt() const
 {
     const std::time_t tt{std::time(nullptr)};
-    std::strftime((char*)fmtgmt, 64, "%a, %b %d %Y %H:%M:%S GMT", std::gmtime(&tt));
+    std::strftime((char*)fmtgmt, 64, "%a, %b %d %Y %H:%M:%S", std::localtime(&tt));
     return fmtgmt;
 }

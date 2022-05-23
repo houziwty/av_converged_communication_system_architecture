@@ -31,7 +31,8 @@ typedef enum class tagDVSFactoryType_t : uint32_t
 {
 	DVS_FACTORY_TYPE_NONE = 0,
 	DVS_FACTORY_TYPE_HK, 
-	DVS_FACTORY_TYPE_DH
+	DVS_FACTORY_TYPE_DH,
+	DVS_FACTORY_TYPE_UNIVIEW
 }DVSFactoryType;
 
 typedef enum class tagDVSModuleType_t : uint32_t

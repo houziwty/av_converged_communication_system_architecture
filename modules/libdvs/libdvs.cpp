@@ -4,6 +4,7 @@ using namespace boost::placeholders;
 #include "error_code.h"
 #include "hikvision/hikvision_node.h"
 #include "dahua/dahua_node.h"
+#include "uniview/uniview_node.h"
 #include "map/unordered_map.h"
 #include "libdvs.h"
 using namespace module::device::dvs;
@@ -35,6 +36,12 @@ int Libdvs::addConf(const DVSModeConf& conf)
 		else if (DVSFactoryType::DVS_FACTORY_TYPE_DH == conf.factory)
 		{
 			dvs = boost::make_shared<DahuaNode>(
+				boost::bind(&Libdvs::afterPolledDVSDataNotification, this, _1, _2, _3, _4, _5), 
+				boost::bind(&Libdvs::afterPolledDVSExceptionNotification, this, _1, _2));
+		}
+		else if (DVSFactoryType::DVS_FACTORY_TYPE_UNIVIEW == conf.factory)
+		{
+			dvs = boost::make_shared<UniviewNode>(
 				boost::bind(&Libdvs::afterPolledDVSDataNotification, this, _1, _2, _3, _4, _5), 
 				boost::bind(&Libdvs::afterPolledDVSExceptionNotification, this, _1, _2));
 		}

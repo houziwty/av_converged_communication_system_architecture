@@ -30,7 +30,7 @@ int MediaHostServer::loadApi()
 {
     apis.add(
         "/api/v1/getapilist", 
-        boost::bind(&MediaHostServer::afterFetchApiEventGetApiList, this, _1, _2, _3));
+        boost::bind(&MediaHostServer::afterFetchApiEventGetApiList, this, _1, _2, _3, _4));
     
     return Error_Code_Success;
 }
@@ -48,14 +48,14 @@ uint32_t MediaHostServer::afterFetchIOAcceptedEventNotification(
         currentSID = ++sessionIDNumber;
         flog.write(
             SeverityLevel::SEVERITY_LEVEL_INFO, 
-            "接收[ %s:%u ]连接本地端口[ %u ]成功，会话ID=%u", 
+            "接收[ %s:%u ]连接本地端口[ %u ]成功,会话ID=%u", 
             remoteIP, remotePort, localPort, currentSID);
     }
     else
     {
         flog.write(
             SeverityLevel::SEVERITY_LEVEL_WARNING, 
-            "接收[ %s:%u ]连接本地端口[ %u ]失败，错误码=%d", 
+            "接收[ %s:%u ]连接本地端口[ %u ]失败,错误码=%d", 
             remoteIP, remotePort, localPort, e);
     }
 
@@ -89,7 +89,7 @@ void MediaHostServer::afterPolledIOReadDataNotification(
         sessions.remove(id);
         flog.write(
             SeverityLevel::SEVERITY_LEVEL_WARNING, 
-            "捕获会话[ %u ]数据读取异常，错误码=[ %d ]", id, e);
+            "捕获会话[ %u ]数据读取异常,错误码=[ %d ]", id, e);
     }
     else if (data && 0 < bytes && 0 < id)
     {
@@ -211,7 +211,8 @@ void MediaHostServer::afterFetchHttpResponseNotification(
     }
 }
 
-void MediaHostServer::afterFetchHttpApiEventNotification(const uint32_t id, const char* api, int& e, char*& body)
+void MediaHostServer::afterFetchHttpApiEventNotification(
+    const uint32_t id, const char* api, int& e, char*& body, char*& type)
 {
     if (0 < id && api)
     {
@@ -228,7 +229,7 @@ void MediaHostServer::afterFetchHttpApiEventNotification(const uint32_t id, cons
         AfterFetchApiEventNotification notification{apis.at(command)};
         if (notification)
         {
-            notification(!parameters.empty() ? nullptr : parameters.c_str(), e, body);
+            notification(!parameters.empty() ? nullptr : parameters.c_str(), e, body, type);
         }
         else
         {
@@ -239,7 +240,7 @@ void MediaHostServer::afterFetchHttpApiEventNotification(const uint32_t id, cons
     }
 }
 
-void MediaHostServer::afterFetchApiEventGetApiList(const char* params, int& e, char*& body)
+void MediaHostServer::afterFetchApiEventGetApiList(const char* params, int& e, char*& body, char*& type)
 {
     e = 200;
     const std::vector<std::string> apilist{apis.keies()};
@@ -256,5 +257,7 @@ void MediaHostServer::afterFetchApiEventGetApiList(const char* params, int& e, c
     if (!out.empty())
     {
         body = reinterpret_cast<char*>(XMem().alloc(out.c_str(), len));
+        const std::string temp{"text/json"};
+        type = reinterpret_cast<char*>(XMem().alloc(temp.c_str(), temp.length()));
     }
 }

@@ -23,7 +23,7 @@ using namespace module::network::http;
 using namespace module::file::log;
 #include "map/unordered_map.h"
 
-typedef boost::function<void(const char*, int&, char*&)> AfterFetchApiEventNotification;
+typedef boost::function<void(const char*, int&, char*&, char*&)> AfterFetchApiEventNotification;
 
 class MediaHostServer final 
     : public Libasio, protected Libhttp
@@ -70,7 +70,8 @@ protected:
         const uint32_t id, 
         const char* api, 
         int& e, 
-        char*& body) override;
+        char*& body, 
+        char*& type) override;
 
 private:
     //创建会话
@@ -80,7 +81,8 @@ private:
     //@param [in] : 参数
     //@e [in/out] ：HTTP错误码
     //@body [in/out] : 应答消息体
-    void afterFetchApiEventGetApiList(const char* params, int& e, char*& body);
+    //@type [in/out] : 应答消类型
+    void afterFetchApiEventGetApiList(const char* params, int& e, char*& body, char*& type);
 
 private:
     FileLog& flog;

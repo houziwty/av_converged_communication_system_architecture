@@ -35,7 +35,8 @@ namespace module
 			//@_2 [out] : API请求
 			//@_3 [out] : HTTP错误码
 			//@_4 [out] : 应答消息体
-			typedef boost::function<void(const uint32_t, const char*, int&, char*&)> AfterFetchHttpApiEventCallback;
+			//@_5 [out] : 应答消息体类型
+			typedef boost::function<void(const uint32_t, const char*, int&, char*&, char*&)> AfterFetchHttpApiEventCallback;
 
 			class HttpSession : protected HttpRequestSplitter
 			{

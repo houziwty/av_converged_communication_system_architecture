@@ -62,12 +62,14 @@ namespace module
 				//@id [out] : 会话ID
 				//@api [out] : API数据
 				//@e [in/out] : HTTP错误码
-				//@body [in/out] : 应答消息体
+				//@body [in/out] : 应答消息体数据
+				//@type [in/out] : 应答消息体类型
 				virtual void afterFetchHttpApiEventNotification(
 					const uint32_t id, 
 					const char* api, 
 					int& e, 
-					char*& body) = 0;
+					char*& body, 
+					char*& type) = 0;
 			};//class Libhttp
 		}//namespace http
 	}//namespace network
