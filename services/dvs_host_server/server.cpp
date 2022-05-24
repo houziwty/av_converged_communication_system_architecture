@@ -312,6 +312,10 @@ int Server::addDVS(
         {
             conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_DH;
         }
+        else if (!factory.compare("2"))
+        {
+            conf.factory = DVSFactoryType::DVS_FACTORY_TYPE_UNIVIEW;
+        }
         conf.module = DVSModuleType::DVS_MODULE_TYPE_NONE;
         //设备ID从1开始原子计数
         conf.id = (id.empty() ? ++did : temp_did);

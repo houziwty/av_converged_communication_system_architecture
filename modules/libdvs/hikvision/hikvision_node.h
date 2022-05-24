@@ -13,7 +13,6 @@
 #ifndef MODULE_DEVICE_DVS_HIKVISION_NODE_H
 #define MODULE_DEVICE_DVS_HIKVISION_NODE_H
 
-#include "HCNetSDK.h"
 #include "dvs_node.h"
 
 namespace module
@@ -29,6 +28,9 @@ namespace module
 					PolledDataCallback data, 
 					PolledExceptionCallback exception);
 				virtual ~HikvisionNode(void);
+
+			public:
+				void afterFetchExceptionNotification(const uint32_t type = 0);
 
 			protected:
 				int64_t login(
@@ -48,9 +50,7 @@ namespace module
 
 			private:
 				static void CALLBACK livestreamDataCallback(
-					LONG lRealHandle, DWORD dwDataType, BYTE *pBuffer, DWORD dwBufSize, void* pUser);
-				static void CALLBACK exceptionCallBack(
-					DWORD dwType, LONG lUserID, LONG lHandle, void *pUser);
+					int lRealHandle, unsigned int dwDataType, unsigned char *pBuffer, unsigned int dwBufSize, void* pUser);
 
 			private:
 				static uint32_t counter;

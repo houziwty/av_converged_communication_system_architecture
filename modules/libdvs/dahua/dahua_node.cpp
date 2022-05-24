@@ -1,3 +1,4 @@
+#include "dhnetsdk.h"
 #include "error_code.h"
 #include "memory/xstr.h"
 using namespace framework::utils::memory;
@@ -142,7 +143,7 @@ int DahuaNode::getChanNum(
 }
 
 void DahuaNode::livestreamDataCallback(
-	LLONG lRealHandle, DWORD dwDataType, BYTE *pBuffer, DWORD dwBufSize, LONG param, LDWORD dwUser)
+	long lRealHandle, unsigned int dwDataType, unsigned char *pBuffer, unsigned int dwBufSize, int param, long dwUser)
 {
 	DahuaNode* node{ reinterpret_cast<DahuaNode*>(dwUser) };
 
@@ -160,7 +161,7 @@ void DahuaNode::livestreamDataCallback(
 }
 
 void DahuaNode::disconnectCallback(
-	LLONG lLoginID, char *pchDVRIP, LONG nDVRPort, LDWORD dwUser)
+	long lLoginID, char *pchDVRIP, int nDVRPort, long dwUser)
 {
 	DahuaNode* node{ reinterpret_cast<DahuaNode*>(dwUser) };
 
@@ -171,7 +172,7 @@ void DahuaNode::disconnectCallback(
 }
 
 void DahuaNode::reconnectedCallback(
-	LLONG lLoginID, char *pchDVRIP, LONG nDVRPort, LDWORD dwUser)
+	long lLoginID, char *pchDVRIP, int nDVRPort, long dwUser)
 {
 	DahuaNode* node{ reinterpret_cast<DahuaNode*>(dwUser) };
 

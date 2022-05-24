@@ -15,18 +15,26 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	
 	if(CMAKE_BUILD_TYPE MATCHES "Debug")
 		set(DEPENDS 
-			${BOOST_LINK_DIR}/libboost_filesystem-vc143-mt-sgd-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_json-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_filesystem-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_json-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_atomic-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_thread-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_chrono-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_container-vc143-mt-sgd-x64-1_78.lib 
 			${FILELOG_DIR}/${CMAKE_BUILD_TYPE}/filelog.lib 
-			${ASIO_DIR}/asio.lib 
-			${HTTP_DIR}/http.lib)
+			${ASIO_DIR}/${CMAKE_BUILD_TYPE}/asio.lib 
+			${HTTP_DIR}/${CMAKE_BUILD_TYPE}/http.lib)
 	elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 		set(DEPENDS 
-			${BOOST_LINK_DIR}/libboost_filesystem-vc143-mt-sgd-x64-1_78.lib 
-			${BOOST_LINK_DIR}/libboost_json-vc143-mt-sgd-x64-1_78.lib 
+			${BOOST_DIR}/libboost_filesystem-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_json-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_atomic-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_thread-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_chrono-vc143-mt-s-x64-1_78.lib 
+			${BOOST_DIR}/libboost_container-vc143-mt-s-x64-1_78.lib
 			${FILELOG_DIR}/${CMAKE_BUILD_TYPE}/filelog.lib 
-			${ASIO_DIR}/asio.lib 
-			${HTTP_DIR}/http.lib)
+			${ASIO_DIR}/${CMAKE_BUILD_TYPE}/asio.lib 
+			${HTTP_DIR}/${CMAKE_BUILD_TYPE}/http.lib)
 	endif()
 	
 	add_definitions(-DUSE_MODULE_FILE_LOG -DUSE_MODULE_NETWORK_ASIO -DUSE_MODULE_NETWORK_HTTP)

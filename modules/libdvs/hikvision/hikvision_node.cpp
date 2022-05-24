@@ -1,3 +1,4 @@
+#include "HCNetSDK.h"
 #include "error_code.h"
 #include "memory/xstr.h"
 using namespace framework::utils::memory;
@@ -6,6 +7,16 @@ using namespace module::device::dvs;
 
 uint32_t HikvisionNode::counter = 0;
 
+static void CALLBACK exceptionCallBack(
+	DWORD dwType, LONG lUserID, LONG lHandle, void* pUser)
+{
+	HikvisionNode* node{ reinterpret_cast<HikvisionNode*>(pUser) };
+	if (node)
+	{
+		node->afterFetchExceptionNotification(dwType);
+	}
+}
+
 HikvisionNode::HikvisionNode(
 	PolledDataCallback data, PolledExceptionCallback exception)
 	: DVSNode(data, exception)
@@ -13,6 +24,23 @@ HikvisionNode::HikvisionNode(
 
 HikvisionNode::~HikvisionNode()
 {}
+
+void HikvisionNode::afterFetchExceptionNotification(const uint32_t type/* = 0*/)
+{
+	if (polledExceptionCallback)
+	{
+		if (EXCEPTION_PREVIEW == type || EXCEPTION_RECONNECT == type)
+		{
+			//Offline
+			polledExceptionCallback(did, Error_Code_Catch_Device_Exception);
+		}
+		else if (PREVIEW_RECONNECTSUCCESS == type)
+		{
+			//Online
+			polledExceptionCallback(did, Error_Code_Catch_Device_Exception_Resume);
+		}
+	}
+}
 
 int64_t HikvisionNode::login(
 	const char* ip/* = nullptr*/, 
@@ -71,7 +99,7 @@ int HikvisionNode::logout(const int64_t uid/* = -1*/)
 
 int HikvisionNode::catchException()
 {
-	return NET_DVR_SetExceptionCallBack_V30(0, nullptr, &HikvisionNode::exceptionCallBack, this) ? 
+	return NET_DVR_SetExceptionCallBack_V30(0, nullptr, exceptionCallBack, this) ?
 		Error_Code_Success : 
 		Error_Code_Operate_Failure;
 }
@@ -143,7 +171,7 @@ int HikvisionNode::getChanNum(
 }
 
 void HikvisionNode::livestreamDataCallback(
-	LONG lRealHandle, DWORD dwDataType, BYTE *pBuffer, DWORD dwBufSize, void* pUser)
+	int lRealHandle, unsigned int dwDataType, unsigned char *pBuffer, unsigned int dwBufSize, void* pUser)
 {
 	HikvisionNode* node{ reinterpret_cast<HikvisionNode*>(pUser) };
 
@@ -158,25 +186,6 @@ void HikvisionNode::livestreamDataCallback(
 		}
 		else if (NET_DVR_AUDIOSTREAMDATA == dwDataType)
 		{
-		}
-	}
-}
-
-void HikvisionNode::exceptionCallBack(DWORD dwType, LONG lUserID, LONG lHandle, void *pUser)
-{
-	HikvisionNode* node{ reinterpret_cast<HikvisionNode*>(pUser) };
-
-	if (node && node->polledExceptionCallback)
-	{
-		if (EXCEPTION_PREVIEW == dwType || EXCEPTION_RECONNECT == dwType)
-		{
-			//Offline
-			node->polledExceptionCallback(node->did, Error_Code_Catch_Device_Exception);
-		}
-		else if (PREVIEW_RECONNECTSUCCESS == dwType)
-		{
-			//Online
-			node->polledExceptionCallback(node->did, Error_Code_Catch_Device_Exception_Resume);
 		}
 	}
 }

@@ -13,7 +13,6 @@
 #ifndef MODULE_DEVICE_DVS_DAHUA_NODE_H
 #define MODULE_DEVICE_DVS_DAHUA_NODE_H
 
-#include "dhnetsdk.h"
 #include "dvs_node.h"
 
 namespace module
@@ -48,11 +47,11 @@ namespace module
 
 			private:
 				static void CALLBACK livestreamDataCallback(
-					LLONG lRealHandle, DWORD dwDataType, BYTE *pBuffer, DWORD dwBufSize, LONG param, LDWORD dwUser);
+					long lRealHandle, unsigned int dwDataType, unsigned char *pBuffer, unsigned int dwBufSize, int param, long dwUser);
 				static void CALLBACK disconnectCallback(
-					LLONG lLoginID, char *pchDVRIP, LONG nDVRPort, LDWORD dwUser);
+					long lLoginID, char *pchDVRIP, int nDVRPort, long dwUser);
 				static void CALLBACK reconnectedCallback(
-					LLONG lLoginID, char *pchDVRIP, LONG nDVRPort, LDWORD dwUser);
+					long lLoginID, char *pchDVRIP, int nDVRPort, long dwUser);
 
 			private:
 				static uint32_t counter;

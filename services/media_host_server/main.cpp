@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        log.write(SeverityLevel::SEVERITY_LEVEL_ERROR, "创建流媒体发布实例失败");
+        log.write(SeverityLevel::SEVERITY_LEVEL_ERROR, "创建流媒体发布实例失败.");
     }
 
     getchar();

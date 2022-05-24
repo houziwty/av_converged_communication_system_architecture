@@ -13,7 +13,6 @@
 #ifndef MODULE_DEVICE_DVS_UNIVIEW_NODE_H
 #define MODULE_DEVICE_DVS_UNIVIEW_NODE_H
 
-#include "NetDEVSDK.h"
 #include "dvs_node.h"
 
 namespace module
@@ -48,9 +47,9 @@ namespace module
 
 			private:
 				static void CALLBACK livestreamDataCallback(
-					LONG lRealHandle, DWORD dwDataType, BYTE *pBuffer, DWORD dwBufSize, void* pUser);
+					void* lRealHandle, const unsigned char *pBuffer, int dwBufSize, int dwMediaDataType, void* pUser);
 				static void CALLBACK exceptionCallBack(
-					DWORD dwType, LONG lUserID, LONG lHandle, void *pUser);
+					void* lpUserID, int dwType, void* lpExpHandle, void* lpUserData, void* pstExceptionOutputInfo);
 
 			private:
 				static uint32_t counter;
