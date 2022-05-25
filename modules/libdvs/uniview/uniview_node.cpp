@@ -32,29 +32,29 @@ int64_t UniviewNode::login(
 
 		const std::string sip{ip}, suser{user}, spasswd{passwd};
 		NETDEV_DEVICE_LOGIN_INFO_S devinfo{0};
-		devinfo.dwLoginProto = NETDEV_LOGIN_PROTO_PRIVATE;
+//		devinfo.dwLoginProto = NETDEV_LOGIN_PROTO_PRIVATE;
 		devinfo.dwPort = port;
 		XStr().copy(sip.c_str(), sip.length(), devinfo.szIPAddr, NETDEV_LEN_260);
 		XStr().copy(suser.c_str(), suser.length(), devinfo.szUserName, NETDEV_LEN_132);
 		XStr().copy(spasswd.c_str(), spasswd.length(), devinfo.szPassword, NETDEV_LEN_128);
 		NETDEV_SELOG_INFO_S logininfo{0};
-
 		LPVOID loginID{NETDEV_Login_V30(&devinfo, &logininfo)};
 
 		if (loginID)
 		{
-			NETDEV_VIDEO_CHL_DETAIL_INFO_EX_S channels[4]{0};
-			int32_t number{4};
-			BOOL ret = NETDEV_QueryVideoChlDetailListEx(loginID, &number, channels);
-			if (ret || (FALSE == ret &&  NETDEV_E_NEEDMOREDATA == NETDEV_GetLastError()))
+			NETDEV_VIDEO_CHL_DETAIL_INFO_S channels[256]{0};
+			INT32 number{256};
+			BOOL ret = NETDEV_QueryVideoChlDetailList(loginID, &number, channels);
+			INT32 lastError{NETDEV_GetLastError()};
+			if (ret/* || (FALSE == ret &&  NETDEV_E_NEEDMOREDATA == lastError)*/)
 			{
 				for (int i = 0; i != number; ++i)
 				{
 					chanNums.push_back(channels[i].dwChannelID);
 				}
 			}
-			
-			uid = *((int64_t*)loginID);
+
+			uid = (int64_t)loginID;
 		}
 	}
 
@@ -63,11 +63,12 @@ int64_t UniviewNode::login(
 
 int UniviewNode::logout(const int64_t uid/* = -1*/)
 {
-	int ret{-1 < uid ? Error_Code_Success : Error_Code_Invalid_Param};
+	int ret{0 < uid ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if (Error_Code_Success == ret)
 	{
-		ret = NETDEV_Logout((LPVOID)uid) ? Error_Code_Success : Error_Code_Device_Logout_Failure;
+		LPVOID loginID{(LPVOID)uid};
+		ret = NETDEV_Logout(loginID) ? Error_Code_Success : Error_Code_Device_Logout_Failure;
 
 		if(0 < counter && 0 == --counter)
 		{
@@ -98,11 +99,12 @@ int64_t UniviewNode::openRealplay(
 		preview.dwChannelID = channel;
 		preview.dwLinkMode = NETDEV_TRANSPROTOCAL_RTPTCP;
 		preview.dwStreamMode = NETDEV_STREAM_MODE_VIDEO;
-		LPVOID streamID{NETDEV_RealPlay((LPVOID)uid, &preview, (NETDEV_SOURCE_DATA_CALLBACK_PF)&UniviewNode::livestreamDataCallback, this)};
+		LPVOID loginID{(LPVOID)uid};
+		LPVOID streamID{NETDEV_RealPlay(loginID, &preview, (NETDEV_SOURCE_DATA_CALLBACK_PF)&UniviewNode::livestreamDataCallback, this)};
 
 		if (streamID)
 		{
-			sid = *((int64_t*)streamID);
+			sid = (int64_t)streamID;
 		}
 	}
 
@@ -115,7 +117,8 @@ int UniviewNode::closeRealplay(const int64_t sid/* = 0*/)
 
 	if (Error_Code_Success == ret)
 	{
-		ret = NETDEV_StopRealPlay((LPVOID)sid) ? Error_Code_Success : Error_Code_Stream_Close_Failure;
+		LPVOID streamID{(LPVOID)sid};
+		ret = NETDEV_StopRealPlay(streamID) ? Error_Code_Success : Error_Code_Stream_Close_Failure;
 	}
 
 	return ret;
@@ -143,6 +146,13 @@ void UniviewNode::livestreamDataCallback(
 				node->polledDataCallback(node->did, node->streams.at((int64_t)lRealHandle), dwMediaDataType, pBuffer, dwBufSize);
 			}
 		}
+
+		static FILE* fd{ nullptr };
+		if (!fd)
+		{
+			fopen_s(&fd, "d:\\test.264", "wb+");
+		}
+		fwrite(pBuffer + 12, dwBufSize - 12, 1, fd);
 	}
 }
 

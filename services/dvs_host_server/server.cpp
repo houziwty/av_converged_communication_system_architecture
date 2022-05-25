@@ -16,7 +16,7 @@ using namespace framework::utils::data;
 #include "server.h"
 
 Server::Server(FileLog& flog)
-    : Libxmq(), Libasio(), Libdvs(), Libavparser(), log{flog}, did{0}, sid{0}, 
+    : Libxmq(), Libdvs(), Libavparser(), Libasio(), log{flog}, did{0}, sid{0},
     xid{0}, logid{std::string(DVSHostID).append("_log")}
 {}
 
@@ -39,7 +39,7 @@ int Server::run(const XMQNodeConf& conf)
         ioconf.proto = ASIOProtoType::ASIO_PROTO_TYPE_TCP;
         ioconf.port = 60820;
         ioconf.tcp.mode = ASIOModeType::ASIO_MODE_TYPE_LISTEN;
-        ret = Libasio::addConf(ioconf);
+        ret = Error_Code_Success;// Libasio::addConf(ioconf);
 
         if (Error_Code_Success == ret)
         {

@@ -9,11 +9,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(DEPENDS 
 		${3RDPART_DIR}/hikvision/linux/lib/libhcnetsdk.so 
 		${3RDPART_DIR}/dahua/linux/lib/libdhnetsdk.so 
-		${3RDPART_DIR}/uniview/linux/lib/libNetDEVSDK.so 
-		${3RDPART_DIR}/uniview/linux/lib/libmxml.so 
-		${3RDPART_DIR}/uniview/linux/lib/libt2u.so 
-		${3RDPART_DIR}/uniview/linux/lib/libevent.so 
-		${3RDPART_DIR}/uniview/linux/lib/libstun.so)
+		${3RDPART_DIR}/uniview/linux/lib/libNetDEVSDK.so)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(BOOST_DIR ${3RDPART_DIR}/boost_1_78_0 ${3RDPART_DIR}/boost_1_78_0/stage/lib)
 	set(HIKVISION_DIR ${3RDPART_DIR}/hikvision/x64/include ${3RDPART_DIR}/hikvision/x64/lib)

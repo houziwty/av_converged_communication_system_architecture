@@ -1,0 +1,219 @@
+[05-25 13:48:26.055] [thr:140736985528064][INF][NetDEVSDK.cpp:514](NETDEV_Init) SDK Version: V2.6.0.0 (Built on 20211117)
+[05-25 13:48:26.056] [thr:140736985528064][INF][NetDEVSDK.cpp:518](NETDEV_Init) Path:aHR0cDovLzEwLjIyMC4zLjI0Mi9yZF9wcm90b2NvbF9jb2RlL3RhZ3NfdnZkYnVnZml4L1NESy9WMTAwUjAwMUI5OS9FVk1TVjEwMFIwMDFCOTlWMi42LjAuMEJBUzAyWzM4NjA0XQA=
+[05-25 13:48:26.094] [thr:140731113010944][INF][ezr_rm.c:3582](MEDIA-RM) (RM_ClientRcvProc) Start ClientRcvProc Thread Success.
+[05-25 13:48:26.098] [thr:140731104618240][INF][ezr_rm.c:4167](MEDIA-RM) (RM_MainProc) Thread Started.
+[05-25 13:48:26.098] [thr:140736985528064][INF][ezr_rm_ex.c:1184](MEDIA-RM) (IMCP_RM_Init) Success, MaxSession:[128].
+[05-25 13:48:26.099] [thr:140736985528064][INF][player_sdk_func.c:145](MEDIA-ND) (NDPlayer_Init) Start.
+[05-25 13:48:26.099] [thr:140736985528064][INF][player_manager.cpp:203](MEDIA-ND) (Player_Startup) Player Startup.
+[05-25 13:48:26.108] [thr:140736985528064][ERR][sdlDisplay.cpp:91](MEDIA-ND) (SDLInit) dlopen libX11.so failed, error : libX11.so: cannot open shared object file: No such file or directory.
+[05-25 13:48:32.188] [thr:140736985528064][INF][player_sdk_func.c:172](MEDIA-ND) (NDPlayer_Init) Succeed, Version: 3.60.1.
+[05-25 13:48:32.189] [thr:140736985528064][INF][player_sdk_func.c:320](MEDIA-ND) (NDPlayer_SetPlayerRunMsgCB) Succeed.
+[05-25 13:48:32.189] [thr:140736985528064][INF][NetDEVSDK.cpp:593](NETDEV_Init) NetDEVSDK init succeed.
+[05-25 13:48:42.224] [thr:140736985528064][INF][NetDEVSDK.cpp:1791](NETDEV_Login_V30) Succeed, IP : 192.168.2.65, port : 80, userID : 0x7fffd4be4d30
+[05-25 13:48:47.048] [thr:140736985528064][ERR][LapiBase.cpp:359](lapiGetByHeader) Parse response fail, retcode : 8, url : HTTP://192.168.2.65:80/LAPI/V1.0/Channels/System/ChannelDetailInfos, response : {
+"Response": {
+	"ResponseURL": "/LAPI/V1.0/Channels/System/ChannelDetailInfos",
+	"CreatedID": -1, 
+	"ResponseCode": 4,
+ 	"SubResponseCode": 0,
+ 	"ResponseString": "Not Supported",
+	"StatusCode": 8,
+	"StatusString": "UnSupport",
+	"Data": "null"
+	}
+}
+
+[05-25 13:48:47.062] [thr:140736985528064][ERR][system_LAPI.cpp:4819](getDevChnDetailList) operation fail, retcode : 8
+[05-25 13:48:47.062] [thr:140736985528064][ERR][NetLAPI.cpp:541](queryVideoChlListEx) Query video chl info failed, Video Source Num : iRet=8, pdwCount=0
+[05-25 13:48:47.062] [thr:140736985528064][ERR][NetDEVSDK.cpp:3261](NETDEV_QueryVideoChlDetailListEx) Fail, retcode : -1
+[05-25 13:54:50.577] [thr:140736985528064][INF][NetDEVSDK.cpp:514](NETDEV_Init) SDK Version: V2.6.0.0 (Built on 20211117)
+[05-25 13:54:50.577] [thr:140736985528064][INF][NetDEVSDK.cpp:518](NETDEV_Init) Path:aHR0cDovLzEwLjIyMC4zLjI0Mi9yZF9wcm90b2NvbF9jb2RlL3RhZ3NfdnZkYnVnZml4L1NESy9WMTAwUjAwMUI5OS9FVk1TVjEwMFIwMDFCOTlWMi42LjAuMEJBUzAyWzM4NjA0XQA=
+[05-25 13:54:50.609] [thr:140731599525632][INF][ezr_rm.c:3582](MEDIA-RM) (RM_ClientRcvProc) Start ClientRcvProc Thread Success.
+[05-25 13:54:50.611] [thr:140731247228672][INF][ezr_rm.c:4167](MEDIA-RM) (RM_MainProc) Thread Started.
+[05-25 13:54:50.611] [thr:140736985528064][INF][ezr_rm_ex.c:1184](MEDIA-RM) (IMCP_RM_Init) Success, MaxSession:[128].
+[05-25 13:54:50.612] [thr:140736985528064][INF][player_sdk_func.c:145](MEDIA-ND) (NDPlayer_Init) Start.
+[05-25 13:54:50.612] [thr:140736985528064][INF][player_manager.cpp:203](MEDIA-ND) (Player_Startup) Player Startup.
+[05-25 13:54:50.616] [thr:140736985528064][ERR][sdlDisplay.cpp:91](MEDIA-ND) (SDLInit) dlopen libX11.so failed, error : libX11.so: cannot open shared object file: No such file or directory.
+[05-25 13:54:54.537] [thr:140736985528064][INF][player_sdk_func.c:172](MEDIA-ND) (NDPlayer_Init) Succeed, Version: 3.60.1.
+[05-25 13:54:54.537] [thr:140736985528064][INF][player_sdk_func.c:320](MEDIA-ND) (NDPlayer_SetPlayerRunMsgCB) Succeed.
+[05-25 13:54:54.537] [thr:140736985528064][INF][NetDEVSDK.cpp:593](NETDEV_Init) NetDEVSDK init succeed.
+[05-25 13:54:56.996] [thr:140736985528064][INF][NetDEVSDK.cpp:1791](NETDEV_Login_V30) Succeed, IP : 192.168.2.65, port : 80, userID : 0x7fffd446ad70
+[05-25 13:55:01.040] [thr:140736985528064][ERR][LapiBase.cpp:359](lapiGetByHeader) Parse response fail, retcode : 8, url : HTTP://192.168.2.65:80/LAPI/V1.0/Channels/System/ChannelDetailInfos, response : {
+"Response": {
+	"ResponseURL": "/LAPI/V1.0/Channels/System/ChannelDetailInfos",
+	"CreatedID": -1, 
+	"ResponseCode": 4,
+ 	"SubResponseCode": 0,
+ 	"ResponseString": "Not Supported",
+	"StatusCode": 8,
+	"StatusString": "UnSupport",
+	"Data": "null"
+	}
+}
+
+[05-25 13:55:01.040] [thr:140736985528064][ERR][system_LAPI.cpp:4819](getDevChnDetailList) operation fail, retcode : 8
+[05-25 13:55:01.040] [thr:140736985528064][ERR][NetLAPI.cpp:541](queryVideoChlListEx) Query video chl info failed, Video Source Num : iRet=8, pdwCount=0
+[05-25 13:55:01.041] [thr:140736985528064][ERR][NetDEVSDK.cpp:3261](NETDEV_QueryVideoChlDetailListEx) Fail, retcode : -1
+[05-25 14:01:23.969] [thr:140736985528064][INF][NetDEVSDK.cpp:514](NETDEV_Init) SDK Version: V2.6.0.0 (Built on 20211117)
+[05-25 14:01:23.969] [thr:140736985528064][INF][NetDEVSDK.cpp:518](NETDEV_Init) Path:aHR0cDovLzEwLjIyMC4zLjI0Mi9yZF9wcm90b2NvbF9jb2RlL3RhZ3NfdnZkYnVnZml4L1NESy9WMTAwUjAwMUI5OS9FVk1TVjEwMFIwMDFCOTlWMi42LjAuMEJBUzAyWzM4NjA0XQA=
+[05-25 14:01:24.002] [thr:140731607918336][INF][ezr_rm.c:3582](MEDIA-RM) (RM_ClientRcvProc) Start ClientRcvProc Thread Success.
+[05-25 14:01:24.004] [thr:140731599525632][INF][ezr_rm.c:4167](MEDIA-RM) (RM_MainProc) Thread Started.
+[05-25 14:01:24.004] [thr:140736985528064][INF][ezr_rm_ex.c:1184](MEDIA-RM) (IMCP_RM_Init) Success, MaxSession:[128].
+[05-25 14:01:24.004] [thr:140736985528064][INF][player_sdk_func.c:145](MEDIA-ND) (NDPlayer_Init) Start.
+[05-25 14:01:24.004] [thr:140736985528064][INF][player_manager.cpp:203](MEDIA-ND) (Player_Startup) Player Startup.
+[05-25 14:01:24.008] [thr:140736985528064][ERR][sdlDisplay.cpp:91](MEDIA-ND) (SDLInit) dlopen libX11.so failed, error : libX11.so: cannot open shared object file: No such file or directory.
+[05-25 14:01:27.960] [thr:140736985528064][INF][player_sdk_func.c:172](MEDIA-ND) (NDPlayer_Init) Succeed, Version: 3.60.1.
+[05-25 14:01:27.960] [thr:140736985528064][INF][player_sdk_func.c:320](MEDIA-ND) (NDPlayer_SetPlayerRunMsgCB) Succeed.
+[05-25 14:01:27.960] [thr:140736985528064][INF][NetDEVSDK.cpp:593](NETDEV_Init) NetDEVSDK init succeed.
+[05-25 14:01:28.230] [thr:140736985528064][INF][NetDEVSDK.cpp:1791](NETDEV_Login_V30) Succeed, IP : 192.168.2.65, port : 80, userID : 0x7fffd4be9d90
+[05-25 14:01:28.264] [thr:140736985528064][ERR][LapiBase.cpp:359](lapiGetByHeader) Parse response fail, retcode : 8, url : HTTP://192.168.2.65:80/LAPI/V1.0/Channels/System/ChannelDetailInfos, response : {
+"Response": {
+	"ResponseURL": "/LAPI/V1.0/Channels/System/ChannelDetailInfos",
+	"CreatedID": -1, 
+	"ResponseCode": 4,
+ 	"SubResponseCode": 0,
+ 	"ResponseString": "Not Supported",
+	"StatusCode": 8,
+	"StatusString": "UnSupport",
+	"Data": "null"
+	}
+}
+
+[05-25 14:01:28.265] [thr:140736985528064][ERR][system_LAPI.cpp:4819](getDevChnDetailList) operation fail, retcode : 8
+[05-25 14:01:28.265] [thr:140736985528064][ERR][NetLAPI.cpp:509](queryVideoChlList) Query video chl info failed, Video Source Num : iRet=8, pdwCount=0
+[05-25 14:01:28.266] [thr:140736985528064][ERR][NetDEVSDK.cpp:3239](NETDEV_QueryVideoChlDetailList) Fail, retcode : -1
+[05-25 14:03:54.805] [thr:140736985528064][INF][NetDEVSDK.cpp:514](NETDEV_Init) SDK Version: V2.6.0.0 (Built on 20211117)
+[05-25 14:03:54.805] [thr:140736985528064][INF][NetDEVSDK.cpp:518](NETDEV_Init) Path:aHR0cDovLzEwLjIyMC4zLjI0Mi9yZF9wcm90b2NvbF9jb2RlL3RhZ3NfdnZkYnVnZml4L1NESy9WMTAwUjAwMUI5OS9FVk1TVjEwMFIwMDFCOTlWMi42LjAuMEJBUzAyWzM4NjA0XQA=
+[05-25 14:03:54.837] [thr:140731599525632][INF][ezr_rm.c:3582](MEDIA-RM) (RM_ClientRcvProc) Start ClientRcvProc Thread Success.
+[05-25 14:03:54.839] [thr:140731247228672][INF][ezr_rm.c:4167](MEDIA-RM) (RM_MainProc) Thread Started.
+[05-25 14:03:54.839] [thr:140736985528064][INF][ezr_rm_ex.c:1184](MEDIA-RM) (IMCP_RM_Init) Success, MaxSession:[128].
+[05-25 14:03:54.839] [thr:140736985528064][INF][player_sdk_func.c:145](MEDIA-ND) (NDPlayer_Init) Start.
+[05-25 14:03:54.840] [thr:140736985528064][INF][player_manager.cpp:203](MEDIA-ND) (Player_Startup) Player Startup.
+[05-25 14:03:54.844] [thr:140736985528064][ERR][sdlDisplay.cpp:91](MEDIA-ND) (SDLInit) dlopen libX11.so failed, error : libX11.so: cannot open shared object file: No such file or directory.
+[05-25 14:03:58.815] [thr:140736985528064][INF][player_sdk_func.c:172](MEDIA-ND) (NDPlayer_Init) Succeed, Version: 3.60.1.
+[05-25 14:03:58.816] [thr:140736985528064][INF][player_sdk_func.c:320](MEDIA-ND) (NDPlayer_SetPlayerRunMsgCB) Succeed.
+[05-25 14:03:58.816] [thr:140736985528064][INF][NetDEVSDK.cpp:593](NETDEV_Init) NetDEVSDK init succeed.
+[05-25 14:03:58.909] [thr:140736985528064][INF][NetDEVSDK.cpp:1791](NETDEV_Login_V30) Succeed, IP : 192.168.2.65, port : 80, userID : 0x7fffd4be9d90
+[05-25 14:03:58.945] [thr:140736985528064][ERR][LapiBase.cpp:359](lapiGetByHeader) Parse response fail, retcode : 8, url : HTTP://192.168.2.65:80/LAPI/V1.0/Channels/System/ChannelDetailInfos, response : {
+"Response": {
+	"ResponseURL": "/LAPI/V1.0/Channels/System/ChannelDetailInfos",
+	"CreatedID": -1, 
+	"ResponseCode": 4,
+ 	"SubResponseCode": 0,
+ 	"ResponseString": "Not Supported",
+	"StatusCode": 8,
+	"StatusString": "UnSupport",
+	"Data": "null"
+	}
+}
+
+[05-25 14:03:58.946] [thr:140736985528064][ERR][system_LAPI.cpp:4819](getDevChnDetailList) operation fail, retcode : 8
+[05-25 14:03:58.946] [thr:140736985528064][ERR][NetLAPI.cpp:509](queryVideoChlList) Query video chl info failed, Video Source Num : iRet=8, pdwCount=0
+[05-25 14:03:58.946] [thr:140736985528064][ERR][NetDEVSDK.cpp:3239](NETDEV_QueryVideoChlDetailList) Fail, retcode : -1
+[05-25 14:09:36.424] [thr:140736985528064][INF][NetDEVSDK.cpp:514](NETDEV_Init) SDK Version: V2.6.0.0 (Built on 20211117)
+[05-25 14:09:36.425] [thr:140736985528064][INF][NetDEVSDK.cpp:518](NETDEV_Init) Path:aHR0cDovLzEwLjIyMC4zLjI0Mi9yZF9wcm90b2NvbF9jb2RlL3RhZ3NfdnZkYnVnZml4L1NESy9WMTAwUjAwMUI5OS9FVk1TVjEwMFIwMDFCOTlWMi42LjAuMEJBUzAyWzM4NjA0XQA=
+[05-25 14:09:36.457] [thr:140732002178816][INF][ezr_rm.c:3582](MEDIA-RM) (RM_ClientRcvProc) Start ClientRcvProc Thread Success.
+[05-25 14:09:36.459] [thr:140731247228672][INF][ezr_rm.c:4167](MEDIA-RM) (RM_MainProc) Thread Started.
+[05-25 14:09:36.459] [thr:140736985528064][INF][ezr_rm_ex.c:1184](MEDIA-RM) (IMCP_RM_Init) Success, MaxSession:[128].
+[05-25 14:09:36.459] [thr:140736985528064][INF][player_sdk_func.c:145](MEDIA-ND) (NDPlayer_Init) Start.
+[05-25 14:09:36.460] [thr:140736985528064][INF][player_manager.cpp:203](MEDIA-ND) (Player_Startup) Player Startup.
+[05-25 14:09:36.464] [thr:140736985528064][ERR][sdlDisplay.cpp:91](MEDIA-ND) (SDLInit) dlopen libX11.so failed, error : libX11.so: cannot open shared object file: No such file or directory.
+[05-25 14:09:40.422] [thr:140736985528064][INF][player_sdk_func.c:172](MEDIA-ND) (NDPlayer_Init) Succeed, Version: 3.60.1.
+[05-25 14:09:40.422] [thr:140736985528064][INF][player_sdk_func.c:320](MEDIA-ND) (NDPlayer_SetPlayerRunMsgCB) Succeed.
+[05-25 14:09:40.422] [thr:140736985528064][INF][NetDEVSDK.cpp:593](NETDEV_Init) NetDEVSDK init succeed.
+[05-25 14:09:40.560] [thr:140736985528064][INF][NetDEVSDK.cpp:1791](NETDEV_Login_V30) Succeed, IP : 192.168.2.65, port : 80, userID : 0x7fffd446d560
+[05-25 14:09:52.805] [thr:140736985528064][ERR][LapiBase.cpp:359](lapiGetByHeader) Parse response fail, retcode : 8, url : HTTP://192.168.2.65:80/LAPI/V1.0/Channels/System/ChannelDetailInfos, response : {
+"Response": {
+	"ResponseURL": "/LAPI/V1.0/Channels/System/ChannelDetailInfos",
+	"CreatedID": -1, 
+	"ResponseCode": 4,
+ 	"SubResponseCode": 0,
+ 	"ResponseString": "Not Supported",
+	"StatusCode": 8,
+	"StatusString": "UnSupport",
+	"Data": "null"
+	}
+}
+
+[05-25 14:09:52.805] [thr:140736985528064][ERR][system_LAPI.cpp:4819](getDevChnDetailList) operation fail, retcode : 8
+[05-25 14:09:52.806] [thr:140736985528064][WAR][NetOnvif.cpp:1058](queryVideoChlList) Query video chl info failed, Video Source Num : 1
+[05-25 14:10:10.269] [thr:140736985528064][ERR][NetDEVSDK_media.cpp:522](NETDEV_RealPlay) Not find the device userID : 0x7ffff552c7d0
+[05-25 14:21:49.183] [thr:140736985528064][INF][NetDEVSDK.cpp:514](NETDEV_Init) SDK Version: V2.6.0.0 (Built on 20211117)
+[05-25 14:21:49.184] [thr:140736985528064][INF][NetDEVSDK.cpp:518](NETDEV_Init) Path:aHR0cDovLzEwLjIyMC4zLjI0Mi9yZF9wcm90b2NvbF9jb2RlL3RhZ3NfdnZkYnVnZml4L1NESy9WMTAwUjAwMUI5OS9FVk1TVjEwMFIwMDFCOTlWMi42LjAuMEJBUzAyWzM4NjA0XQA=
+[05-25 14:21:49.215] [thr:140732002178816][INF][ezr_rm.c:3582](MEDIA-RM) (RM_ClientRcvProc) Start ClientRcvProc Thread Success.
+[05-25 14:21:49.217] [thr:140731247228672][INF][ezr_rm.c:4167](MEDIA-RM) (RM_MainProc) Thread Started.
+[05-25 14:21:49.217] [thr:140736985528064][INF][ezr_rm_ex.c:1184](MEDIA-RM) (IMCP_RM_Init) Success, MaxSession:[128].
+[05-25 14:21:49.217] [thr:140736985528064][INF][player_sdk_func.c:145](MEDIA-ND) (NDPlayer_Init) Start.
+[05-25 14:21:49.217] [thr:140736985528064][INF][player_manager.cpp:203](MEDIA-ND) (Player_Startup) Player Startup.
+[05-25 14:21:49.221] [thr:140736985528064][ERR][sdlDisplay.cpp:91](MEDIA-ND) (SDLInit) dlopen libX11.so failed, error : libX11.so: cannot open shared object file: No such file or directory.
+[05-25 14:21:53.500] [thr:140736985528064][INF][player_sdk_func.c:172](MEDIA-ND) (NDPlayer_Init) Succeed, Version: 3.60.1.
+[05-25 14:21:53.500] [thr:140736985528064][INF][player_sdk_func.c:320](MEDIA-ND) (NDPlayer_SetPlayerRunMsgCB) Succeed.
+[05-25 14:21:53.500] [thr:140736985528064][INF][NetDEVSDK.cpp:593](NETDEV_Init) NetDEVSDK init succeed.
+[05-25 14:21:53.553] [thr:140736985528064][INF][NetDEVSDK.cpp:1791](NETDEV_Login_V30) Succeed, IP : 192.168.2.65, port : 80, userID : 0x7fffd446dad0
+[05-25 14:22:03.029] [thr:140736985528064][ERR][LapiBase.cpp:359](lapiGetByHeader) Parse response fail, retcode : 8, url : HTTP://192.168.2.65:80/LAPI/V1.0/Channels/System/ChannelDetailInfos, response : {
+"Response": {
+	"ResponseURL": "/LAPI/V1.0/Channels/System/ChannelDetailInfos",
+	"CreatedID": -1, 
+	"ResponseCode": 4,
+ 	"SubResponseCode": 0,
+ 	"ResponseString": "Not Supported",
+	"StatusCode": 8,
+	"StatusString": "UnSupport",
+	"Data": "null"
+	}
+}
+
+[05-25 14:22:03.030] [thr:140736985528064][ERR][system_LAPI.cpp:4819](getDevChnDetailList) operation fail, retcode : 8
+[05-25 14:22:03.030] [thr:140736985528064][WAR][NetOnvif.cpp:1058](queryVideoChlList) Query video chl info failed, Video Source Num : 1
+[05-25 14:22:24.318] [thr:140736985528064][INF][player_sdk_func.c:232](MEDIA-ND) (NDPlayer_AllocPort) Start.
+[05-25 14:22:24.318] [thr:140736985528064][INF][player_sdk_func.c:249](MEDIA-ND) (NDPlayer_AllocPort) Succeed, GetPort[000].
+[05-25 14:22:24.318] [thr:140736985528064][INF][player_sdk_func.c:285](MEDIA-ND) (NDPlayer_SetPacketBuffer) Port[000] Succeed, BufferSize[2000] DelayRenderTime[0].
+[05-25 14:22:24.318] [thr:140736985528064][INF][NetMedia.cpp:1491](startStream) NDPlayer set decode video data cb succeed, deviceHandle : 0x7fffd446dad0, chl : 1, NDPlayer port : 0
+[05-25 14:22:24.319] [thr:140736985528064][INF][player_sdk_func.c:391](MEDIA-ND) (NDPlayer_OpenInputStream) Port[000].
+[05-25 14:22:24.319] [thr:140730987476736][INF][player_manager.cpp:1839](MEDIA-ND) (__DecodeThreadEntry) Port[000] Start Thread Succeed.
+[05-25 14:22:24.319] [thr:140736985528064][INF][player_sdk_func.c:416](MEDIA-ND) (NDPlayer_OpenInputStream) Port[000] Succeed.
+[05-25 14:22:24.320] [thr:140736985528064][INF][NetMedia.cpp:1620](startStream) NDPlayer Open input stream succeed, deviceHandle : 0x7fffd446dad0, chl : 1, NDPlayer port : 0
+[05-25 14:22:24.320] [thr:140736985528064][INF][ezr_rm_ex.c:2592](MEDIA-RM) (IMCP_RM_GetSpareSessionNo) Done=0, Space Session Num[0].
+[05-25 14:22:24.320] [thr:140736985528064][INF][ezr_rm.c:925](MEDIA-RM) (RM_InitMsg) Link Nonblocking Init Done, Dest:[192.168.2.65:554].
+[05-25 14:22:24.322] [thr:140732002178816][INF][ezr_rm.c:3667](MEDIA-RM) (RM_ClientRcvProc) Session[S000] Connect Success, Socket[75], ClientAddr[172.29.166.19:42764]
+[05-25 14:22:24.322] [thr:140731247228672][INF][ezr_rm.c:1381](MEDIA-RM) (RM_MsgDescribe) Session[S000] Send MsgDescribe
+[05-25 14:22:24.338] [thr:140731247228672][INF][ezr_rm.c:2805](MEDIA-RM) (RM_ProcessReplyMsg) Session[S000] DESCRIBE Reply State[401], Need Authenticate.
+[05-25 14:22:24.338] [thr:140731247228672][INF][ezr_rm.c:1381](MEDIA-RM) (RM_MsgDescribe) Session[S000] Send MsgDescribe
+[05-25 14:22:24.445] [thr:140731247228672][INF][ezr_rm.c:2727](MEDIA-RM) (RM_ProcessReplyMsg) Session[S000] MsgDescribe Reply OK.
+[05-25 14:22:24.446] [thr:140731247228672][INF][ezr_rm.c:1795](MEDIA-RM) (RM_MsgSetup) Session[S000] Send MsgSetup
+[05-25 14:22:24.522] [thr:140731247228672][INF][ezr_rm.c:2889](MEDIA-RM) (RM_ProcessReplyMsg) Session[S000] MsgSetup Video Reply OK.
+[05-25 14:22:24.523] [thr:140731247228672][INF][ezr_rm.c:3271](MEDIA-RM) (RM_ProcessSession) Session[S000] Audio Stream Skip, Setup OK >> Play.
+[05-25 14:22:24.523] [thr:140731247228672][INF][ezr_rm.c:1926](MEDIA-RM) (RM_MsgPlay) Session[S000] Send MsgPlay
+[05-25 14:22:24.538] [thr:140731247228672][INF][ezr_rm.c:3056](MEDIA-RM) (RM_ProcessReplyMsg) Session[S000] CSeq[4] Reply PLAY Msg OK.
+[05-25 14:22:24.539] [thr:140731247228672][INF][ezr_rm.c:3332](MEDIA-RM) (RM_ProcessSession) Session[S000] RTSP PLAY OK.
+[05-25 14:22:24.539] [thr:140731247228672][INF][ezr_rm_ex.c:886](MEDIA-RM) (RM_StateReport) Session[S000] Report Event, State[1], SyncEvent[0x0x7fffd4034220].
+[05-25 14:22:24.544] [thr:140736985528064][INF][ezr_rm_ex.c:2979](MEDIA-RM) (IMCP_RM_StartStreamV2) Session[S000] Done=0, URL:(rtsp://192.168.2.65/media/video1), Type:[0x8000], Dest[:0], Speed:[9], Time[0-0].
+[05-25 14:22:24.544] [thr:140736985528064][INF][NetMedia.cpp:1666](startStream) RM Start stream succeed, deviceHandle : 0x7fffd446dad0, chl : 1, NDPlayer port : 0, RM sessionID : 0
+[05-25 14:22:24.545] [thr:140736985528064][INF][ezr_rm_ex.c:2247](MEDIA-RM) (IMCP_RM_GetAudioInfo) Session[S000] Done=0.
+[05-25 14:22:24.545] [thr:140736985528064][INF][NetMedia.cpp:1824](openUrl) Open Url succeed, deviceHandle : 0x7fffd446dad0, chl : 1, NDPlayer port : 0, RM session ID : 0, playHandle : 0x7fffd4c43350
+[05-25 14:22:24.545] [thr:140736985528064][INF][player_sdk_func.c:1241](MEDIA-ND) (NDPlayer_SetPictureFluency) Port[000] Succeed, ulFluency:[0].
+[05-25 14:22:24.545] [thr:140736985528064][INF][player_sdk_func.c:522](MEDIA-ND) (NDPlayer_SetSourceMediaDataCB) Port[000] Succeed, Continue:[1].
+[05-25 14:22:24.546] [thr:140736985528064][INF][NetMedia.cpp:4656](setPlayDataCB) setPlayDataCallBack open succeed, NDPlayer port : 0, playHandle : 0x7fffd4c43350
+[05-25 14:22:24.546] [thr:140736985528064][INF][NetMedia.cpp:4662](setPlayDataCB) Set play data call back succeed, playHandle : 0x7fffd4c43350
+[05-25 14:22:24.546] [thr:140736985528064][INF][NetDEVSDK_media.cpp:803](NETDEV_RealPlay) Real play succeed, UserID :0x7fffd446dad0, chl : 1, stream type :0, play handle : 0x7fffd4c43350
+[05-25 14:22:43.212] [thr:140732002178816][INF][ezr_rm.c:2343](MEDIA-RM) (RM_ProcessSocketBuf) -------->RTCP Msg[1]<-----------
+[05-25 14:22:43.214] [thr:140730987476736][INF][player_manager.cpp:4217](MEDIA-ND) (Player_FindDecode) Port[000] Player_CreateVideoDecoder(payload:3) 
+[05-25 14:22:43.214] [thr:140730987476736][INF][player_manager.cpp:4091](MEDIA-ND) (Player_CreateVideoDecoder) Port[000] Player_FindDecode info, Used CPU Decord
+[05-25 14:22:43.215] [thr:140730987476736][INF][module_code.cpp:543](MEDIA-ND) (CODE_CreateCode) Call dec_h264_init, Thread Count:[2].
+[05-25 14:22:43.268] [thr:140732002178816][INF][ezr_rm.c:2241](MEDIA-RM) (RM_CorrectBufError) Session[S000] lCurRcvLen[140728898421185], lRemoveStartPos[140733193388313].
+[05-25 14:22:43.271] [thr:140730987476736][INF][player_manager.cpp:4394](MEDIA-ND) (Player_Decoder) Port[000] Player_Decoder Success, Pic Resolution:[1920 * 1080], Payload[3].
+[05-25 14:22:43.516] [thr:140730987476736][WAR][module_rtp.c:451](MEDIA-ND) (RTP_ParsePackHead) Cur Num:6953, Pro Num:606
+[05-25 14:22:43.516] [thr:140730987476736][WAR][module_rtp.c:851](MEDIA-ND) (RTP_SpellFrameH264) PACKET LOSE Data, Count[1].
+[05-25 14:22:43.516] [thr:140730987476736][ERR][module_rtp.c:222](MEDIA-ND) (RTP_UnpacketRtpData) SpellFrame Failed, Count[1].
+[05-25 14:22:43.907] [thr:140731247228672][INF][ezr_rm.c:2116](MEDIA-RM) (RM_MsgOption) Session[S000] Send MsgOption
+[05-25 14:23:13.186] [thr:140731247228672][INF][ezr_rm.c:2116](MEDIA-RM) (RM_MsgOption) Session[S000] Send MsgOption
+[05-25 14:24:05.077] [thr:140731247228672][INF][ezr_rm.c:2116](MEDIA-RM) (RM_MsgOption) Session[S000] Send MsgOption
+[05-25 14:24:05.822] [thr:140732002178816][INF][ezr_rm.c:2241](MEDIA-RM) (RM_CorrectBufError) Session[S000] lCurRcvLen[140728898430230], lRemoveStartPos[140733193388644].
+[05-25 14:24:05.838] [thr:140731247228672][ERR][ezr_rm.c:3384](MEDIA-RM) (RM_ProcessSession) Session[S000], Keep Stream OK.
+[05-25 14:24:05.956] [thr:140732002178816][INF][ezr_rm.c:2241](MEDIA-RM) (RM_CorrectBufError) Session[S000] lCurRcvLen[140728898424161], lRemoveStartPos[140733193389135].
+[05-25 14:24:06.796] [thr:140730987476736][WAR][module_rtp.c:451](MEDIA-ND) (RTP_ParsePackHead) Cur Num:38544, Pro Num:27654
+[05-25 14:24:06.796] [thr:140730987476736][WAR][module_rtp.c:451](MEDIA-ND) (RTP_ParsePackHead) Cur Num:38906, Pro Num:38848
+[05-25 14:24:06.796] [thr:140730987476736][WAR][module_rtp.c:851](MEDIA-ND) (RTP_SpellFrameH264) PACKET LOSE Data, Count[21].
+[05-25 14:24:35.568] [thr:140731247228672][INF][ezr_rm.c:2116](MEDIA-RM) (RM_MsgOption) Session[S000] Send MsgOption
+[05-25 14:25:05.555] [thr:140731247228672][INF][ezr_rm.c:2116](MEDIA-RM) (RM_MsgOption) Session[S000] Send MsgOption
+[05-25 14:25:35.568] [thr:140731247228672][INF][ezr_rm.c:2116](MEDIA-RM) (RM_MsgOption) Session[S000] Send MsgOption
