@@ -84,6 +84,20 @@ private:
     //@type [in/out] : 应答消类型
     void afterFetchApiEventGetApiList(const char* params, int& e, char*& body, char*& type);
 
+    //API事件/api/v1/device/add处理
+    //@param [in] : 参数
+    //@e [in/out] ：HTTP错误码
+    //@body [in/out] : 应答消息体
+    //@type [in/out] : 应答消类型
+    void afterFetchApiEventCreateNewDevice(const char* params, int& e, char*& body, char*& type);
+
+    //API事件/api/v1/device/remove处理
+    //@param [in] : 参数
+    //@e [in/out] ：HTTP错误码
+    //@body [in/out] : 应答消息体
+    //@type [in/out] : 应答消类型
+    void afterFetchApiEventRemoveDevice(const char* params, int& e, char*& body, char*& type);
+
 private:
     FileLog& flog;
     boost::atomic_uint32_t sessionIDNumber;

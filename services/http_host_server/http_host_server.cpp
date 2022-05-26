@@ -28,9 +28,18 @@ int MediaHostServer::addPort(const std::string name, const uint16_t port/* = 0*/
 
 int MediaHostServer::loadApi()
 {
+    //获取API列表
     apis.add(
         "/api/v1/getapilist", 
         boost::bind(&MediaHostServer::afterFetchApiEventGetApiList, this, _1, _2, _3, _4));
+    //新增DVS设备
+    apis.add(
+        "/api/v1/device/add", 
+        boost::bind(&MediaHostServer::afterFetchApiEventCreateNewDevice, this, _1, _2, _3, _4));
+    //删除DVS设备
+    apis.add(
+        "/api/v1/device/remove", 
+        boost::bind(&MediaHostServer::afterFetchApiEventRemoveDevice, this, _1, _2, _3, _4));
     
     return Error_Code_Success;
 }
@@ -252,6 +261,10 @@ void MediaHostServer::afterFetchApiEventGetApiList(const char* params, int& e, c
         o[key] = apilist[i]; 
     }
 
+    //  {
+    //      "1":"/api/v1/getapilist",
+    //      ...
+    //  }
     const std::string out{boost::json::serialize(o)};
     const std::size_t len{out.length()};
     if (!out.empty())
