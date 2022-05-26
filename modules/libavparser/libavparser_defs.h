@@ -30,7 +30,8 @@ typedef enum class tagAVParserType_t : int
 {
 	AV_PARSER_TYPE_NONE = 0,
 	AV_PARSER_TYPE_BUFFER_PARSER,
-	AV_PARSER_TYPE_PS_PARSER,
+	AV_PARSER_TYPE_PS_PARSER, 
+	AV_PARSER_TYPE_RTP_ES_PARSER,
 }AVParserType;
 
 typedef struct tagAVParserModeConf_t

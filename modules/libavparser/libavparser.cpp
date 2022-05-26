@@ -5,6 +5,7 @@ using namespace boost::placeholders;
 #include "map/unordered_map.h"
 #include "buffer/buffer_parser.h"
 #include "ps/ps_parser.h"
+#include "rtp/rtp_es_parser.h"
 #include "libavparser.h"
 using namespace module::av::stream;
 
@@ -38,6 +39,12 @@ int Libavparser::addConf(const AVParserModeConf& conf)
 		else if (AVParserType::AV_PARSER_TYPE_PS_PARSER == conf.type)
 		{
 			node = boost::make_shared<PSParser>(
+				boost::bind(&Libavparser::afterParsedDataNotification, this, _1, _2), 
+				conf.id);
+		}
+		else if (AVParserType::AV_PARSER_TYPE_RTP_ES_PARSER == conf.type)
+		{
+			node = boost::make_shared<RTPESParser>(
 				boost::bind(&Libavparser::afterParsedDataNotification, this, _1, _2), 
 				conf.id);
 		}

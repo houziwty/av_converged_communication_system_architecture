@@ -146,13 +146,6 @@ void UniviewNode::livestreamDataCallback(
 				node->polledDataCallback(node->did, node->streams.at((int64_t)lRealHandle), dwMediaDataType, pBuffer, dwBufSize);
 			}
 		}
-
-		static FILE* fd{ nullptr };
-		if (!fd)
-		{
-			fopen_s(&fd, "d:\\test.264", "wb+");
-		}
-		fwrite(pBuffer + 12, dwBufSize - 12, 1, fd);
 	}
 }
 

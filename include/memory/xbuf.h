@@ -140,6 +140,48 @@ namespace framework
                 std::size_t tail;
                 std::string stringbuf;
             };//class StringBuffer
+
+            class AVFrameBuffer : public XBuffer
+            {
+            public:
+                AVFrameBuffer(void);
+                virtual ~AVFrameBuffer(void);
+                
+                //获取解码时间戳
+                //@Return : 解码时间戳
+                virtual const uint32_t dts(void) const = 0;
+
+                //获取显示时间戳
+                //@Return : 显示时间戳
+                virtual const uint32_t pts(void) const
+                {
+                    return dts();
+                }
+
+                //前缀长度
+                //@Return : 前缀长度
+                //@Comment : 譬如264前缀为0x00 00 00 01,那么前缀长度就是4B, aac前缀则为7B
+                virtual const size_t prefixSize(void) const = 0;
+
+                //是否为关键帧
+                //@Return : 是/否
+                virtual const bool keyFrame(void) const = 0;
+
+                //是否可以缓存
+                //@Return : 是/否
+                virtual const bool cacheable(void) const
+                {
+                    return true;
+                }
+
+                //是否可丢弃帧
+                //@Return : 是/否
+                //@Comment ：SEI/AUD帧可以丢弃,其他都不能丢
+                virtual const bool dropable(void) const
+                {
+                    return false;
+                }
+            };//class AVFrameBuffer
         }//namespace memory
     }//namespace utils
 }//namespace framework

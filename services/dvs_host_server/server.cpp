@@ -39,7 +39,7 @@ int Server::run(const XMQNodeConf& conf)
         ioconf.proto = ASIOProtoType::ASIO_PROTO_TYPE_TCP;
         ioconf.port = 60820;
         ioconf.tcp.mode = ASIOModeType::ASIO_MODE_TYPE_LISTEN;
-        ret = Error_Code_Success;// Libasio::addConf(ioconf);
+        ret = Libasio::addConf(ioconf);
 
         if (Error_Code_Success == ret)
         {
