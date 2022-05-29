@@ -38,6 +38,8 @@ static const std::vector<const std::string> httpAPIs
     "/api/v1/user/removechannels",//删除用户关联通道
     "/api/v1/user/channellist",//获取用户关联通道
     //设备管理
+    "/api/v1/device/list",//查询DVS列表
+    "/api/v1/device/info",//查询单个DVS信息
     "/api/v1/device/add",//新增DVS设备
     "/api/v1/device/remove"//删除DVS设备
 };
