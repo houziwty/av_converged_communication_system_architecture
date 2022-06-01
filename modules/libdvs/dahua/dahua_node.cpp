@@ -43,12 +43,16 @@ int64_t DahuaNode::login(
 
 		uid = CLIENT_LoginWithHighLevelSecurity(&login, &out);
 
-		if (-1 < uid)
+		if (0 < uid)
 		{
 			for (int i = 0; i != out.stuDeviceInfo.nChanNum; ++i)
 			{
 				chanNums.push_back(i);
 			}
+		}
+		else
+		{
+			uid = -1;
 		}
 	}
 

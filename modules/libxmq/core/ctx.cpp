@@ -24,6 +24,11 @@ void* Ctx::createNew()
 	if (c)
 	{
 		zmq_ctx_set(c, ZMQ_IO_THREADS, Cpu().getCount());
+		//The ZMQ_MAX_MSGSZ argument returns the maximum size of a message allowed for this context. 
+		//Default value is INT_MAX.
+		zmq_ctx_set(c, ZMQ_MAX_MSGSZ, 10);
+		//Switching off the context deadlock gambit.
+		zmq_ctx_set(c, ZMQ_BLOCKY, false);
 	}
 
 	return c;

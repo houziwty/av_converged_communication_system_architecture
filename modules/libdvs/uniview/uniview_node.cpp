@@ -1,5 +1,7 @@
 #include "NetDEVSDK.h"
 #include "error_code.h"
+#include "libavpkt.h"
+using namespace module::av::stream;
 #include "memory/xstr.h"
 using namespace framework::utils::memory;
 #include "uniview_node.h"
@@ -55,6 +57,13 @@ int64_t UniviewNode::login(
 			}
 
 			uid = (int64_t)loginID;
+
+			AVParserModeConf conf;
+			conf.id = 0xff;
+			conf.type = AVParserType::AV_PARSER_TYPE_RTP_ES_PARSER;
+			conf.cache = 1024 * 1024;
+			Libavparser::addConf(conf);
+			openRealplay(uid, 1);
 		}
 	}
 
@@ -141,10 +150,14 @@ void UniviewNode::livestreamDataCallback(
 	{
 		if (NETDEV_MEDIA_DATA_RTP_ES == dwMediaDataType)
 		{
-			if (node->polledDataCallback)
-			{
-				node->polledDataCallback(node->did, node->streams.at((int64_t)lRealHandle), dwMediaDataType, pBuffer, dwBufSize);
-			}
+			// if (node->polledDataCallback)
+			// {
+			// 	node->polledDataCallback(node->did, node->streams.at((int64_t)lRealHandle), dwMediaDataType, pBuffer, dwBufSize);
+			// }
+
+			Libavpkt pkt;
+			pkt.input(pBuffer, dwBufSize);
+			node->input(0xff, &pkt);
 		}
 	}
 }
@@ -167,4 +180,11 @@ void UniviewNode::exceptionCallBack(
 		// 	node->polledExceptionCallback(node->did, Error_Code_Catch_Device_Exception_Resume);
 		// }
 	}
+}
+
+void UniviewNode::afterParsedDataNotification(
+	const uint32_t id/* = 0*/, 
+	const void* avpkt/* = nullptr*/)
+{
+
 }

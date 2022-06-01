@@ -207,7 +207,7 @@ void Server::afterPolledIOReadDataNotification(
         //解析视频播放的URL
         //用完就可以释放
         //用IO的ID来标识连接
-        AVParserModeConf conf{id, AVParserType::AV_PARSER_TYPE_BUFFER_PARSER};
+        AVParserModeConf conf{id, AVParserType::AV_PARSER_TYPE_BUFFER_PARSER, 3 * 1024 * 1024};
         Libavparser::addConf(conf);
         Libavpkt avpkt;
         avpkt.input(data, bytes);
@@ -323,7 +323,7 @@ int Server::addDVS(
         XMem().copy(passwd.c_str(), passwd.length(), conf.passwd, 64);
         XMem().copy(ip.c_str(), ip.length(), conf.ip, 128);
         conf.port = atoi(port.c_str());
-        int ret{Libdvs::addConf(conf)};
+        ret = Libdvs::addConf(conf);
 
         //Reply
         boost::json::object o;

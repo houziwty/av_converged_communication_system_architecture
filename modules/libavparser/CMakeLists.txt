@@ -26,7 +26,7 @@ endif()
 set(LIB_DIR ${MODULES_DIR}/libavparser)
 include_directories(${INCLUDE_DIR} ${BOOST_DIR} ${AVPKT_DIR} ${LIB_DIR})
 file(GLOB_RECURSE src 
-	*.cpp 
+	*.cpp *.c 
 	"${SOURCE_DIR}/memory/*.cpp" 
 	"${SOURCE_DIR}/av/sps/*.cpp" 
 	"${SOURCE_DIR}/av/mpeg/*.c")

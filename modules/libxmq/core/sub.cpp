@@ -1,11 +1,5 @@
-#include "boost/format.hpp"
-#ifdef __cplusplus
-extern "C" {
-#endif
+﻿#include "boost/format.hpp"
 #include "zmq.h"
-#ifdef __cplusplus
-}
-#endif
 #include "error_code.h"
 #include "sub.h"
 using namespace module::network::xmq;
@@ -32,10 +26,13 @@ void* Sub::connect(
 		{
 			zmq_setsockopt(s, ZMQ_SUBSCRIBE, "", 0);
 
-			if (0 < reconivl)
-			{
-				zmq_setsockopt(s, ZMQ_RECONNECT_IVL, &reconivl, sizeof(const uint64_t));
-			}
+			//Set reconnection interval.
+			//The ZMQ_RECONNECT_IVL option shall set the initial reconnection interval for the specified socket.
+			//The reconnection interval is the period ØMQ shall wait between attempts to reconnect disconnected peers when using connection - oriented transports.
+			//The value - 1 means no reconnection.
+			//Default value is 100ms.
+			int ivl{ 30000 };
+			zmq_setsockopt(s, ZMQ_RECONNECT_IVL, &ivl, sizeof(int));
 
 			if (zmq_connect(s, (boost::format("tcp://%s:%d") % ip % port).str().c_str()))
 			{

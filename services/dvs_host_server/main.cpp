@@ -27,6 +27,7 @@ int main(int argc, char* argv[])
 
         Server svr(log);
         svr.run(conf);
+//        svr.addDVS("0", "1", "192.168.2.164", "8000", "admin", "Vrc123456", "dvs_host_server", "uniview_test", "123456");
         getchar();
         svr.stop();
     }

@@ -84,7 +84,8 @@ protected:
         const uint32_t id = 0, 
         const void* avpkt = nullptr) override;
 
-private:
+//private:
+public:
 	void processConfigRequest(
         const char* name = nullptr, 
         const char* req = nullptr);

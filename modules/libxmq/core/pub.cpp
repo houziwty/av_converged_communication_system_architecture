@@ -1,11 +1,5 @@
 #include "boost/format.hpp"
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include "zmq.h"
-#ifdef __cplusplus
-}
-#endif
 #include "error_code.h"
 #include "pub.h"
 using namespace module::network::xmq;
@@ -29,6 +23,7 @@ void* Pub::bind(
 
 		if (s)
 		{
+			//The default value is 1000.
 			if (0 < hwm)
 			{
 				zmq_setsockopt(s, ZMQ_SNDHWM, &hwm, sizeof(const uint64_t));

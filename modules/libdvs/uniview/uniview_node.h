@@ -13,6 +13,8 @@
 #ifndef MODULE_DEVICE_DVS_UNIVIEW_NODE_H
 #define MODULE_DEVICE_DVS_UNIVIEW_NODE_H
 
+#include "libavparser.h"
+using namespace module::av::stream;
 #include "dvs_node.h"
 
 namespace module
@@ -21,7 +23,7 @@ namespace module
 	{
 		namespace dvs
 		{
-			class UniviewNode : public DVSNode
+			class UniviewNode : public DVSNode, protected Libavparser
 			{
 			public:
 				UniviewNode(
@@ -44,6 +46,9 @@ namespace module
 				int getChanNum(
 					const int64_t uid, 
 					std::vector<int64_t>& chanNums) override;
+				void afterParsedDataNotification(
+					const uint32_t id = 0, 
+					const void* avpkt = nullptr) override;
 
 			private:
 				static void CALLBACK livestreamDataCallback(

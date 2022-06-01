@@ -4,7 +4,7 @@
 #include <errno.h>
 #include "rtp-h264-unpack.h"
 
-static void* rtp_h264_unpack_create(struct rtp_payload_t *handler, void* param)
+void* rtp_h264_unpack_create(struct rtp_payload_t *handler, void* param)
 {
 	struct rtp_decode_h264_t *unpacker;
 	unpacker = (struct rtp_decode_h264_t *)calloc(1, sizeof(*unpacker));
@@ -17,7 +17,7 @@ static void* rtp_h264_unpack_create(struct rtp_payload_t *handler, void* param)
 	return unpacker;
 }
 
-static void rtp_h264_unpack_destroy(void* p)
+void rtp_h264_unpack_destroy(void* p)
 {
 	struct rtp_decode_h264_t *unpacker;
 	unpacker = (struct rtp_decode_h264_t *)p;
@@ -51,7 +51,7 @@ static void rtp_h264_unpack_destroy(void* p)
 |                               :    ...OPTIONAL RTP padding    |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 */
-static int rtp_h264_unpack_stap(struct rtp_decode_h264_t *unpacker, const uint8_t* ptr, int bytes, uint32_t timestamp, int stap_b)
+int rtp_h264_unpack_stap(struct rtp_decode_h264_t *unpacker, const uint8_t* ptr, int bytes, uint32_t timestamp, int stap_b)
 {
 	int r, n;
 	uint16_t len;
@@ -114,7 +114,7 @@ static int rtp_h264_unpack_stap(struct rtp_decode_h264_t *unpacker, const uint8_
 |                               :    ...OPTIONAL RTP padding    |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 */
-static int rtp_h264_unpack_mtap(struct rtp_decode_h264_t *unpacker, const uint8_t* ptr, int bytes, uint32_t timestamp, int n)
+int rtp_h264_unpack_mtap(struct rtp_decode_h264_t *unpacker, const uint8_t* ptr, int bytes, uint32_t timestamp, int n)
 {
 	int r;
 	//uint16_t dond;
@@ -178,7 +178,7 @@ static int rtp_h264_unpack_mtap(struct rtp_decode_h264_t *unpacker, const uint8_
 |                               :   ...OPTIONAL RTP padding     |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 */
-static int rtp_h264_unpack_fu(struct rtp_decode_h264_t *unpacker, const uint8_t* ptr, int bytes, uint32_t timestamp, int fu_b)
+int rtp_h264_unpack_fu(struct rtp_decode_h264_t *unpacker, const uint8_t* ptr, int bytes, uint32_t timestamp, int fu_b)
 {
 	int r, n;
 	uint8_t fuheader;
@@ -256,7 +256,7 @@ static int rtp_h264_unpack_fu(struct rtp_decode_h264_t *unpacker, const uint8_t*
 	return 0 == r ? 1 : r; // packet handled
 }
 
-static int rtp_h264_unpack_input(void* p, const void* packet, int bytes)
+int rtp_h264_unpack_input(void* p, const void* packet, int bytes)
 {
 	int r;
 	uint8_t nalt;
@@ -266,7 +266,7 @@ static int rtp_h264_unpack_input(void* p, const void* packet, int bytes)
 	unpacker = (struct rtp_decode_h264_t *)p;
 	if(!unpacker || 0 != rtp_packet_deserialize(&pkt, packet, bytes) || pkt.payloadlen < 1)
 		return -EINVAL;
-	
+
 	if (-1 == unpacker->flags)
 	{
 		unpacker->flags = 0;
@@ -279,6 +279,7 @@ static int rtp_h264_unpack_input(void* p, const void* packet, int bytes)
 		unpacker->size = 0; // discard previous packets
 	}
 	unpacker->seq = (uint16_t)pkt.rtp.seq;
+	printf("........RTP sequence = %u.\r\n", (uint16_t)pkt.rtp.seq);
 
 	nalt = ((unsigned char *)pkt.payload)[0];
 	switch(nalt & 0x1F)
@@ -297,11 +298,13 @@ static int rtp_h264_unpack_input(void* p, const void* packet, int bytes)
 	case 27: // MTAP24
 		return rtp_h264_unpack_mtap(unpacker, (const uint8_t*)pkt.payload, pkt.payloadlen, pkt.rtp.timestamp, 3);
 	case 28: // FU-A
+//		printf("........NAL = %x, bytes = %d, timestamp = %u, flags = %d.\r\n", (nalt & 0xFF), pkt.payloadlen, pkt.rtp.timestamp, 0);
 		return rtp_h264_unpack_fu(unpacker, (const uint8_t*)pkt.payload, pkt.payloadlen, pkt.rtp.timestamp, 0);
 	case 29: // FU-B
 		return rtp_h264_unpack_fu(unpacker, (const uint8_t*)pkt.payload, pkt.payloadlen, pkt.rtp.timestamp, 1);
 
 	default: // 1-23 NAL unit
+//		printf("NAL = %x, bytes = %d, timestamp = %u, flags = %d.\r\n", (nalt & 0xFF), pkt.payloadlen, pkt.rtp.timestamp, unpacker->flags);
 		r = unpacker->handler.packet(unpacker->cbparam, (const uint8_t*)pkt.payload, pkt.payloadlen, pkt.rtp.timestamp, unpacker->flags);
 		unpacker->flags = 0;
 		unpacker->size = 0;
