@@ -23,6 +23,9 @@ void* Router::bind(
 
 		if(s)
 		{
+			int keepalive{ 1 };
+//			zmq_setsockopt(s, ZMQ_TCP_KEEPALIVE, &keepalive, sizeof(int));
+
 			//The default value is 1000.
 			if (0 < hwm)
 			{
@@ -30,8 +33,8 @@ void* Router::bind(
 				zmq_setsockopt(s, ZMQ_SNDHWM, &hwm, sizeof(const uint64_t));
 			}
 
-			int handover{ 1 };
-			zmq_setsockopt(s, ZMQ_ROUTER_HANDOVER, &handover, sizeof(int));
+			// int handover{ 1 };
+			// zmq_setsockopt(s, ZMQ_ROUTER_HANDOVER, &handover, sizeof(int));
 
 			//Retrieve linger period for socket shutdown.
 			//* The default value of - 1 specifies an infinite linger period.

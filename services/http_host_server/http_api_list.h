@@ -41,7 +41,19 @@ static const std::vector<const std::string> httpAPIs
     "/api/v1/device/list",//查询DVS列表
     "/api/v1/device/info",//查询单个DVS信息
     "/api/v1/device/add",//新增DVS设备
-    "/api/v1/device/remove"//删除DVS设备
+    "/api/v1/device/remove",//删除DVS设备
+    "/api/v1/device/channelinfo",//查询单个通道信息
+    "/api/v1/device/statuslog",//查询单个设备状态记录
+    "/api/v1/device/streamstatistic",//查询单个设备流量统计
+    "/api/v1/device/setchannelname",//自定义通道名称
+    "/api/v1/device/setchannelgbid",//自定义通道国标ID
+    "/api/v1/device/setname",//自定义设备名称
+    "/api/v1/device/setsms",//指定设备推流SMS
+    //设备控制
+    //实时直播
+    "/api/v1/livestream/list",//查询直播流列表
+    "/api/v1/livestream/start",//打开实时流
+    "/api/v1/livestream/stop",//关闭实时流
 };
 
 #endif//SERVICE_HTTP_API_LIST_H

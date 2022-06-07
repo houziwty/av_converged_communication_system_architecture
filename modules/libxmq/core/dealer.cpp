@@ -27,8 +27,8 @@ void* Dealer::connect(
 
 		if (s)
 		{
-			//int keepalive{ 1 }, idle{30};
-			//zmq_setsockopt(s, ZMQ_TCP_KEEPALIVE, &keepalive, sizeof(int));
+			int keepalive{ 1 };//, idle{30};
+			zmq_setsockopt(s, ZMQ_TCP_KEEPALIVE, &keepalive, sizeof(int));
 			//zmq_setsockopt(s, ZMQ_TCP_KEEPALIVE_IDLE, &idle, sizeof(int));
 			zmq_setsockopt(s, ZMQ_IDENTITY, id.c_str(), id.length());
 
@@ -55,7 +55,7 @@ void* Dealer::connect(
 			//The reconnection interval is the period ØMQ shall wait between attempts to reconnect disconnected peers when using connection - oriented transports.
 			//The value - 1 means no reconnection.
 			//Default value is 100ms.
-			int ivl{ 30000 };
+			int ivl{ 100 };
 			zmq_setsockopt(s, ZMQ_RECONNECT_IVL, &ivl, sizeof(int));
 
 			//Maximum time before a recv/send operation returns with EAGAIN.
@@ -142,6 +142,9 @@ void* Dealer::connect_inproc(
 
 		if (s)
 		{
+			int keepalive{ 1 };
+			zmq_setsockopt(s, ZMQ_TCP_KEEPALIVE, &keepalive, sizeof(int));
+
 			//The default value is 1000.
 			if (0 < hwm)
 			{
@@ -154,7 +157,7 @@ void* Dealer::connect_inproc(
 			//The reconnection interval is the period ØMQ shall wait between attempts to reconnect disconnected peers when using connection - oriented transports.
 			//The value - 1 means no reconnection.
 			//Default value is 100ms.
-			int ivl{ 30000 };
+			int ivl{ 100 };
 			zmq_setsockopt(s, ZMQ_RECONNECT_IVL, &ivl, sizeof(int));
 
 			//Retrieve linger period for socket shutdown.

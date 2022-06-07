@@ -31,7 +31,7 @@ int Server::run(const uint16_t port/* = 0*/)
             SeverityLevel::SEVERITY_LEVEL_INFO,
             "Run xmq server listen port [ %u ] successfully.", port);
         
-        for (int i = 0; i != Cpu().getCount(); ++i)
+        for (int i = 0; i != 1/*Cpu().getCount()*/; ++i)
         {
             boost::shared_ptr<Consumer> ptr{
                 boost::make_shared<Consumer>(*this)};

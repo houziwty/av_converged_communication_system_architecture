@@ -97,7 +97,7 @@ void DataTask::pollDataThread()
 
 	while(dso && !stopped)
 	{
-		zmq_poll(pollers, 1, 1);
+		zmq_poll(pollers, 1, -1);
 
 		if (pollers[0].revents & ZMQ_POLLIN)
 		{

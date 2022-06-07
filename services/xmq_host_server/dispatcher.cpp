@@ -21,7 +21,7 @@ int Dispatcher::run(const uint16_t port/* = 0*/)
         modeconf.port = port;
         modeconf.type = XMQModuleType::XMQ_MODULE_TYPE_DISPATCHER;
         XMem().copy(name.c_str(), name.length(), modeconf.name, 128);
-        modeconf.opt.hwm = 3;
+        modeconf.opt.hwm = 10;
         ret = addNode(modeconf);
     }
 
