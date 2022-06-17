@@ -64,9 +64,13 @@ namespace module
 
 				//设备异常状态通知
 				//@id [out] : 设备ID
+				//@ip [out] : 设备IP
+				//@sn [out] : 设备SN
 				//@error [out] : 错误码
 				virtual void afterPolledDVSExceptionNotification(
 					const uint32_t id = 0, 
+					const char* ip = nullptr, 
+					const char* sn = nullptr, 
 					const int32_t error = 0) = 0;
 			};//class Libdvs
 		}//namespace dvs

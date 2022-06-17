@@ -79,6 +79,8 @@ protected:
         const uint32_t bytes = 0) override;
     void afterPolledDVSExceptionNotification(
         const uint32_t id = 0, 
+        const char* ip = nullptr, 
+        const char* sn = nullptr, 
         const int32_t error = 0) override;
     void afterParsedDataNotification(
         const uint32_t id = 0, 
@@ -98,7 +100,8 @@ public:
         const std::string& passwd, 
         const std::string& from, 
         const std::string& name, 
-        const std::string& timestamp);
+        const std::string& timestamp, 
+        const std::string& sn);
     int removeDVS(
         const std::string& from, 
         const std::string& id, 

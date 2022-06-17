@@ -37,6 +37,8 @@ int DVSNode::run(const DVSModeConf& conf)
 //            }
             
             did = conf.id;
+            ip.append(conf.ip);
+            sn.append(conf.sn);
         }
         else
         {

@@ -31,19 +31,19 @@ int Libdvs::addConf(const DVSModeConf& conf)
 		{
 			dvs = boost::make_shared<HikvisionNode>(
 				boost::bind(&Libdvs::afterPolledDVSDataNotification, this, _1, _2, _3, _4, _5), 
-				boost::bind(&Libdvs::afterPolledDVSExceptionNotification, this, _1, _2));
+				boost::bind(&Libdvs::afterPolledDVSExceptionNotification, this, _1, _2, _3, _4));
 		}
 		else if (DVSFactoryType::DVS_FACTORY_TYPE_DH == conf.factory)
 		{
 			dvs = boost::make_shared<DahuaNode>(
 				boost::bind(&Libdvs::afterPolledDVSDataNotification, this, _1, _2, _3, _4, _5), 
-				boost::bind(&Libdvs::afterPolledDVSExceptionNotification, this, _1, _2));
+				boost::bind(&Libdvs::afterPolledDVSExceptionNotification, this, _1, _2, _3, _4));
 		}
 		else if (DVSFactoryType::DVS_FACTORY_TYPE_UNIVIEW == conf.factory)
 		{
 			dvs = boost::make_shared<UniviewNode>(
 				boost::bind(&Libdvs::afterPolledDVSDataNotification, this, _1, _2, _3, _4, _5), 
-				boost::bind(&Libdvs::afterPolledDVSExceptionNotification, this, _1, _2));
+				boost::bind(&Libdvs::afterPolledDVSExceptionNotification, this, _1, _2, _3, _4));
 		}
 		else
 		{

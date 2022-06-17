@@ -172,7 +172,7 @@ void UniviewNode::exceptionCallBack(
 		if (NETDEV_EXCEPTION_EXCHANGE == dwType)
 		{
 			//Offline
-			node->polledExceptionCallback(node->did, Error_Code_Catch_Device_Exception);
+			node->polledExceptionCallback(node->did, node->ip.c_str(), node->sn.c_str(), Error_Code_Catch_Device_Exception);
 		}
 		// else if (PREVIEW_RECONNECTSUCCESS == dwType)
 		// {

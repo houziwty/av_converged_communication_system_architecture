@@ -58,6 +58,7 @@ typedef struct tagDVSModeConf_t
     char user[128];
 	char passwd[128];
     char ip[128];
+	char sn[128];
     uint16_t port;
     uint32_t id;                    //物理设备ID标识，0 < id，由调用者定义
 }DVSModeConf;

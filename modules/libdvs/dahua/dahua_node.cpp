@@ -171,7 +171,7 @@ void DahuaNode::disconnectCallback(
 
 	if(node && node->enableException)
 	{
-		node->polledExceptionCallback(node->did, Error_Code_Catch_Device_Exception);
+		node->polledExceptionCallback(node->did, node->ip.c_str(), node->sn.c_str(), Error_Code_Catch_Device_Exception);
 	}
 }
 
@@ -182,6 +182,6 @@ void DahuaNode::reconnectedCallback(
 
 	if(node && node->enableException)
 	{
-		node->polledExceptionCallback(node->did, Error_Code_Catch_Device_Exception_Resume);
+		node->polledExceptionCallback(node->did, node->ip.c_str(), node->sn.c_str(), Error_Code_Catch_Device_Exception_Resume);
 	}
 }

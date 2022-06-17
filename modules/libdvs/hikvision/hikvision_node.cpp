@@ -32,12 +32,12 @@ void HikvisionNode::afterFetchExceptionNotification(const uint32_t type/* = 0*/)
 		if (EXCEPTION_PREVIEW == type || EXCEPTION_RECONNECT == type)
 		{
 			//Offline
-			polledExceptionCallback(did, Error_Code_Catch_Device_Exception);
+			polledExceptionCallback(did, ip.c_str(), sn.c_str(), Error_Code_Catch_Device_Exception);
 		}
 		else if (PREVIEW_RECONNECTSUCCESS == type)
 		{
 			//Online
-			polledExceptionCallback(did, Error_Code_Catch_Device_Exception_Resume);
+			polledExceptionCallback(did,  ip.c_str(), sn.c_str(), Error_Code_Catch_Device_Exception_Resume);
 		}
 	}
 }

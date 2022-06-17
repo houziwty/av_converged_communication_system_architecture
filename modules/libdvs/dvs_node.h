@@ -37,8 +37,10 @@ namespace module
 
 			//设备异常回调
 			//@_1 : 设备ID
-			//@_3 : 错误码
-			typedef boost::function<void(const uint32_t, const int32_t)> PolledExceptionCallback;
+			//@_2 : 设备IP
+			//@_3 : 设备SN
+			//@_4 : 错误码
+			typedef boost::function<void(const uint32_t, const char*, const char*, const int32_t)> PolledExceptionCallback;
 
 			class DVSNode : 
 				protected EnableLoginAndLogout, 
@@ -72,6 +74,8 @@ namespace module
 			protected:
 				uint32_t did;
 				int64_t uid;
+				std::string ip;
+				std::string sn;
 				std::vector<int64_t> chanNums;
 				UnorderedMap<int64_t, int32_t> streams;
 				PolledDataCallback polledDataCallback;
