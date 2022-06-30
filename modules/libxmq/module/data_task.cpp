@@ -68,23 +68,15 @@ int DataTask::send(
 	//不是信封格式
 	int ret{data && 0 < bytes ? Error_Code_Success : Error_Code_Operate_Failure};
 	int sentbytes{0};
-
+	
 	if (dso && Error_Code_Success == ret)
 	{
-		Sock sock;
-		//先发分隔符
-		//再发数据
-		sentbytes += sock.send(dso, "", 0, true);
-		uint64_t pos{0};
-		while (pos < bytes)
-		{
-			const uint64_t remain{bytes - pos};
-			const uint64_t mtu{remain > 1048576 ? 1048576 : remain};
-			sentbytes += sock.send(dso, (uint8_t*)data + pos, mtu, remain > 1048576 ? true : false);
-			pos += mtu;
-		}
+		std::string temp{(const char*)data, bytes};
+		mtx.lock();
+		vecSendBuff.push_back(temp);
+		mtx.unlock();
 	}
-
+	
 	return sentbytes;
 }
 
@@ -92,11 +84,12 @@ void DataTask::pollDataThread()
 {
 	//1MB
 	char* recvbuf{new(std::nothrow) char[1048576]};
-	zmq_pollitem_t pollers[]{ { dso, 0, ZMQ_POLLIN, 0} };
+	zmq_pollitem_t pollers[]{ { dso, 0, ZMQ_POLLIN | ZMQ_POLLOUT, 0} };
 	Sock sock;
 
 	while(dso && !stopped)
 	{
+		pollers[0].revents = 0;
 		zmq_poll(pollers, 1, -1);
 
 		if (pollers[0].revents & ZMQ_POLLIN)
@@ -173,6 +166,38 @@ void DataTask::pollDataThread()
 							break;
 						}
 					}
+				}
+			}
+		}
+		else if (pollers[0].revents & ZMQ_POLLOUT)
+		{
+			if (!vecSendBuff.size())
+			{
+				XTime().sleep(3);
+				continue;
+			}
+
+			int sentbytes = 0;
+			if (vecSendBuff.size() > 0)
+			{
+				std::string temp = vecSendBuff.at(0);
+				const char* sendBuff{temp.c_str()};
+				mtx.lock();
+				vecSendBuff.erase(vecSendBuff.begin());
+				mtx.unlock();
+
+				int nLen = temp.length();
+				uint64_t pos{ 0 };
+				
+				//先发分隔符
+				//再发数据
+				sentbytes += sock.send(dso, "", 0, true);
+				while (pos < nLen)
+				{
+					const uint64_t remain{ nLen - pos };
+					const uint64_t mtu{ remain > 1048576 ? 1048576 : remain };
+					sentbytes += sock.send(dso, (uint8_t*)sendBuff + pos, mtu, remain > 1048576 ? true : false);
+					pos += mtu;
 				}
 			}
 		}

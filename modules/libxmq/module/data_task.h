@@ -53,6 +53,8 @@ namespace module
 				bool online;
 				void* check;
 				void* dso;
+				std::vector<std::string> vecSendBuff;
+				boost::shared_mutex mtx;
 				CheckOnlineStatusCallback checkOnlineStatusCallback;
 				ServiceCapabilitiesNotificationCallback serviceCapabilitiesNotificationCallback;
 			};//class DataTask

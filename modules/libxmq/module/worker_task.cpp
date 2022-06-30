@@ -81,7 +81,7 @@ int WorkerTask::send(
 void WorkerTask::pollDataThread()
 {
 	//1MB
-	char* recvbuf{new(std::nothrow) char[1048576]{0}};
+	char* recvbuf{new(std::nothrow) char[1048576 * 3]{0}};
 	zmq_pollitem_t poller[]{ { dso, 0, ZMQ_POLLIN, 0} };
 	Sock sock;
 
@@ -94,9 +94,9 @@ void WorkerTask::pollDataThread()
 			bool more{true};
 			std::size_t curpos{0}, headerpos{0};
 
-			while (more)
+			while (more && curpos < 1048576*3)
 			{
-				int recvbytes{sock.recv(dso, recvbuf + curpos, 1048576 - curpos, more)};
+				int recvbytes{sock.recv(dso, recvbuf + curpos, 1048576*3 - curpos, more)};
 
 				if (!headerpos && !curpos && 0 < recvbytes)
 				{
