@@ -7,6 +7,7 @@
 #endif//_WINDOWS
 #include "graph/av_grab_rgb_image_graph.h"
 #include "graph/av_grab_ps_graph.h"
+#include "graph/av_grab_es_graph.h"
 #include "graph/av_grab_jpeg_image_graph.h"
 #include "filter/av_filter.h"
 #include "libav.h"
@@ -35,6 +36,10 @@ int Libav::addConf(const AVModeConf& conf)
 			AVModeType::AV_MODE_TYPE_GRAB_RGB24 == conf.type)
 		{
 			graph = boost::make_shared<AVGrabRGBImageGraph>();
+		}
+		else if (AVModeType::AV_MODE_TYPE_GRAB_ES == conf.type)
+		{
+			graph = boost::make_shared<AVGrabESGraph>();
 		}
 		else if (AVModeType::AV_MODE_TYPE_GRAB_PS == conf.type)
 		{

@@ -14,6 +14,7 @@
    * 2. [基本约定](#Second)
    * 3. [系统设计](#SystemDesign)
    * 4. [边缘计算](#EdgeComputing)
+   * 5. [GStreamer插件编写](#Gstreamerplugins)
 
    # 1. <a name='First'></a>引言
    
@@ -1783,4 +1784,8 @@ Developer options (useful when working on FFmpeg itself):
   --disable-large-tests    disable tests that use a large amount of memory
   --disable-ptx-compression don't compress CUDA PTX code even when possible
 
+# 5. <a name='Gstreamerplugins'></a>GStreamer插件编写
+
+## 5.1 查看gst-template git模块的副本，以获取一个重要的工具和基本GStreamer插件的源代码模板。
+       git clone https://gitlab.freedesktop.org/gstreamer/gst-template.git
    

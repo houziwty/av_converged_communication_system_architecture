@@ -45,7 +45,7 @@ void* Router::bind(
 			//	Pending messages shall not be discarded after a call to zmq_close(); 
 			//	attempting to terminate the socket's context with zmq_term() shall block until either all pending messages have been sent to a peer, or the linger period expires, after which any pending messages shall be discarded.
 			int linger{ 0 };
-			zmq_setsockopt(s, ZMQ_LINGER, &linger, sizeof(int));
+			//zmq_setsockopt(s, ZMQ_LINGER, &linger, sizeof(int));
 
 			//Maximum time before a recv/send operation returns with EAGAIN.
 			//Sets the timeout for receive operation on the socket.

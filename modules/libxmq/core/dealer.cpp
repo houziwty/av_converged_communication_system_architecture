@@ -48,7 +48,7 @@ void* Dealer::connect(
 			//	Pending messages shall not be discarded after a call to zmq_close(); 
 			//	attempting to terminate the socket's context with zmq_term() shall block until either all pending messages have been sent to a peer, or the linger period expires, after which any pending messages shall be discarded.
 			int linger{ 0 };
-			zmq_setsockopt(s, ZMQ_LINGER, &linger, sizeof(int));
+			//zmq_setsockopt(s, ZMQ_LINGER, &linger, sizeof(int));
 
 			//Set reconnection interval.
 			//The ZMQ_RECONNECT_IVL option shall set the initial reconnection interval for the specified socket.
@@ -56,7 +56,7 @@ void* Dealer::connect(
 			//The value - 1 means no reconnection.
 			//Default value is 100ms.
 			int ivl{ 100 };
-			zmq_setsockopt(s, ZMQ_RECONNECT_IVL, &ivl, sizeof(int));
+			//zmq_setsockopt(s, ZMQ_RECONNECT_IVL, &ivl, sizeof(int));
 
 			//Maximum time before a recv/send operation returns with EAGAIN.
 			//Sets the timeout for receive operation on the socket.
@@ -107,7 +107,7 @@ void* Dealer::bind(
 			//	Pending messages shall not be discarded after a call to zmq_close(); 
 			//	attempting to terminate the socket's context with zmq_term() shall block until either all pending messages have been sent to a peer, or the linger period expires, after which any pending messages shall be discarded.
 			int linger{ 0 };
-			zmq_setsockopt(s, ZMQ_LINGER, &linger, sizeof(int));
+			//zmq_setsockopt(s, ZMQ_LINGER, &linger, sizeof(int));
 
 			//Maximum time before a recv/send operation returns with EAGAIN.
 			//Sets the timeout for receive operation on the socket.
@@ -158,7 +158,7 @@ void* Dealer::connect_inproc(
 			//The value - 1 means no reconnection.
 			//Default value is 100ms.
 			int ivl{ 100 };
-			zmq_setsockopt(s, ZMQ_RECONNECT_IVL, &ivl, sizeof(int));
+			//zmq_setsockopt(s, ZMQ_RECONNECT_IVL, &ivl, sizeof(int));
 
 			//Retrieve linger period for socket shutdown.
 			//* The default value of - 1 specifies an infinite linger period.
@@ -169,7 +169,7 @@ void* Dealer::connect_inproc(
 			//	Pending messages shall not be discarded after a call to zmq_close(); 
 			//	attempting to terminate the socket's context with zmq_term() shall block until either all pending messages have been sent to a peer, or the linger period expires, after which any pending messages shall be discarded.
 			int linger{ 0 };
-			zmq_setsockopt(s, ZMQ_LINGER, &linger, sizeof(int));
+			//zmq_setsockopt(s, ZMQ_LINGER, &linger, sizeof(int));
 
 			//Maximum time before a recv/send operation returns with EAGAIN.
 			//Sets the timeout for receive operation on the socket.

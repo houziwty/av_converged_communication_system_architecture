@@ -16,131 +16,84 @@ using namespace module::network::http;
 
 HttpSession::HttpSession(
 	const uint32_t id/* = 0*/, 
-	AfterFetchHttpResponseCallback resp_cbf/* = nullptr*/, 
-	AfterFetchHttpApiEventCallback api_cbf/* = nullptr*/) 
-	: HttpRequestSplitter(), sid{id}, websocket{false}, 
-	afterFetchHttpResponseCallback{resp_cbf}, 
-	afterFetchHttpApiEventCallback{api_cbf}
+	AfterFetchHttpResponseCallback rep/* = nullptr*/, 
+	AfterFetchHttpRequestCallback req/* = nullptr*/)
+	: parser{ *this }, sid{ id }, websocket{ false },
+	afterFetchHttpResponseCallback{rep}, afterFetchHttpRequestCallback{req}
 {}
 
 HttpSession::~HttpSession()
 {}
 
 int HttpSession::input(
-	const char* data/* = nullptr*/, 
-	const std::size_t bytes/* = std::string::npos*/)
+	const void* request/* = nullptr*/, 
+	const uint32_t bytes/* = 0*/)
 {
-	int ret{data && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
+	int ret{request && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
 
 	if(Error_Code_Success == ret)
 	{
-		ret = HttpRequestSplitter::input(data, bytes);
+		ret = parser.input(request, bytes);
 	}
 
 	return ret;
 }
 
-void HttpSession::afterRecvHttpHeaderNotification(
-	const char* header, 
-	std::size_t& content_length)
+void HttpSession::afterParsedHttpRequestNotification(
+	std::string& method,
+	std::string& url,
+	std::string& protocol,
+	std::string& content,
+	std::unordered_map<std::string, std::string>& headers)
 {
-    int ret{header ? Error_Code_Success : Error_Code_Invalid_Param};
-
-	if (Error_Code_Success == ret)
+	if (!method.compare("GET"))
 	{
-		UrlParser parser;
-
-		//HTTP请求解析
-		if (Error_Code_Success == parser.parse(header))
-		{
-			//获取消息体大小
-			std::vector<std::string> content_length_field{parser.value("Content_Length")};
-			content_length = (0 < content_length_field.size() ? atoi(content_length_field[0].c_str()) : 0);
-
-			//处理HTTP请求并应答
-			const std::string& method{parser.method()};
-
-			if (!method.compare("GET"))
-			{
-				fetchHttpRequestGet(&parser);
-			}
-			else if (!method.compare("POST"))
-			{
-				fetchHttpRequestPost();
-			}
-			else if (!method.compare("HEAD"))
-			{
-				fetchHttpRequestHead();
-			}
-			else if (!method.compare("OPTIONS"))
-			{
-				fetchHttpRequestOptions();
-			}
-			else
-			{
-				response(405);
-			}
-		}
-		else
-		{
-			//HTTP请求解析失败就产生错误应答
-			response(500);
-		}
+	}
+	else if (!method.compare("POST"))
+	{
+		afterFetchHttpRequestPost(url, protocol, content, headers);
+	}
+	else if (!method.compare("OPTIONS"))
+	{
+		afterFetchHttpRequestOptions();
+	}
+	else
+	{
+		sendHttpResponse(405, std::unordered_map<std::string, std::string>(), std::string());
 	}
 }
 
-void HttpSession::afterRecvHttpContentNotification(
-	const char* data/* = nullptr*/, 
-	const std::size_t bytes/* = 0*/)
-{
-	//暂时处理由HTTP GET的消息体
-	//GET没有消息体，只处理Websocket的消息
-	if (websocket && data && 0 < bytes)
-	{
-		/* code */
-	}	
-}
-
-void HttpSession::response(
-	const int code/* = 500*/, 
-	const std::multimap<std::string, std::string>& header/* = std::multimap<std::string, std::string>()*/, 
-	const char* body/* = nullptr*/)
+void HttpSession::sendHttpResponse(
+	const int code,
+	std::unordered_map<std::string, std::string>& headers,
+	const std::string content) const
 {
     //消息体默认为空
-    std::size_t body_bytes{0};
-    if (body)
-	{
-        //有消息体就获取大小
-		const std::string temp{body};
-        body_bytes = temp.length();
-    }
-
-    std::multimap<std::string, std::string>& headerOut{
-		const_cast<std::multimap<std::string, std::string>&>(header)};
-	std::multimap<std::string, std::string>::iterator it{headerOut.find("Content-Length")};
+    const std::size_t contentlen{content.length()};
+	std::unordered_map<std::string, std::string>::iterator it{headers.find("Content-Length")};
 	bool close{true};
 
-	// if (headerOut.end() == it)
-	// {
-    //     //http-flv直播是Keep-Alive类型
-    //     close = false;
-    // } 
-	// else if (body_bytes >= SIZE_MAX || body_bytes < 0)
-	// {
-    //     //不固定长度的body，那么发送完body后应该关闭socket，以便浏览器做下载完毕的判断
-    //     close = true;
-    // }
+	 //if (headers.end() == it)
+	 //{
+  //       //http-flv直播是Keep-Alive类型
+  //       close = false;
+  //   } 
+	 //else if (contentlen >= SIZE_MAX || contentlen < 0)
+	 //{
+  //       //不固定长度的body，那么发送完body后应该关闭socket，以便浏览器做下载完毕的判断
+  //       close = true;
+  //   }
 
-    headerOut.emplace("Date", XTime().gmt());
-    headerOut.emplace("Server", "MediaServer");
-    headerOut.emplace("Connection", close ? "close" : "keep-alive");
+	headers.emplace("Date", XTime().gmt());
+	headers.emplace("Server", "MediaServer");
+	headers.emplace("Connection", close ? "close" : "keep-alive");
     if (!close) 
 	{
-        headerOut.emplace("Keep-Alive", "timeout=30, max=100");
+		headers.emplace("Keep-Alive", "timeout=30, max=100");
     }
 
 	std::vector<std::string> values;
-	auto range{header.equal_range("Origin")};
+	auto range{headers.equal_range("Origin")};
 	for (auto i = range.first; i != range.second; ++i)
     {
         values.push_back(i->second);
@@ -148,46 +101,46 @@ void HttpSession::response(
     if (0 < values.size())
 	{
         //设置跨域
-        headerOut.emplace("Access-Control-Allow-Origin", "Origin");
-        headerOut.emplace("Access-Control-Allow-Credentials", "true");
+		headers.emplace("Access-Control-Allow-Origin", "Origin");
+		headers.emplace("Access-Control-Allow-Credentials", "true");
     }
 
-    if (headerOut.end() == it && body_bytes >= 0 && body_bytes < SIZE_MAX)
+    if (headers.end() == it && contentlen >= 0 && contentlen < SIZE_MAX)
 	{
         //文件长度为固定值,且不是http-flv强制设置Content-Length
-		headerOut.emplace("Content-Length", std::to_string(body_bytes));
+		headers.emplace("Content-Length", std::to_string(contentlen));
     }
 
-	it = headerOut.find("Content-Type");
-    if (0 < body_bytes && headerOut.end() == it)
+	it = headers.find("Content-Type");
+    if (0 < contentlen && headers.end() == it)
 	{
         //有消息体但没有类型
 		//默认使用UTF-8编码
-		headerOut.emplace("Content-Type", "text/plain; charset=utf-8");
+		headers.emplace("Content-Type", "text/plain; charset=utf-8");
     }
 
     //发送HTTP应答
 	if (afterFetchHttpResponseCallback)
 	{
 		std::string resp;
-		//消息头
 		resp += "HTTP/1.1 ";
 		resp += std::to_string(code);
 		resp += ' ';
 		resp += getHttpStatusMessage(code);
 		resp += "\r\n";
-		for (auto& it : header)
+		//消息头
+		for (auto& it : headers)
 		{
 			resp += it.first;
-			resp += ": ";
+			resp += ":";
 			resp += it.second;
 			resp += "\r\n";
 		}
 		resp += "\r\n";
 		//消息体
-		if (body)
+		if (!content.empty())
 		{
-			resp += body;
+			resp += content;
 			resp += "\r\n";
 		}
 
@@ -195,76 +148,78 @@ void HttpSession::response(
 	}
 }
 
-void HttpSession::fetchHttpRequestOptions()
+void HttpSession::afterFetchHttpRequestOptions() const
 {
-	std::multimap<std::string, std::string> header;
-    header.emplace("Allow", "GET, POST, HEAD, OPTIONS");
-    header.emplace("Access-Control-Allow-Origin", "*");
-    header.emplace("Access-Control-Allow-Credentials", "true");
-    header.emplace("Access-Control-Request-Methods", "GET, POST, HEAD, OPTIONS");
-    header.emplace("Access-Control-Request-Headers", "Accept,Accept-Language,Content-Language,Content-Type");
+	std::unordered_map<std::string, std::string> headers;
+	headers.emplace("Allow", "GET, POST, OPTIONS");
+	headers.emplace("Access-Control-Allow-Origin", "*");
+	headers.emplace("Access-Control-Allow-Credentials", "true");
+	headers.emplace("Access-Control-Request-Methods", "GET, POST, OPTIONS");
+	headers.emplace("Access-Control-Request-Headers", "Accept,Accept-Language,Content-Language,Content-Type");
 
-    response(200, header);
+	sendHttpResponse(200, headers, std::string());
 }
 
-void HttpSession::fetchHttpRequestHead()
-{
-	//暂时全部返回200 OK，因为HTTP GET存在按需生成流的操作，所以不能按照HTTP GET的流程返回
-    //如果直接返回404，那么又会导致按需生成流的逻辑失效，所以HTTP HEAD在静态文件或者已存在资源时才有效
-    //对于按需生成流的直播场景并不适用
-    response(200);
-}
-
-void HttpSession::fetchHttpRequestPost()
-{
-	//暂时不处理POST方法
-	response(501);
-}
-
-void HttpSession::fetchHttpRequestGet(void* parser/* = nullptr*/)
+void HttpSession::afterFetchHttpRequestPost(
+	const std::string& url, 
+	const std::string& protocol,
+	const std::string& content,
+	std::unordered_map<std::string, std::string>& headers)
 {
 	//尝试升级为Websocket
-	tryUpgradeWebsocket(parser);
+	websocket = tryUpgradeWebsocket(headers);
 
-	//解析HTTP API并执行API事件通知
-	UrlParser* _parser{reinterpret_cast<UrlParser*>(parser)};
-	const std::string api{_parser->url()};
-	if (!api.empty() && afterFetchHttpApiEventCallback)
+	//处理HTTP请求
+	if (afterFetchHttpRequestCallback)
 	{
 		int e{200};
-		char* body{nullptr};
-		char* type{nullptr};
-		afterFetchHttpApiEventCallback(sid, api.c_str(), e, body, type);
+		char* content{nullptr};
+		char* content_type{nullptr};
+		afterFetchHttpRequestCallback(sid, url.c_str(), e, content, content_type);
 
 		//应答
-		std::multimap<std::string, std::string> header;
-		header.emplace("Content-Type", type);
-		// header.emplace("Content-Length", (boost::format("%u") % std::string(body).length()).str());
-		response(e, header, body);
-		boost::checked_array_delete(body);
-		boost::checked_array_delete(type);
+		std::unordered_map<std::string, std::string> rep_headers;
+		if (content_type)
+		{
+			rep_headers.emplace("Content-Type", content_type);
+		}
+		rep_headers.emplace("Content-Length", (boost::format("%u") % std::string(content).length()).str());
+		sendHttpResponse(e, rep_headers, content);
+		boost::checked_array_delete(content);
+		boost::checked_array_delete(content_type);
 	}
 }
 
-void HttpSession::tryUpgradeWebsocket(void* parser/* = nullptr*/)
+bool HttpSession::tryUpgradeWebsocket(
+	const std::unordered_map<std::string, std::string>& headers)
 {
-	if (parser)
-	{
-		UrlParser* _parser{reinterpret_cast<UrlParser*>(parser)};
-		const std::vector<std::string> key{_parser->value("Sec-WebSocket-Key")};
-		const std::vector<std::string> proto{_parser->value("Sec-WebSocket-Protocol")};
-		const std::vector<std::string> version{_parser->value("Sec-WebSocket-Version")};
+	bool upgrade{ false };
 
-		//HTTP消息头包含Sec-WebSocket-Key字段就升级Websocket请求
-		if (0 < key.size() && 0 < proto.size() && 0 < version.size())
+	if (0 < headers.size())
+	{
+		try
 		{
-			websocket = true;
-			std::multimap<std::string, std::string> headerOut;
-			headerOut.emplace("Upgrade", "websocket");
-			headerOut.emplace("Connection", "Upgrade");
-			headerOut.emplace("Sec-WebSocket-Accept", std::string(Base64Encoder().encode(Sha1Encryptor().encrypt(key[0].c_str()))));
-			headerOut.emplace("Sec-WebSocket-Protocol", proto[0]);
-			headerOut.emplace("Sec-WebSocket-Version", version[0]);
+			const std::string sec_websocket_key{ headers.at("Sec-WebSocket-Key") };
+			const std::string sec_websocket_protocol{ headers.at("Sec-WebSocket-Protocol") };
+			const std::string sec_websocket_version{ headers.at("Sec-WebSocket-Version") };
+
+			if (!sec_websocket_key.empty() &&
+				!sec_websocket_protocol.empty() &&
+				!sec_websocket_version.empty())
+			{
+				upgrade = true;
+				//std::multimap<std::string, std::string> headerOut;
+				//headerOut.emplace("Upgrade", "websocket");
+				//headerOut.emplace("Connection", "Upgrade");
+				//headerOut.emplace("Sec-WebSocket-Accept", std::string(Base64Encoder().encode(Sha1Encryptor().encrypt(key[0].c_str()))));
+				//headerOut.emplace("Sec-WebSocket-Protocol", proto[0]);
+				//headerOut.emplace("Sec-WebSocket-Version", version[0]);
+			}
+		}
+		catch (std::exception&)
+		{
 		}
 	}
+
+	return upgrade;
 }

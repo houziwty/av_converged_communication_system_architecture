@@ -3,17 +3,16 @@
 //
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
-//		Date : 2021-11-18
-//		Description : 实时音视频播放流程图类
+//		Date : 2022-07-01
+//		Description : 实时流ES数据抓取流程图
 //
 //		History:
-//					1. 2021-11-18 由王科威创建
+//					1. 2022-07-01 由王科威创建
 //
 
-#ifndef MODULE_AV_STREAM_AV_REALPLAY_GRAPH_H
-#define MODULE_AV_STREAM_AV_REALPLAY_GRAPH_H
+#ifndef MODULE_AV_STREAM_AV_GRAB_ES_GRAPH_H
+#define MODULE_AV_STREAM_AV_GRAB_ES_GRAPH_H
 
-#ifdef _WINDOWS
 #include "av_graph.h"
 
 namespace module
@@ -22,11 +21,11 @@ namespace module
 	{
 		namespace stream
 		{
-			class AVRealplayGraph : public AVGraph
+			class AVGrabESGraph : public AVGraph
 			{
 			public:
-				AVRealplayGraph(void);
-				virtual ~AVRealplayGraph(void);
+				AVGrabESGraph(void);
+				virtual ~AVGrabESGraph(void);
 
 			public:
 				//创建
@@ -34,17 +33,13 @@ namespace module
 				//@Return : 错误码
 				//@Comment : 固定流程
 				//			1. Buffer Parser Filter
-				//			2. PS Parser Filter
-				//			3. Frame Decoder Filter
-				//			4. Frame Player Filter
 				int createNew(const AVModeConf& conf) override;
 
 			protected:
 				int connectPin(void) override;
-			};//class AVRealplayGraph
+			};//class AVGrabESGraph
 		}//namespace stream
 	}//namespace av
 }//namespace module
 
-#endif//_WINDOWS
-#endif//MODULE_AV_STREAM_AV_REALPLAY_GRAPH_H
+#endif//MODULE_AV_STREAM_AV_GRAB_ES_GRAPH_H

@@ -58,15 +58,15 @@ namespace module
 					const char* response = nullptr, 
 					const bool close = false) = 0;
 
-				//HTTP服务API事件通知
+				//HTTP服务请求通知
 				//@id [out] : 会话ID
-				//@api [out] : API数据
-				//@e [in/out] : HTTP错误码
-				//@body [in/out] : 应答消息体数据
-				//@type [in/out] : 应答消息体类型
-				virtual void afterFetchHttpApiEventNotification(
+				//@url [out] : URL
+				//@e [in,out] : HTTP错误码
+				//@body [in,out] : 应答消息体数据
+				//@type [in,out] : 应答消息体类型
+				virtual void afterFetchHttpRequestNotification(
 					const uint32_t id, 
-					const char* api, 
+					const char* url, 
 					int& e, 
 					char*& body, 
 					char*& type) = 0;

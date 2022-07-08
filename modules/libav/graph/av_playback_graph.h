@@ -13,6 +13,7 @@
 #ifndef MODULE_AV_STREAM_AV_PLAYBACK_GRAPH_H
 #define MODULE_AV_STREAM_AV_PLAYBACK_GRAPH_H
 
+#ifdef _WINDOWS
 #include "av_graph.h"
 
 namespace module
@@ -45,4 +46,5 @@ namespace module
 	}//namespace av
 }//namespace module
 
+#endif//_WINDOWS
 #endif//MODULE_AV_STREAM_AV_PLAYBACK_GRAPH_H

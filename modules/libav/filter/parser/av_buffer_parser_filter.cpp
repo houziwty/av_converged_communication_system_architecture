@@ -17,7 +17,7 @@ int AVBufferParserFilter::createNew(const AVModeConf& conf)
 
 	if (Error_Code_Success == ret)
 	{
-		AVParserModeConf parserConf{ conf.id, AVParserType::AV_PARSER_TYPE_BUFFER_PARSER };
+		AVParserModeConf parserConf{ conf.id, AVParserType::AV_PARSER_TYPE_BUFFER_PARSER, 3 * 1024 * 1024 };
 		ret = Libavparser::addConf(parserConf);
 
 		if (Error_Code_Success == ret)

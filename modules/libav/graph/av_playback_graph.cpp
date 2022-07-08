@@ -1,3 +1,4 @@
+#ifdef _WINDOWS
 #include "boost/make_shared.hpp"
 #include "error_code.h"
 #include "pin/av_pin.h"
@@ -76,3 +77,5 @@ int AVPlaybackGraph::connectPin()
 	
 	return ret;
 }
+
+#endif//_WINDOWS

@@ -91,6 +91,7 @@ typedef struct tagXMQNodeConf_t
 //服务名称
 static const char* XMQHostID = "xmq_host_server";
 static const char* DVSHostID = "dvs_host_server";
+static const char* HttpHostID = "http_host_server";
 static const char* DatabaseHostID = "database_host_server";
 static const char* StorageHostID = "storage_host_server";
 static const char* LidarHostID = "lidar_host_server";

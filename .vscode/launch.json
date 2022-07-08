@@ -225,7 +225,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/services/http_host_server/http_host_server",
-            "args": ["--http_port", "8080"],
+            "args": ["--xmq_addr", "192.168.2.160", "--xmq_port", "60531"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
@@ -312,6 +312,27 @@
             "args": ["--xmq_port", "60531", "--xmq_addr", "127.0.0.1"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/services/media_host_server/",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build",
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "grab_es_benchmarks",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/benchmarks/grab_es_benchmarks/grab_es_benchmarks",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${fileDirname}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",

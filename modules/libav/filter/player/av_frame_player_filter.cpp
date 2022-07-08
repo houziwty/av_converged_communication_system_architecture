@@ -1,3 +1,4 @@
+#ifdef _WINDOWS
 #include "libavpkt.h"
 #include "error_code.h"
 #include "pin/av_pin.h"
@@ -69,3 +70,5 @@ int AVFramePlayerFilter::input(
 	
 	return ret;
 }
+
+#endif//_WINDOWS

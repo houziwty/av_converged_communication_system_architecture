@@ -1,5 +1,5 @@
 //
-//		Copyright : @2021, ***, All Rights Reserved
+//		Copyright : @2022, ***, All Rights Reserved
 //
 //		Author : 王科威
 //		E-mail : wangkw531@hotmail.com
@@ -16,7 +16,7 @@
 #include <vector>
 #include <string>
 
-static const std::vector<const std::string> httpAPIs
+static const std::vector<const std::string> httpAPIList
 {
     //系统接口
     "/api/v1/getapilist",//获取API列表
