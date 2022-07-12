@@ -320,17 +320,19 @@ void Server::getAPIList(const char* params, int& e, char*& body, char*& type)
     boost::json::object o;
     
     for (std::unordered_map<std::string, std::pair<AfterFetchHttpRequestCallback, std::string>>::iterator it = callbacks.begin(); 
-        it != callbacks.end();++it)
+        it != callbacks.end();
+        ++it)
     {
         o[it->first] = it->second.second;
     }
 
     const std::string out{boost::json::serialize(o)};
     const std::size_t len{out.length()};
+    const std::string temp{ "text/json" };
+
     if (!out.empty())
     {
         body = reinterpret_cast<char*>(XMem().alloc(out.c_str(), len));
-        const std::string temp{"text/json"};
         type = reinterpret_cast<char*>(XMem().alloc(temp.c_str(), temp.length()));
     }
 }
@@ -350,11 +352,11 @@ int Server::loadHttpAPIList()
     //获取API列表
     callbacks.emplace(
         "/api/v1/getapilist", 
-        std::make_pair(boost::bind(&Server::getAPIList, this, _1, _2, _3, _4), "获取API接口"));
-    ////新增DVS设备
-    //invokers.add(
-    //    "/api/v1/device/add", 
-    //    boost::bind(&Server::afterFetchAPIInvokeAddDevice, this, _1, _2, _3, _4));
+        std::make_pair(boost::bind(&Server::getAPIList, this, _1, _2, _3, _4), "Get all api interface"));
+    //新增设备
+    callbacks.emplace(
+        "/api/v1/device/add", 
+        std::make_pair(boost::bind(&Server::addDevice, this, _1, _2, _3, _4), "Add new device"));
     ////删除DVS设备
     //invokers.add(
     //    "/api/v1/device/remove", 

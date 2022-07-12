@@ -355,7 +355,10 @@ int Server::addDVS(
         const std::string out{boost::json::serialize(o)};
         const std::string rep{
             (boost::format("config://%s?data=%s") % from % out).str()};
-        Libxmq::send(xid, rep.c_str(), rep.length(), from.c_str());
+        ret = Libxmq::send(xid, rep.c_str(), rep.length(), from.c_str());
+        log.write(
+            SeverityLevel::SEVERITY_LEVEL_INFO,
+            "Reply add new device message [ %s : %d ] successfully.", rep.c_str(), ret);
     }
 
     //Terminal
@@ -363,7 +366,7 @@ int Server::addDVS(
     {
         log.write(
             SeverityLevel::SEVERITY_LEVEL_INFO,
-            "Add new device [ %d_%s_%s_%u_%s_%s_%s_%d ] successfully.", 
+            "###################Add new device [ %d_%s_%s_%u_%s_%s_%s_%d ] successfully.", 
             conf.id, name.c_str(), conf.ip, conf.port, conf.user, conf.passwd, conf.sn, channels);
     }
     else

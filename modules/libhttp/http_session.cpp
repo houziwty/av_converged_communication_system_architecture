@@ -59,7 +59,9 @@ void HttpSession::afterParsedHttpRequestNotification(
 	}
 	else
 	{
-		sendHttpResponse(405, std::unordered_map<std::string, std::string>(), std::string());
+		std::unordered_map<std::string, std::string> h;
+		std::string c;
+		sendHttpResponse(405, h, c);
 	}
 }
 
@@ -173,9 +175,9 @@ void HttpSession::afterFetchHttpRequestPost(
 	if (afterFetchHttpRequestCallback)
 	{
 		int e{200};
-		char* content{nullptr};
+		char* _content{nullptr};
 		char* content_type{nullptr};
-		afterFetchHttpRequestCallback(sid, url.c_str(), e, content, content_type);
+		afterFetchHttpRequestCallback(sid, url.c_str(), e, _content, content_type);
 
 		//应答
 		std::unordered_map<std::string, std::string> rep_headers;
@@ -185,7 +187,7 @@ void HttpSession::afterFetchHttpRequestPost(
 		}
 		rep_headers.emplace("Content-Length", (boost::format("%u") % std::string(content).length()).str());
 		sendHttpResponse(e, rep_headers, content);
-		boost::checked_array_delete(content);
+		boost::checked_array_delete(_content);
 		boost::checked_array_delete(content_type);
 	}
 }
