@@ -47,48 +47,6 @@
             "miDebuggerPath": "/usr/bin/gdb"
         },
         {
-            "name": "test_libvideo_encode_image",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/tests/test_libvideo_encode_image/test_libvideo_encode_image",
-            "args": [],
-            "stopAtEntry": true,
-            "cwd": "${fileDirname}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "preLaunchTask": "Build",
-            "miDebuggerPath": "/usr/bin/gdb"
-        },
-        {
-            "name": "http_flv_stream_server",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/services/http_flv_stream_server/http_flv_stream_server",
-            "args": [],
-            "stopAtEntry": true,
-            "cwd": "${fileDirname}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "preLaunchTask": "Build",
-            "miDebuggerPath": "/usr/bin/gdb"
-        },
-        {
             "name": "xmq_pub_benchmarks",
             "type": "cppdbg",
             "request": "launch",
@@ -114,48 +72,6 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/benchmarks/xmq_sub_benchmarks/xmq_sub_benchmarks",
-            "args": [],
-            "stopAtEntry": true,
-            "cwd": "${fileDirname}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "preLaunchTask": "Build",
-            "miDebuggerPath": "/usr/bin/gdb"
-        },
-        {
-            "name": "test_dvs_host_client",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/tests/test_dvs_host_client/test_dvs_host_client",
-            "args": ["--xmq_addr", "127.0.0.1", "--xmq_port", "50531", "--app_name", "test_dvs_host_client"],
-            "stopAtEntry": true,
-            "cwd": "${fileDirname}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "preLaunchTask": "Build",
-            "miDebuggerPath": "/usr/bin/gdb"
-        },
-        {
-            "name": "test_asio_node",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/benchmarks/asio_node_benchmarks/asio_node_benchmarks",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${fileDirname}",
@@ -227,7 +143,7 @@
             "program": "${workspaceFolder}/build/services/http_host_server/http_host_server",
             "args": ["--xmq_addr", "192.168.2.160", "--xmq_port", "60531"],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}/build/services/http_host_server/",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
@@ -305,13 +221,13 @@
             "miDebuggerPath": "/usr/bin/gdb"
         },
         {
-            "name": "media_host_server",
+            "name": "grab_es_benchmarks",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/services/media_host_server/media_host_server",
-            "args": ["--xmq_port", "60531", "--xmq_addr", "127.0.0.1"],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/services/media_host_server/",
+            "program": "${workspaceFolder}/build/benchmarks/grab_es_benchmarks/grab_es_benchmarks",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${fileDirname}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
@@ -326,13 +242,13 @@
             "miDebuggerPath": "/usr/bin/gdb"
         },
         {
-            "name": "grab_es_benchmarks",
+            "name": "drogon_host_demo",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/benchmarks/grab_es_benchmarks/grab_es_benchmarks",
+            "program": "${workspaceFolder}/build/tests/drogon_host_demo/drogon_host_demo",
             "args": [],
             "stopAtEntry": true,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}/build/tests/drogon_host_demo/",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",

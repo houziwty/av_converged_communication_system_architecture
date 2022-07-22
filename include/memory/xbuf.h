@@ -5,17 +5,17 @@
 //		E-mail : wangkw531@hotmail.com
 //		Date : 2022-05-16
 //		Description : 数据缓存
+//                    -----------------------------------------------------
+//                    |                          |          |             |
+//                    -----------------------------------------------------
+//                    0                      currentPos   currentLen     capacity
 //
 //		History:
 //					1. 05-16 由王科威创建
 //
 
-#ifndef FRAMEWORK_UTILS_MEMORY_XBUF_H
-#define FRAMEWORK_UTILS_MEMORY_XBUF_H
-
-#include <stdint.h>
-#include <string>
-#include "boost/noncopyable.hpp"
+#ifndef FRAMEWORK_UTILS_MEMORY_XBUFFER_H
+#define FRAMEWORK_UTILS_MEMORY_XBUFFER_H
 
 namespace framework
 {
@@ -23,167 +23,56 @@ namespace framework
 	{
 		namespace memory
 		{
-            class XBuffer : public boost::noncopyable
+            class XBuffer
             {
             public:
-                //@bytes : 缓存容量大小
-                XBuffer(void);
-                virtual ~XBuffer(void);
+                //@capacity [in] : 缓存大小
+                XBuffer(const std::size_t capacity = 3 * 1024 * 1024);
+                ~XBuffer(void);
 
             public:
-                //输入数据
-                //@_data : 数据
-                //@_bytes : 大小
+                //输入
+                //@data [in] : 数据
+                //@bytes [in] : 大小
                 //@Return ：错误码
-                int input(const char* data = nullptr, const uint64_t bytes = 0);
+                int input(
+                    const char* data = nullptr, 
+                    const std::size_t bytes = 0);
 
                 //获取数据
+                //@pos [in] : 数据起始位置
                 //@Return : 数据
-                inline const char* data(void) const
+                inline const char* data(const std::size_t pos = 0) const
                 {
-                    return buf;
+                    return 0 < currentLen && pos < currentLen ? buffer + pos : nullptr;
                 }
 
-                //获取大小
-                //@Return : 大小
-                inline const uint64_t bytes(void) const
+                //获取数据大小
+                //@pos [in] : 数据起始位置
+                //@Return : 数据大小
+                inline const std::size_t bytes(const std::size_t pos = 0) const
                 {
-                    return buf_bytes;
-                }
-
-                //设置缓存
-                //@_bytes : 大小
-                //@Return : 数据
-                int capacity(const uint64_t bytes = 0);
-
-                //获取缓存容量大小
-                inline const uint64_t capacity(void) const 
-                {
-                    return capacity_bytes;
+                    return 0 < currentLen && pos < currentLen ? currentLen - pos : 0;
                 }
 
                 //重置
-                void reset(void);
+                inline void reset(void)
+                {
+                    currentLen = 0;
+                }
+
+                //数据移动到首部
+                //@pos [in] : 数据起始位置
+                //@Return : 错误码
+                int move(const std::size_t pos = 0);
 
             protected:
-                char* buf;
-                uint64_t buf_bytes;
-                uint64_t capacity_bytes;
+                char* buffer;
+                const std::size_t bufferCapacity;
+                std::size_t currentLen;
             };//class XBuffer
-
-            class StringBuffer : public XBuffer
-            {
-            public:
-                explicit StringBuffer(void);
-                explicit StringBuffer(std::string str);
-                explicit StringBuffer(const char* str = nullptr);
-                StringBuffer(StringBuffer&& sb);
-                StringBuffer(const StringBuffer& sb);
-                virtual ~StringBuffer(void);
-
-            public:
-                StringBuffer& operator=(std::string str);
-                StringBuffer& operator=(const char* str);
-                StringBuffer& operator=(StringBuffer&& sb);
-                StringBuffer& operator=(const StringBuffer& sb);
-
-                inline char* data() const
-                {
-                    return const_cast<char*>(stringbuf.data()) + head;
-                }
-
-                inline const std::size_t size() const
-                {
-                    return stringbuf.size() - tail - head;
-                }
-
-                //删除
-                StringBuffer& erase(const size_t pos = 0, const size_t n = std::string::npos);
-                //追加
-                StringBuffer& append(const StringBuffer& str);
-                StringBuffer& append(const std::string& str);
-                StringBuffer& append(const char* data = nullptr);
-                StringBuffer& append(const char* data = nullptr, const std::size_t len = 0);
-                //添加字符
-                void push_back(const char c);
-                //指定位置插入
-                StringBuffer& insert(const std::size_t pos = 0, const char* str = nullptr, const std::size_t n = 0);
-                //分配
-                StringBuffer& assign(const char* str = nullptr);
-                StringBuffer& assign(const char* str = nullptr, const std::size_t len = 0);
-
-                //重置
-                void reset(void);
-
-                //获取字符
-                char& operator[](const std::size_t pos);
-                const char& operator[](const std::size_t pos) const;
-
-                inline const std::size_t capacity() const
-                {
-                    return stringbuf.capacity();
-                }
-
-                void reserve(const std::size_t n = std::string::npos);
-
-                void resize(const std::size_t n = std::string::npos, const char c = 0);
-
-                inline const bool empty(void) const
-                {
-                    return size() <= 0;
-                }
-
-                const std::string substr(size_t pos, size_t n = std::string::npos) const;
-
-            private:
-                std::size_t head;
-                std::size_t tail;
-                std::string stringbuf;
-            };//class StringBuffer
-
-            class AVFrameBuffer : public XBuffer
-            {
-            public:
-                AVFrameBuffer(void);
-                virtual ~AVFrameBuffer(void);
-                
-                //获取解码时间戳
-                //@Return : 解码时间戳
-                virtual const uint32_t dts(void) const = 0;
-
-                //获取显示时间戳
-                //@Return : 显示时间戳
-                virtual const uint32_t pts(void) const
-                {
-                    return dts();
-                }
-
-                //前缀长度
-                //@Return : 前缀长度
-                //@Comment : 譬如264前缀为0x00 00 00 01,那么前缀长度就是4B, aac前缀则为7B
-                virtual const size_t prefixSize(void) const = 0;
-
-                //是否为关键帧
-                //@Return : 是/否
-                virtual const bool keyFrame(void) const = 0;
-
-                //是否可以缓存
-                //@Return : 是/否
-                virtual const bool cacheable(void) const
-                {
-                    return true;
-                }
-
-                //是否可丢弃帧
-                //@Return : 是/否
-                //@Comment ：SEI/AUD帧可以丢弃,其他都不能丢
-                virtual const bool dropable(void) const
-                {
-                    return false;
-                }
-            };//class AVFrameBuffer
         }//namespace memory
     }//namespace utils
 }//namespace framework
 
-#endif //FRAMEWORK_UTILS_MEMORY_XBUF_H
+#endif //FRAMEWORK_UTILS_MEMORY_XBUFFER_H

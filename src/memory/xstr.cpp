@@ -4,6 +4,7 @@
 #include <cstring>
 #endif//WINDOWS
 #include <new>
+#include "boost/algorithm/string.hpp"
 #include "error_code.h"
 #include "memory/xstr.h"
 using namespace framework::utils::memory;
@@ -65,4 +66,13 @@ const uint64_t XStr::len(const char* src/* = nullptr*/)
     }
     
     return bytes;
+}
+
+const std::vector<std::string> XStr::split(
+    const char* src/* = nullptr*/, 
+    const char* c/* = nullptr*/)
+{
+    std::vector<std::string> ret;
+    boost::split(ret, src, boost::is_any_of(c));
+    return std::move(ret);
 }

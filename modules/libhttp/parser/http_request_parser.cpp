@@ -1,117 +1,88 @@
-﻿#include "boost/checked_delete.hpp"
+﻿#include <map>
 #include "error_code.h"
-#include "memory/xmem.h"
-using namespace framework::utils::memory;
 #include "http_session.h"
 #include "http_request_parser.h"
 using namespace module::network::http;
 
-HttpRequestParser::HttpRequestParser(
-    HttpSession& http, 
-    const uint32_t bytes/* = 3 * 1024 * 1024*/) 
-    : httpSession{http}, buffer {nullptr}, bufBytes{ bytes }, pos{ 0 }
-{
-    buffer = new(std::nothrow) char[bufBytes];
-}
+HttpRequestParser::HttpRequestParser(HttpSession& session) : httpSession{session}
+{}
 
 HttpRequestParser::~HttpRequestParser()
-{
-    boost::checked_array_delete(buffer);
-}
+{}
 
-int HttpRequestParser::input(
-    const void* request/* = nullptr*/, 
-    const uint32_t bytes/* = 0 */)
-{
-    int ret{request && 0 < bytes ? Error_Code_Success : Error_Code_Invalid_Param};
-
-    if(Error_Code_Success == ret)
-    {
-        //缓存超界
-        if (pos + bytes > bufBytes)
-        {
-            pos = 0;
-            return Error_Code_Operate_Out_Of_Range;
-        }
-
-        //拷贝数据到缓存后再进行解析
-        //解析一次完整包重置位置
-        //否则就要移动数据内容到缓存首部
-        ret = XMem().copy(request, bytes, buffer + pos, bytes);
-        if (Error_Code_Success == ret)
-        {
-            pos += bytes;
-            const int parsepos{parse(buffer, pos)};
-
-            if (0 < parsepos && parsepos < pos)
-            {
-                const std::size_t len{pos - parsepos};
-                ret = XMem().move(buffer + parsepos, buffer, len);
-                pos = len;
-            }
-            else
-            {
-                pos = 0;
-            }
-        }
-    }
-
-    return ret;
-}
-
-int HttpRequestParser::parse(
+const std::size_t HttpRequestParser::parse(
     const char* data/* = nullptr*/,
-    const uint32_t bytes/* = 0*/)
+    const std::size_t bytes/* = 0*/)
 {
-    int ret{data && 0 < bytes ? Error_Code_Success : Error_Code_Operate_Failure};
-    std::size_t curpos{0}, startpos{0};
+    std::size_t pos{0}, crlfPos{0};
+    std::string method, url, protocol, type, content;
+    std::multimap<std::string, std::string> headers;
 
-    while (Error_Code_Success == ret && startpos < bytes)
+    while (data && 0 < bytes && pos < bytes)
     {
-        const std::string http{ data + startpos, bytes - startpos };
-        curpos = http.find_first_of("\r\n");
+        const std::string req{ data + pos, bytes - pos };
+        crlfPos = req.find_first_of("\r\n");
 
-        if (!curpos)
+        //如果0 == currentLinePos表示找到HTTP协议的头和消息体的分隔符
+        if (!crlfPos)
         {
-            //有消息体且长度足够就直接按大小拷贝
-            if (headers.find("Content-Length") != headers.end())
+            httpSession.afterParsedHttpRequestHeaderHandler(method, url, protocol, headers);
+
+            //有消息体且长度足够就直接处理
+            //否则缓存到下次接收后再解析
+            std::multimap<std::string, std::string>::iterator content_len{headers.find("Content-Length")};
+            std::multimap<std::string, std::string>::iterator content_type{headers.find("Content-Type")};
+            if (content_len != headers.end() && content_type != headers.end())
             {
-                const int len{atoi(headers["Content-Length"].c_str())};
+                const int len{atoi(content_len->second.c_str())};
                 
-                if (startpos + len <= bytes)
+                if (pos + len + 2 <= bytes)
                 {
                     //直接跳过消息头和消息体的分隔符\r\n
-                    content = http.substr(2, len);
-                    curpos += len;
+                    content = req.substr(2, len);
+                    type = content_type->second;
+                    pos += len;
+
+                    httpSession.afterParsedHttpRequestContentHandler(url, protocol, type, content);
+                }
+                else
+                {
+                    //数据接收不完整
+                    //等待下一次接收完成后再解析
+                    pos = 0;
+                    break;
                 }
             }
-
-            httpSession.afterParsedHttpRequestNotification(method, url, protocol, content, headers);
         }
-        else if (0 < curpos)
+        else if (0 < crlfPos)
         {
-            const std::string line{http.substr(0, curpos)};
-            const std::size_t splitpos{line.find_first_of(":")};
+            const std::string currentLine{req.substr(0, crlfPos)};
+            const std::size_t colonPos{currentLine.find_first_of(":")};
 
-            if (std::string::npos == splitpos)
+            //通过查找单行中是否包含":"来区分当前行是否是请求或应答的首行还是字段
+            if (std::string::npos == colonPos)
             {
-                //第一行
-                const std::size_t firstblackpos{line.find_first_of(" ")}, lastblackpos{line.find_last_of(" ")};
-                method = line.substr(0, firstblackpos);
-                url = line.substr(firstblackpos + 1, lastblackpos - firstblackpos - 1);
-                protocol = line.substr(lastblackpos + 1, line.length());
+                const std::size_t firstblackpos{currentLine.find_first_of(" ")}, lastblackpos{currentLine.find_last_of(" ")};
+                method = currentLine.substr(0, firstblackpos);
+                url = currentLine.substr(firstblackpos + 1, lastblackpos - firstblackpos - 1);
+                protocol = currentLine.substr(lastblackpos + 1, currentLine.length());
             }
             else
             {
                 //消息头单行
-                const std::size_t colonpos{line.find_first_of(":")};
-                headers.insert(std::make_pair(line.substr(0, colonpos), line.substr(colonpos + 1, line.length())));
+                const std::size_t colonpos{currentLine.find_first_of(":")};
+                headers.insert(std::make_pair(currentLine.substr(0, colonpos), currentLine.substr(colonpos + 1, currentLine.length())));
             }
         }
+        else
+        {
+            //TODO: 怎么解决多行表示一个字段的解析
+            pos = 0;
+            break;
+        }
 
-        curpos += 2;
-        startpos += curpos;
+        pos += (crlfPos + 2);
     }
     
-    return Error_Code_Success == ret ? startpos : ret;
+    return pos;
 }

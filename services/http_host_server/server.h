@@ -13,27 +13,15 @@
 #ifndef SERVICE_HTTP_HOST_SERVER_H
 #define SERVICE_HTTP_HOST_SERVER_H
 
-#include <unordered_map>
 #include "boost/atomic.hpp"
 #include "boost/function.hpp"
-#include "libasio.h"
-using namespace module::network::asio;
-#include "libhttp.h"
-using namespace module::network::http;
 #include "libxmq.h"
 using namespace module::network::xmq;
 #include "libfilelog.h"
 using namespace module::file::log;
+#include "map/unordered_map.h"
 
-//HTTP请求回调
-//@_1 [in] : 参数
-//@_2 [in, out] : HTTP错误码
-//@_3 [in, out] : 消息体
-//@_4 [in, out] : 消息体类型
-typedef boost::function<void(const char*, int&, char*&, char*&)> AfterFetchHttpRequestCallback;
-
-class Server final 
-    : protected Libxmq, protected Libasio, protected Libhttp
+class Server final : protected Libxmq
 {
 public:
     Server(FileLog& flog);
@@ -48,6 +36,20 @@ public:
     //@Return ：错误码
     int stop(void);
 
+    //DVS设备查询
+    //@rep [in,out] ：应答
+    void getDvslist(std::string& rep);
+
+    //DVS设备添加
+    //@req [in] ：请求
+    //@rep [in,out] ：应答
+    void addDvs(const std::string& req, std::string& rep);
+
+    //DVS设备删除
+    //@req [in] ：请求
+    //@rep [in,out] ：应答
+    void removeDvs(const std::string& req, std::string& rep);
+
 protected:
     void afterPolledXMQDataNotification(
         const uint32_t id = 0, 
@@ -56,61 +58,35 @@ protected:
         const char* name = nullptr) override;
     void afterFetchOnlineStatusNotification(const bool online = false) override;
     void afterFetchServiceCapabilitiesNotification(const char* names = nullptr) override;
-    uint32_t afterFetchIOAcceptedEventNotification(
-        const char* remoteIP = nullptr, 
-        const uint16_t remotePort = 0, 
-        const uint16_t localPort = 0, 
-        const int32_t e = 0) override;
-    uint32_t afterFetchIOConnectedEventNotification(
-        const int32_t e = 0, 
-        void* user = nullptr) override;
-    void afterPolledIOReadDataNotification(
-        const uint32_t id = 0, 
-        const void* data = nullptr, 
-        const uint64_t bytes = 0, 
-        const int32_t e = 0) override;
-    void afterPolledIOSendDataNotification(
-        const uint32_t id = 0, 
-        const uint64_t bytes = 0, 
-        const int32_t e = 0) override;
-    void afterFetchHttpResponseNotification(
-        const uint32_t id = 0, 
-        const char* response = nullptr,  
-        const bool close = false) override;
-    void afterFetchHttpRequestNotification(
-        const uint32_t id, 
-        const char* url, 
-        int& e, 
-        char*& body, 
-        char*& type) override;
 
 private:
-    //@params [in] : 参数
-    //@e [in/out] ：HTTP错误码
-    //@content [in/out] : 消息体
-    //@type [in/out] : 消息体类型
-    // /api/v1/getapilist处理
-    void getAPIList(const char* params, int& e, char*& content, char*& type);
-    // /api/v1/device/add处理
-    void addDevice(const char* params, int& e, char*& content, char*& type);
-    // /api/v1/device/remove处理
-    void removeDevice(const char* params, int& e, char*& content, char*& type);
+    //HTTP服务运行线程
+    void httpWorkerThread(void);
 
-    //加载API接口列表
-    //@Return ：错误码
-    int loadHttpAPIList(void);
+    //加载HTTP控制器
+    void loadHttpController(void);
 
+    //配置消息处理
     void processConfigRequest(
         const char* name = nullptr, 
         const char* req = nullptr);
+
+    //同步业务消息处理
+    //@id [in] ：请求ID
+    //@req [in] ：请求
+    //@rep [in,out] ：应答
+    //@Return ：错误码
+    int syncXMQMessageProcess(
+        const uint64_t id, 
+        const std::string& req, 
+        std::string& rep);
 
 private:
     FileLog& log;
     uint32_t xid;
     const std::string logid;
     boost::atomic_uint32_t sessionIDNumber;
-    //API调用回调集合
-    std::unordered_map<std::string, std::pair<AfterFetchHttpRequestCallback, std::string>> callbacks;
+    UnorderedMap<const uint64_t, std::string> asyncMessages;
 };//class Server
 
 #endif//SERVICE_HTTP_HOST_SERVER_H

@@ -1,18 +1,23 @@
-#include "boost/bind/bind.hpp"
-using namespace boost::placeholders;
 #include "boost/format.hpp"
 #include "boost/json.hpp"
+#include <drogon/drogon.h>
+using namespace drogon; 
 #include "error_code.h"
+#include "thread/thread_pool.h"
+using namespace framework::utils::thread;
 #include "memory/xmem.h"
 using namespace framework::utils::memory;
 #include "time/xtime.h"
 using namespace framework::utils::time;
 #include "url/url.h"
 using namespace framework::utils::data;
+#include "controller/device/device.h"
+#include "controller/capabilities/capabilities.h"
+using namespace api::v1;
 #include "server.h"
 
 Server::Server(FileLog& flog)
-    : Libxmq(), Libasio(), Libhttp(), log{flog}, xid{0}, 
+    : Libxmq(), log{flog}, xid{0}, 
     sessionIDNumber{0}, logid{std::string(HttpHostID).append("_log")}
 {}
 
@@ -31,52 +36,8 @@ int Server::run(const XMQNodeConf& conf)
             SeverityLevel::SEVERITY_LEVEL_INFO,
             "Connect to xmq server [ %s : %u ] successfully.", conf.ip, conf.port);
 
-        //Open http server.
-        ASIOModeConf http;
-        http.proto = ASIOProtoType::ASIO_PROTO_TYPE_TCP;
-        http.port = 18080;
-        http.tcp.mode = ASIOModeType::ASIO_MODE_TYPE_LISTEN;
-        ret = Libasio::addConf(http);
-
-        if (Error_Code_Success == ret)
-        {
-            httpValid = true;
-            log.write(
-                SeverityLevel::SEVERITY_LEVEL_INFO, 
-                "Run http server [ %u ] successfully.", http.port);
-        }
-        else
-        {
-             log.write(
-                SeverityLevel::SEVERITY_LEVEL_ERROR, 
-                "Run http server [ %u ] failed, reuslt = [ %d ].", http.port, ret);
-        }
-
-        //Open https server.
-        ASIOModeConf https;
-        https.proto = ASIOProtoType::ASIO_PROTO_TYPE_TCP;
-        https.port = 18443;
-        https.tcp.mode = ASIOModeType::ASIO_MODE_TYPE_LISTEN;
-        ret = Libasio::addConf(https);
-
-        if (Error_Code_Success == ret)
-        {
-            httpValid = true;
-            log.write(
-                SeverityLevel::SEVERITY_LEVEL_INFO, 
-                "Run https server [ %u ] successfully.", https.port);
-        }
-        else
-        {
-             log.write(
-                SeverityLevel::SEVERITY_LEVEL_ERROR, 
-                "Run https server [ %u ] failed, reuslt = [ %d ].", https.port, ret);
-        }
-
-        if (httpValid)
-        {
-            ret = loadHttpAPIList();
-        }
+        ThreadPool().get_mutable_instance().createNew(
+            boost::bind(&Server::httpWorkerThread, this));
     }
     
     return ret;
@@ -95,6 +56,8 @@ int Server::stop()
             log.write(
                 SeverityLevel::SEVERITY_LEVEL_INFO, 
                 "Disconnect xmq connection [ %d ] successfully.", xid);
+            
+            app().quit();
         }
         else
         {
@@ -169,200 +132,53 @@ void Server::afterFetchServiceCapabilitiesNotification(const char* names/* = nul
         "Fetch system online names of servers [ %s ].", names);
 }
 
-uint32_t Server::afterFetchIOAcceptedEventNotification(
-    const char* remoteIP/* = nullptr*/, 
-    const uint16_t remotePort/* = 0*/, 
-    const uint16_t localPort/* = 0*/, 
-    const int32_t e/* = 0*/)
+void Server::httpWorkerThread()
 {
-    uint32_t sid{0};
-
-    if (!e)
-    {
-        sid = ++sessionIDNumber;
-        log.write(
-            SeverityLevel::SEVERITY_LEVEL_INFO, 
-            "Fetch remote connect from [ %s:%u ] successfully, session ID = [ %u ]", 
-            remoteIP, remotePort, sid);
-    }
-    else
-    {
-        log.write(
-            SeverityLevel::SEVERITY_LEVEL_WARNING, 
-            "Fetch remote connect from [ %s:%u ] failed, error = [ %d ]", 
-            remoteIP, remotePort, e);
-    }
-
-    if (0 < sid)
-    {
-        Libhttp::addSession(sid);
-    }
-    
-    return sid;
-}
-
-uint32_t Server::afterFetchIOConnectedEventNotification(
-    const int32_t e/* = 0*/, 
-    void* user/* = nullptr*/)
-{
-    return 0;
-}
-
-void Server::afterPolledIOReadDataNotification(
-    const uint32_t id/* = 0*/, 
-    const void* data/* = nullptr*/, 
-    const uint64_t bytes/* = 0*/, 
-    const int32_t e/* = 0*/)
-{
-    const std::string temp{ (const char*)data, bytes };
     log.write(
-        SeverityLevel::SEVERITY_LEVEL_INFO, 
-        "\r\n%s", temp.c_str());
-
-    if (e)
-    {
-        Libhttp::removeSession(id);
-        log.write(
-            SeverityLevel::SEVERITY_LEVEL_WARNING, 
-            "Capture data read error [ %d ] on session [ %u ]", e, id);
-    }
-    else if (data && 0 < bytes && 0 < id)
-    {
-        Libhttp::input(id, data, bytes);
-    }
-}
-
-void Server::afterPolledIOSendDataNotification(
-    const uint32_t id/* = 0*/, 
-    const uint64_t bytes/* = 0*/, 
-    const int32_t e/* = 0*/)
-{}
-
-void Server::afterFetchHttpResponseNotification(
-    const uint32_t id/* = 0*/, 
-    const char* response/* = nullptr*/, 
-    const bool close/* = false*/)
-{
-    if (0 < id && response)
-    {
-        const std::string responseStr{response};
-        //发送应答
-        int ret{Libasio::send(id, response, responseStr.length())};
-
-        if (Error_Code_Success == ret)
-        {
-            log.write(
-                SeverityLevel::SEVERITY_LEVEL_INFO, 
-                "Send response on session ID [ %u ] successfully\r\n%s", id, response);
-        }
-        else
-        {
-            log.write(
-                SeverityLevel::SEVERITY_LEVEL_ERROR, 
-                "Send response on session ID [ %u ] successfully, error = [ %d ]\r\n%s", id, ret, response);
-        }
-
-        //根据会话关闭标识控制会话是否关闭
-        if (close)
-        {
-            ret = Libasio::removeConf(id);
-
-            if (Error_Code_Success == ret)
-            {
-                ret = Libhttp::removeSession(id);
-                log.write(
-                    SeverityLevel::SEVERITY_LEVEL_INFO, 
-                    "Remove HTTP session ID [ %u ] successfully.", id);
-            }
-            else
-            {
-                log.write(
-                    SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                    "Remove HTTP session ID [ %u ], error = [ %d ]", id, ret);
-            }
-        }
-    }
-}
-
-void Server::afterFetchHttpRequestNotification(
-    const uint32_t id, const char* url, int& e, char*& body, char*& type)
-{
-    if (0 < id && url)
-    {
-        //通过URL中是否带有参数来区分GET和POST请求
-        //这个不属于HTTP协议范围内的解析
-        //由应用端自行解析
-        const std::string request_url{url};
-        const std::size_t pos{ request_url.find_first_of('?') };
-        const std::string command{ request_url.substr(0, pos) };
-        const std::string parameters{ 
-            std::string::npos != pos ? 
-            request_url.substr(pos + 1, request_url.length() - pos - 1) : 
-            ""};
-
-        std::pair<AfterFetchHttpRequestCallback, std::string> callback{callbacks.at(command)};
-        if (callback.first)
-        {
-            callback.first(parameters.c_str(), e, body, type);
-        }
-        else
-        {
-            log.write(
-                SeverityLevel::SEVERITY_LEVEL_WARNING, 
-                "Fetch unsupport HTTP request [ %s ] on session [ %u ]", command, id);
-        }
-    }
-}
-
-void Server::getAPIList(const char* params, int& e, char*& body, char*& type)
-{
-    e = 200;
-    boost::json::object o;
+        SeverityLevel::SEVERITY_LEVEL_INFO, "Start http service.");
     
-    for (std::unordered_map<std::string, std::pair<AfterFetchHttpRequestCallback, std::string>>::iterator it = callbacks.begin(); 
-        it != callbacks.end();
-        ++it)
-    {
-        o[it->first] = it->second.second;
-    }
-
-    const std::string out{boost::json::serialize(o)};
-    const std::size_t len{out.length()};
-    const std::string temp{ "text/json" };
-
-    if (!out.empty())
-    {
-        body = reinterpret_cast<char*>(XMem().alloc(out.c_str(), len));
-        type = reinterpret_cast<char*>(XMem().alloc(temp.c_str(), temp.length()));
-    }
+    loadHttpController();
+    //设置应答消息server字段
+    app().setServerHeaderField("clt/0.0.1").setUploadPath("./uploads").addListener("127.0.0.1", 18080).run();
 }
 
-void Server::addDevice(const char* params, int& e, char*& body, char*& type)
+void Server::loadHttpController()
 {
-    
+    app().registerController(std::make_shared<api::v1::Device>(*this));
+    app().registerController(std::make_shared<api::v1::Capabilities>());
 }
 
-void Server::removeDevice(const char* params, int& e, char*& body, char*& type)
+void Server::getDvslist(std::string& rep)
 {
-
+    XTime tm;
+    const uint64_t now{tm.tickcount()};
+    const std::string msg{
+        (boost::format("config://external_deamon_host_server?data={\"command\":\"mec.dvs.query\",\"timestamp\":\"%llu\"}") % now).str()};
+    syncXMQMessageProcess(now, msg, rep);
 }
 
-int Server::loadHttpAPIList()
+void Server::addDvs(const std::string& req, std::string& rep)
 {
-    //获取API列表
-    callbacks.emplace(
-        "/api/v1/getapilist", 
-        std::make_pair(boost::bind(&Server::getAPIList, this, _1, _2, _3, _4), "Get all api interface"));
-    //新增设备
-    callbacks.emplace(
-        "/api/v1/device/add", 
-        std::make_pair(boost::bind(&Server::addDevice, this, _1, _2, _3, _4), "Add new device"));
-    ////删除DVS设备
-    //invokers.add(
-    //    "/api/v1/device/remove", 
-    //    boost::bind(&Server::afterFetchAPIInvokeRemoveDevice, this, _1, _2, _3, _4));
-    
-    return Error_Code_Success;
+    XTime tm;
+    const uint64_t now{tm.tickcount()};
+    auto o{boost::json::parse(req).as_object()};
+    o["command"] = "mec.dvs.add";
+    o["timestamp"] = std::to_string(now);
+    const std::string msg{
+        (boost::format("config://external_deamon_host_server?data=%s") % boost::json::serialize(o)).str()};
+    syncXMQMessageProcess(now, msg, rep);
+}
+
+void Server::removeDvs(const std::string& req, std::string& rep)
+{
+    XTime tm;
+    const uint64_t now{tm.tickcount()};
+    auto o{boost::json::parse(req).as_object()};
+    o["command"] = "mec.dvs.remove";
+    o["timestamp"] = std::to_string(now);
+    const std::string msg{
+        (boost::format("config://external_deamon_host_server?data=%s") % boost::json::serialize(o)).str()};
+    syncXMQMessageProcess(now, msg, rep);
 }
 
 void Server::processConfigRequest(
@@ -375,24 +191,75 @@ void Server::processConfigRequest(
         auto command{o.at("command").as_string()}, timestamp{o.at("timestamp").as_string()};
         std::string out, from{name};
 
-        if (!command.compare("mec.dvs.add"))
+        // if (!command.compare("mec.dvs.add"))
+        // {
+        //     std::string id;
+        //     auto factory{ o.at("factory").as_string() },
+        //         name{ o.at("name").as_string() },
+        //         ip{ o.at("ip").as_string() },
+        //         port{ o.at("port").as_string() },
+        //         user{ o.at("user").as_string() },
+        //         passwd{ o.at("passwd").as_string() },
+        //         timestamp{ o.at("timestamp").as_string() },
+        //         sn{o.at("sn").as_string()};
+        //     if (o.contains("id"))
+        //     {
+        //         id = o.at("id").as_string().c_str();
+        //     }
+        // }
+        // else if (!command.compare("mec.dvs.remove"))
+        // {
+        //     const std::string e{o.at("error").as_string().c_str()};
+        //     const std::string timestamp{o.at("timestamp").as_string().c_str()};
+        // }
+        // else if (!command.compare("mec.dvs.query"))
+        // {
+        //     const std::string e{o.at("error").as_string().c_str()};
+        //     const std::string timestamp{o.at("timestamp").as_string().c_str()};
+        //     o.erase("command");
+        //     o.erase("error");
+        //     o.erase("timestamp");
+        //     out = boost::json::serialize(o);
+        // }
+        // else
+        // {
+        //     return;
+        // }
+
+        const uint64_t last{atoll(timestamp.c_str())};
+        const uint64_t diff{XTime().tickcount() - last};
+        if (8000 > diff)
         {
-            std::string id;
-            auto factory{ o.at("factory").as_string() },
-                name{ o.at("name").as_string() },
-                ip{ o.at("ip").as_string() },
-                port{ o.at("port").as_string() },
-                user{ o.at("user").as_string() },
-                passwd{ o.at("passwd").as_string() },
-                timestamp{ o.at("timestamp").as_string() },
-                sn{o.at("sn").as_string()};
-            if (o.contains("id"))
-            {
-                id = o.at("id").as_string().c_str();
-            }
-        }
-        else if (!command.compare("mec.dvs.remove"))
-        {
+            asyncMessages.add(last, req);
         }
     }
+}
+
+int Server::syncXMQMessageProcess(
+    const uint64_t id, 
+    const std::string& req, 
+    std::string& rep)
+{
+    int ret{Error_Code_Success};
+    XTime tm;
+    const uint64_t now{tm.tickcount()};
+    rep.clear();
+
+    if (Error_Code_Success == Libxmq::send(xid, req.c_str(), req.length(), "external_deamon_host_server"))
+    {
+        while(10000 > tm.tickcount() - now)
+        {
+            rep = asyncMessages.at(id);
+            if (!rep.empty())
+            {
+                break;
+            }
+            
+            tm.sleep(1000);
+        }
+
+        ret = Error_Code_Operate_Failure;
+    }
+
+    return ret;
 }

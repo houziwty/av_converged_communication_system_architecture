@@ -14,6 +14,8 @@
 #define FRAMEWORK_UTILS_MEMORY_XSTR_H
 
 #include <cstdint>
+#include <string>
+#include <vector>
 
 namespace framework
 {
@@ -56,6 +58,14 @@ namespace framework
 				//@Return : 大小
                 const uint64_t len(
                     const char* src = nullptr);
+
+                //字符分离
+                //@src [in] : 源数据
+                //@c [in] : 分离字符
+                //@Return : 分离结果
+                const std::vector<std::string> split(
+                    const char* src = nullptr, 
+                    const char* c = nullptr);
             };//class XStr
         }//namespace memory
     }//namespace utils

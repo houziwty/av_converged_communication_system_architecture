@@ -16,6 +16,8 @@
 #include <vector>
 #include <mutex>
 #include "boost/atomic.hpp"
+#include "libavparser.h"
+using namespace module::av::stream;
 
 class Server;
 

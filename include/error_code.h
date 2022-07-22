@@ -51,6 +51,7 @@ static const int Error_Code_Catch_Device_Exception_Ignore = -2008;
 static const int Error_Code_Invalid_Flag = -3000;
 static const int Error_Code_Invalid_URL = -3001;
 static const int Error_Code_Out_Of_Range = -3002;
+static const int Error_Code_Invalid_HTTP_Line = -3003;
 
 //文件
 static const int Error_Code_File_Open_Failure = -4000;

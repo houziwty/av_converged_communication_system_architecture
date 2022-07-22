@@ -61,15 +61,19 @@ namespace module
 				//HTTP服务请求通知
 				//@id [out] : 会话ID
 				//@url [out] : URL
+				//@reqtype [out] : 请求参数类型
+				//@req [out] : 请求参数数据
 				//@e [in,out] : HTTP错误码
-				//@body [in,out] : 应答消息体数据
-				//@type [in,out] : 应答消息体类型
+				//@reptype [in,out] : 应答参数类型
+				//@rep [in,out] : 应答参数数据
 				virtual void afterFetchHttpRequestNotification(
 					const uint32_t id, 
 					const char* url, 
+					const char* reqtype, 
+					const char* req, 
 					int& e, 
-					char*& body, 
-					char*& type) = 0;
+					char*& reptype, 
+					char*& rep) = 0;
 			};//class Libhttp
 		}//namespace http
 	}//namespace network
