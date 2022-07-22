@@ -21,7 +21,7 @@ using namespace module::av::stream;
 
 class Server;
 
-class Session
+class Session : protected Libavparser
 {
 public:
     Session(Server& svr);
@@ -34,11 +34,18 @@ public:
         const void* data = nullptr, 
         const uint64_t bytes = 0);
 
+protected:
+    void afterParsedDataNotification(
+        const uint32_t id = 0, 
+        const void* avpkt = nullptr) override;
+
 private:
     Server& server;
     std::mutex mtx;
     std::vector<uint32_t> sids;
     boost::atomic_uint64_t sequence;
+    static uint32_t counter;
+    uint32_t index;
 };//class Session
 
 #endif//SERVICE_DVS_STREAM_SESSION_H

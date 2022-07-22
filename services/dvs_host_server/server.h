@@ -23,8 +23,6 @@ using namespace module::network::asio;
 using namespace module::network::xmq;
 #include "libdvs.h"
 using namespace module::device::dvs;
-#include "libavparser.h"
-using namespace module::av::stream;
 #include "session.h"
 #include "map/unordered_map.h"
 
