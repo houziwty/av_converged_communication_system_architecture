@@ -46,6 +46,16 @@ int Server::run(const XMQNodeConf& conf)
             log.write(
                 SeverityLevel::SEVERITY_LEVEL_INFO, 
                 "Run dvs streaming server [ %u ] successfully.", ioconf.port);
+
+            //DVSModeConf dvs;
+            //dvs.factory = DVSFactoryType::DVS_FACTORY_TYPE_HK;
+            //dvs.id = 1;
+            //memcpy_s(dvs.ip, 128, "192.168.2.227", 128);
+            //dvs.port = 8000;
+            //memcpy_s(dvs.user, 128, "admin", 128);
+            //memcpy_s(dvs.passwd, 128, "Vrc123456", 128);
+            //memcpy_s(dvs.sn, 128, "ABCD123456", 128);
+            //Libdvs::addConf(dvs);
         }
         else
         {

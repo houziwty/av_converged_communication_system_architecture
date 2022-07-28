@@ -14,19 +14,28 @@
 #ifndef MODULE_NETWORK_HTTP_HTTP_REQUEST_PARSER_H
 #define MODULE_NETWORK_HTTP_HTTP_REQUEST_PARSER_H
 
+#include <map>
+#include "boost/function.hpp"
+
 namespace module
 {
 	namespace network
 	{
 		namespace http
 		{
-            class HttpSession;
+            //HTTP请求解析回调
+            //@_1 [out] : 方法
+			//@_2 [out] : URL
+            //@_3 [out] : 版本
+			//@_4 [out] : 消息头
+			//@_5 [out] : 消息体
+            typedef boost::function<void(const std::string&, const std::string&, const std::string&, const std::multimap<std::string, std::string>&, const std::string&)> AfterParsedHttpRequestCallback;
 
             class HttpRequestParser
             {
             public:
-                //@session [in] : HTTP会话实例
-                HttpRequestParser(HttpSession& session);
+                HttpRequestParser(
+                    AfterParsedHttpRequestCallback callback);
                 ~HttpRequestParser(void);
 
             public:
@@ -35,11 +44,11 @@ namespace module
 				//@bytes [in] : 大小
 				//@Return : 解析数据大小
                 const std::size_t parse(
-                    const char* data = nullptr, 
+                    const void* data = nullptr, 
                     const std::size_t bytes = 0);
 
             private:
-                HttpSession& httpSession;
+                AfterParsedHttpRequestCallback afterParsedHttpRequestCallback;
             };//class HttpRequestParser
 		}//namespace http
 	}//namespace network

@@ -158,6 +158,27 @@
             "miDebuggerPath": "/usr/bin/gdb"
         },
         {
+            "name": "http_flv_host_server",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/services/http_flv_host_server/http_flv_host_server",
+            "args": ["--xmq_addr", "192.168.2.83", "--xmq_port", "60531"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/services/http_flv_host_server/",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build",
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
             "name": "xmq_send_benchmarks",
             "type": "cppdbg",
             "request": "launch",

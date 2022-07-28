@@ -1,5 +1,7 @@
 #include "boost/checked_delete.hpp"
 #include "boost/compute/detail/sha1.hpp"
+#include "boost/bind/bind.hpp"
+using namespace boost::placeholders;
 #include "boost/format.hpp"
 #include "error_code.h"
 #include "time/xtime.h"
@@ -15,10 +17,9 @@ using namespace module::network::http;
 
 HttpSession::HttpSession(
 	const uint32_t id/* = 0*/, 
-	AfterFetchHttpResponseCallback rep/* = nullptr*/, 
-	AfterFetchHttpRequestCallback req/* = nullptr*/)
-	: parser{*this}, wrapper{*this}, buffer{}, sid{ id }, websocket{ false },
-	afterFetchHttpResponseCallback{rep}, afterFetchHttpRequestCallback{req}
+	AfterFetchHttpRequestCallback callback/* = nullptr*/)
+	: httpRequestParser{boost::bind(&HttpSession::afterParsedHttpRequestHandler, this, _1, _2, _3, _4, _5)}, 
+	wrapper{*this}, buffer{}, sid{ id }, afterFetchHttpRequestCallback{callback}
 {}
 
 HttpSession::~HttpSession()
@@ -38,7 +39,7 @@ int HttpSession::input(
 		{
 			const char* currentData{buffer.data(pos)};
 			const std::size_t currentBytes{buffer.bytes(pos)};
-			const std::size_t parsedBytes{parser.parse(currentData, currentBytes)};
+			const std::size_t parsedBytes{httpRequestParser.parse(currentData, currentBytes)};
 
 			if (0 < parsedBytes)
 			{
@@ -55,19 +56,20 @@ int HttpSession::input(
 	return ret;
 }
 
-void HttpSession::afterParsedHttpRequestHeaderHandler(
+void HttpSession::afterParsedHttpRequestHandler(
 	const std::string& method, 
 	const std::string& url, 
 	const std::string& protocol, 
-	const std::multimap<std::string, std::string>& headers)
+	const std::multimap<std::string, std::string>& headers, 
+	const std::string& content)
 {
 	std::multimap<std::string, std::string> repheaders;
-	std::string rep, content;
+	std::string rep, c;
 	int httpErrCode{200};
 
 	if (!method.compare("GET"))
 	{
-		doHttpCommandGetProcess(url.c_str(), headers, httpErrCode, content, rep);
+		processHttpRequestGet(url, protocol, headers, content);
 	}
 	else if (!method.compare("POST"))
 	{
@@ -83,45 +85,45 @@ void HttpSession::afterParsedHttpRequestHeaderHandler(
 		httpErrCode = 405;
 	}
 
-	if (Error_Code_Success == wrapper.encode(protocol, httpErrCode, repheaders, content, rep))
-	{
-		//包含Keep-Alive就肯定包含Connection
-		std::multimap<std::string, std::string>::const_iterator it{repheaders.find("Keep-Alive")};
-		if (afterFetchHttpResponseCallback)
-		{
-			afterFetchHttpResponseCallback(sid, rep.c_str(), repheaders.end() == it ? true : false);
-		}
-	}
+	// if (Error_Code_Success == wrapper.encode(protocol, httpErrCode, repheaders, c, rep))
+	// {
+	// 	//包含Keep-Alive就肯定包含Connection
+	// 	std::multimap<std::string, std::string>::const_iterator it{repheaders.find("Keep-Alive")};
+	// 	if (afterFetchHttpResponseCallback)
+	// 	{
+	// 		afterFetchHttpResponseCallback(sid, rep.c_str(), repheaders.end() == it ? true : false);
+	// 	}
+	// }
 }
 
-void HttpSession::afterParsedHttpRequestContentHandler(
-	const std::string& url, 
-	const std::string& protocol, 
-	const std::string& type, 
-	const std::string& content)
-{
-	if (!url.empty() && !protocol.empty() && !type.empty() && !content.empty())
-	{
-		int errorCode{200};
-		char* reptype{nullptr};
-		char* rep{nullptr};
+// void HttpSession::afterParsedHttpRequestContentHandler(
+// 	const std::string& url, 
+// 	const std::string& protocol, 
+// 	const std::string& type, 
+// 	const std::string& content)
+// {
+// 	if (!url.empty() && !protocol.empty() && !type.empty() && !content.empty())
+// 	{
+// 		int errorCode{200};
+// 		char* reptype{nullptr};
+// 		char* rep{nullptr};
 
-		if (afterFetchHttpRequestCallback)
-		{
-			afterFetchHttpRequestCallback(sid, url.c_str(), type.c_str(), content.c_str(), errorCode, reptype, rep);
-		}
+// 		if (afterFetchHttpRequestCallback)
+// 		{
+// 			afterFetchHttpRequestCallback(sid, url.c_str(), type.c_str(), content.c_str(), errorCode, reptype, rep);
+// 		}
 		
-		// if (Error_Code_Success == wrapper.encode(protocol, httpErrCode, headers, content, rep))
-		// {
-		// 	//包含Keep-Alive就肯定包含Connection
-		// 	std::multimap<std::string, std::string>::const_iterator it{headers.find("Keep-Alive")};
-		// 	if (afterFetchHttpResponseCallback)
-		// 	{
-		// 		afterFetchHttpResponseCallback(sid, rep.c_str(), headers.end() == it ? true : false);
-		// 	}
-		// }
-	}
-}
+// 		// if (Error_Code_Success == wrapper.encode(protocol, httpErrCode, headers, content, rep))
+// 		// {
+// 		// 	//包含Keep-Alive就肯定包含Connection
+// 		// 	std::multimap<std::string, std::string>::const_iterator it{headers.find("Keep-Alive")};
+// 		// 	if (afterFetchHttpResponseCallback)
+// 		// 	{
+// 		// 		afterFetchHttpResponseCallback(sid, rep.c_str(), headers.end() == it ? true : false);
+// 		// 	}
+// 		// }
+// 	}
+// }
 
 // void HttpSession::sendHttpResponse(
 // 	const int code,
@@ -219,68 +221,59 @@ void HttpSession::makeHttpCommandOptionsResponse(
 	headers.emplace("Access-Control-Request-Headers", "Accept,Accept-Language,Content-Language,Content-Type");
 }
 
-void HttpSession::doHttpCommandGetProcess(
-	const char* url, 
-	const std::multimap<std::string, 
-	std::string>& headers, 
-	int& e, 
-	std::string& content, 
-	std::string& rep)
+void HttpSession::processHttpRequestGet(
+	const std::string& url, 
+	const std::string& protocol, 
+	const std::multimap<std::string, std::string>& headers, 
+	const std::string& content)
 {
-	//尝试升级为Websocket
-	websocket = tryUpgradeWebsocket(headers);
+	tryUpgradeWebsocket(headers);
+	tryGetOriginValue(headers);
 
 	//处理HTTP请求
 	if (afterFetchHttpRequestCallback)
 	{
-		int e{200};
-		char* _content{nullptr};
-		char* content_type{nullptr};
-		afterFetchHttpRequestCallback(sid, url.c_str(), e, _content, content_type);
-
-		//应答
-		std::unordered_map<std::string, std::string> rep_headers;
-		if (content_type)
-		{
-			rep_headers.emplace("Content-Type", content_type);
-		}
-		rep_headers.emplace("Content-Length", (boost::format("%u") % std::string(content).length()).str());
-		sendHttpResponse(e, rep_headers, content);
-		boost::checked_array_delete(_content);
-		boost::checked_array_delete(content_type);
+		std::multimap<std::string, std::string>::const_iterator content_type{headers.find("ContentType")};
+		afterFetchHttpRequestCallback(sid, url.c_str(), headers.end() != content_type ? content_type->second.c_str() : nullptr, content.c_str());
 	}
 }
 
-bool HttpSession::tryUpgradeWebsocket(
+void HttpSession::tryUpgradeWebsocket(
 	const std::multimap<std::string, std::string>& headers)
 {
-	bool upgrade{ false };
+	if (0 < headers.size())
+	{
+		std::multimap<std::string, std::string>::const_iterator key{headers.find("Sec-WebSocket-Key")};
+		std::multimap<std::string, std::string>::const_iterator proto{headers.find("Sec-WebSocket-Protocol")};
+		std::multimap<std::string, std::string>::const_iterator version{headers.find("Sec-WebSocket-Version")};
+		std::multimap<std::string, std::string>::const_iterator end{headers.end()};
 
-	// if (0 < headers.size())
-	// {
-	// 	try
-	// 	{
-	// 		const std::string sec_websocket_key{ headers.at("Sec-WebSocket-Key") };
-	// 		const std::string sec_websocket_protocol{ headers.at("Sec-WebSocket-Protocol") };
-	// 		const std::string sec_websocket_version{ headers.at("Sec-WebSocket-Version") };
+		if (end != key && end != proto && end != version)
+		{
+			//std::multimap<std::string, std::string> headerOut;
+			//headerOut.emplace("Upgrade", "websocket");
+			//headerOut.emplace("Connection", "Upgrade");
+			//headerOut.emplace("Sec-WebSocket-Accept", std::string(Base64Encoder().encode(Sha1Encryptor().encrypt(key[0].c_str()))));
+			//headerOut.emplace("Sec-WebSocket-Protocol", proto[0]);
+			//headerOut.emplace("Sec-WebSocket-Version", version[0]);
 
-	// 		if (!sec_websocket_key.empty() &&
-	// 			!sec_websocket_protocol.empty() &&
-	// 			!sec_websocket_version.empty())
-	// 		{
-	// 			upgrade = true;
-	// 			//std::multimap<std::string, std::string> headerOut;
-	// 			//headerOut.emplace("Upgrade", "websocket");
-	// 			//headerOut.emplace("Connection", "Upgrade");
-	// 			//headerOut.emplace("Sec-WebSocket-Accept", std::string(Base64Encoder().encode(Sha1Encryptor().encrypt(key[0].c_str()))));
-	// 			//headerOut.emplace("Sec-WebSocket-Protocol", proto[0]);
-	// 			//headerOut.emplace("Sec-WebSocket-Version", version[0]);
-	// 		}
-	// 	}
-	// 	catch (std::exception&)
-	// 	{
-	// 	}
-	// }
+			ws_sha1 = Base64Encoder().encode(Sha1Encryptor().encrypt(key->second.c_str()));
+			ws_proto = proto->second;
+			ws_version = version->second;
+		}
+	}
+}
 
-	return upgrade;
+void HttpSession::tryGetOriginValue(
+	const std::multimap<std::string, std::string>& headers)
+{
+	if (0 < headers.size())
+	{
+		std::multimap<std::string, std::string>::const_iterator origin_{headers.find("Origin")};
+
+		if (headers.end() != origin_)
+		{
+			origin = origin_->second;
+		}
+	}
 }

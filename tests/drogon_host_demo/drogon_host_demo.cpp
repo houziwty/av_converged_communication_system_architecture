@@ -63,6 +63,20 @@ int main()
         },
         {Get});
 
+    app().registerHandler(
+        "/flv/{1}-{2}.flv",
+        [](const HttpRequestPtr &req,
+           std::function<void(const HttpResponsePtr &)> &&callback) {
+            auto resp = HttpResponse::newHttpResponse();
+            auto name = req->getOptionalParameter<std::string>("user");
+            if (!name)
+                resp->setBody("Please tell me your name");
+            else
+                resp->setBody("Hello, " + name.value() + "!");
+            callback(resp);
+        },
+        {Get});
+
     // Ask Drogon to listen on 127.0.0.1 port 8848. Drogon supports listening
     // on multiple IP addresses by adding multiple listeners. For example, if
     // you want the server also listen on 127.0.0.1 port 5555. Just add another

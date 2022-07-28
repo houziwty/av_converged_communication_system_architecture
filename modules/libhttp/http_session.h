@@ -25,29 +25,19 @@ namespace module
 	{
 		namespace http
 		{
-			//HTTP服务应答回调
-			//@_1 [out] : 会话ID
-			//@_2 [out] : 数据
-			//@_3 [out] : 会话关闭标识
-			typedef boost::function<void(const uint32_t, const char*, const bool)> AfterFetchHttpResponseCallback;
-
-			//HTTP服务请求回调
+			//HTTP请求回调
 			//@_1 [out] : 会话ID
 			//@_2 [out] : URL
-			//@_3 [out] : 请求参数类型
-			//@_4 [out] : 请求参数数据
-			//@_5 [in,out] : HTTP错误码
-			//@_6 [in,out] : 应答参数类型
-			//@_7 [in,out] : 应答参数数据
-			typedef boost::function<void(const uint32_t, const char*, const char*, const char*, int&, char*&, char*&)> AfterFetchHttpRequestCallback;
+			//@_3 [out] : Content类型
+			//@_4 [out] : Content
+			typedef boost::function<void(const uint32_t, const char*, const char*, const char*)> AfterFetchHttpRequestCallback;
 
 			class HttpSession
 			{
 			public:
 				HttpSession(
 					const uint32_t id = 0, 
-					AfterFetchHttpResponseCallback rep = nullptr, 
-					AfterFetchHttpRequestCallback req = nullptr);
+					AfterFetchHttpRequestCallback callback = nullptr);
 				virtual ~HttpSession(void);
 
 			public:
@@ -59,28 +49,14 @@ namespace module
 					const void* data = nullptr, 
                     const uint32_t bytes = 0);
 
-				//处理HTTP请求行和请求头
-				//@method [out] : 方法
-				//@url [out] : URL
-				//@protocol [out] : 协议/版本
-				void afterParsedHttpRequestHeaderHandler(
+			private:
+				void afterParsedHttpRequestHandler(
 					const std::string& method, 
 					const std::string& url, 
 					const std::string& protocol, 
-					const std::multimap<std::string, std::string>& headers);
-
-				//处理HTTP请求消息体
-				//@url [out] : URL
-				//@protocol [out] : 协议/版本
-				//@type [out] : 消息体类型
-				//@content [out] : 消息体
-				void afterParsedHttpRequestContentHandler(
-					const std::string& url, 
-					const std::string& protocol, 
-					const std::string& type, 
+					const std::multimap<std::string, std::string>& headers, 
 					const std::string& content);
-
-			private:
+				
 				//发送HTTP应答
 				//@code [in] : HTTP错误码
 				//@headers [in] : 消息头字段集合
@@ -99,28 +75,35 @@ namespace module
 				// 	const std::string& protocol, 
 				// 	const std::string& content, 
 				// 	std::unordered_map<std::string, std::string>& headers);
+
 				//处理GET命令
-				void doHttpCommandGetProcess(
-					const char* url, 
+				void processHttpRequestGet(
+					const std::string& url, 
+					const std::string& protocol, 
 					const std::multimap<std::string, std::string>& headers, 
-					int& e, 
-					std::string& content, 
-					std::string& rep);
+					const std::string& content);
 
 				//尝试升级会话为Websocket
-				//@Return : 升级标识
-				bool tryUpgradeWebsocket(
+				//@Return : true/false
+				void tryUpgradeWebsocket(
+					const std::multimap<std::string, std::string>& headers);
+				//尝试获取跨域值
+				//@Return : true/false
+				void tryGetOriginValue(
 					const std::multimap<std::string, std::string>& headers);
 
 			private:
 				XBuffer buffer;
-				HttpRequestParser parser;
+				HttpRequestParser httpRequestParser;
 				HttpResponseWrapper wrapper;
 				const uint32_t sid;
-				AfterFetchHttpResponseCallback afterFetchHttpResponseCallback;
 				AfterFetchHttpRequestCallback afterFetchHttpRequestCallback;
-				//是否升级为Websocket会话
-				bool websocket;
+				//是否Websocket
+				std::string ws_sha1;
+				std::string ws_proto;
+				std::string ws_version;
+				//是否跨域
+				std::string origin;
 			};//class HttpSession
 		}//namespace http
 	}//namespace network

@@ -28,8 +28,8 @@ int Libhttp::addSession(const uint32_t id/* = 0*/)
         HttpSessionPtr session{
             boost::make_shared<HttpSession>(
                 id, 
-                boost::bind(&Libhttp::afterFetchHttpResponseNotification, this, _1, _2, _3), 
-                boost::bind(&Libhttp::afterFetchHttpRequestNotification, this, _1, _2, _3, _4, _5, _6, _7))};
+//                boost::bind(&Libhttp::afterFetchHttpResponseNotification, this, _1, _2, _3), 
+                boost::bind(&Libhttp::afterFetchHttpRequestNotification, this, _1, _2, _3, _4))};
 
         if (session)
         {

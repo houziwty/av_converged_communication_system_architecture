@@ -1,17 +1,17 @@
-﻿#include <map>
-#include "error_code.h"
-#include "http_session.h"
+﻿#include "error_code.h"
 #include "http_request_parser.h"
 using namespace module::network::http;
 
-HttpRequestParser::HttpRequestParser(HttpSession& session) : httpSession{session}
+HttpRequestParser::HttpRequestParser(
+    AfterParsedHttpRequestCallback callback) 
+    : afterParsedHttpRequestCallback{callback}
 {}
 
 HttpRequestParser::~HttpRequestParser()
 {}
 
 const std::size_t HttpRequestParser::parse(
-    const char* data/* = nullptr*/,
+    const void* data/* = nullptr*/,
     const std::size_t bytes/* = 0*/)
 {
     std::size_t pos{0}, crlfPos{0};
@@ -20,14 +20,12 @@ const std::size_t HttpRequestParser::parse(
 
     while (data && 0 < bytes && pos < bytes)
     {
-        const std::string req{ data + pos, bytes - pos };
+        const std::string req{ (char*)data + pos, bytes - pos };
         crlfPos = req.find_first_of("\r\n");
 
         //如果0 == currentLinePos表示找到HTTP协议的头和消息体的分隔符
         if (!crlfPos)
         {
-            httpSession.afterParsedHttpRequestHeaderHandler(method, url, protocol, headers);
-
             //有消息体且长度足够就直接处理
             //否则缓存到下次接收后再解析
             std::multimap<std::string, std::string>::iterator content_len{headers.find("Content-Length")};
@@ -42,8 +40,6 @@ const std::size_t HttpRequestParser::parse(
                     content = req.substr(2, len);
                     type = content_type->second;
                     pos += len;
-
-                    httpSession.afterParsedHttpRequestContentHandler(url, protocol, type, content);
                 }
                 else
                 {
@@ -82,6 +78,12 @@ const std::size_t HttpRequestParser::parse(
         }
 
         pos += (crlfPos + 2);
+    }
+
+    //解析完整的请求才回调数据
+    if (0 < pos && pos <= bytes && afterParsedHttpRequestCallback)
+    {
+        afterParsedHttpRequestCallback(method, url, protocol, headers, content);
     }
     
     return pos;

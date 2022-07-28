@@ -90,6 +90,11 @@
         "http-parser.h": "c",
         "http-server-internal.h": "c",
         "http-websocket-internal.h": "c",
-        "netfwd": "cpp"
+        "netfwd": "cpp",
+        "mpeg4-aac.h": "c",
+        "mpeg4-hevc.h": "c",
+        "mpeg4-avc.h": "c",
+        "opus-head.h": "c",
+        "flv-muxer.h": "c"
     }
 }

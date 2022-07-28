@@ -13,11 +13,11 @@
 #ifndef SERVICE_DATABASE_HOST_SERVER_H
 #define SERVICE_DATABASE_HOST_SERVER_H
 
-#include "file_log.h"
+#include "libfilelog.h"
 using namespace module::file::log;
-#include "xmq_node.h"
+#include "libxmq.h"
 using namespace module::network::xmq;
-#include "database_node.h"
+#include "database.h"
 using namespace module::file::database;
 #include "url/url.h"
 using namespace framework::utils::data;
